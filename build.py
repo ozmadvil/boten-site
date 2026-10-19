@@ -77,6 +77,33 @@ platform_active = [r for r in platform_all
 platform_active.sort(key=lambda r: float(r["min_usd"]))
 checks = sorted(read_csv("checks.csv"), key=lambda r: r["date"], reverse=True)
 
+# Channel deals for the product tiles. The bot snapshots every product it posts to @Boten_deals and serves the
+# list at BOT_FEED_URL; data/products.json is the fallback (and the last good copy when building locally).
+BOT_FEED_URL = os.environ.get("BOT_FEED_URL", "https://worker-production-b0bb.up.railway.app/products.json")
+
+
+def load_products() -> list[dict]:
+    import urllib.request
+    cache = ROOT / "data" / "products.json"
+    data = None
+    if BOT_FEED_URL and os.environ.get("BOT_FEED_URL", "x") != "off":
+        try:
+            with urllib.request.urlopen(BOT_FEED_URL, timeout=20) as r:
+                data = json.loads(r.read().decode("utf-8"))
+            cache.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+        except Exception as ex:
+            print(f"products feed unavailable ({ex}); using {cache.name}")
+    if data is None and cache.exists():
+        data = json.loads(cache.read_text(encoding="utf-8"))
+    out = []
+    for p in (data or {}).get("products", []):
+        if p.get("title") and p.get("image") and p.get("link", "").startswith("https://") and p.get("price"):
+            out.append(p)
+    return out[:12]
+
+
+products = load_products()
+
 
 def bot_link(product_id: str | None = None, src: str = "site") -> str:
     return f"{BOT}?start=" + (f"p_{product_id}-{src}" if product_id else src)
@@ -133,7 +160,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     }
     var m = v.match(/(?:\/item\/|productIds?=|[?&]id=|\/i\/)(\d{10,20})/) || v.match(/(\d{13,20})/);
     btn.setAttribute('aria-busy', 'true'); btn.querySelector('span').textContent = 'בודק…';
-    var tag = document.querySelector('.hero .tag'), ts = tag && tag.querySelector('.strip span');
+    var tag = document.querySelector('.proof .tag'), ts = tag && tag.querySelector('.strip span');
     if (tag && ts) { tag.classList.remove('checking'); void tag.offsetWidth; tag.classList.add('checking'); ts.textContent = 'בודק את הלינק שלכם…'; }
     function go(url) { window.location.href = url; setTimeout(function () { btn.removeAttribute('aria-busy'); btn.querySelector('span').textContent = label; if (tag && ts) { tag.classList.remove('checking'); ts.textContent = ts.dataset.idle; } }, 2500); }
     if (m) { say('פותח את בוטן על המוצר הזה…'); go(bot + '?start=p_' + m[1] + '-' + src); return; }
@@ -317,20 +344,43 @@ def checks_log() -> str:
     return f'<ul class="log">{"".join(items)}</ul>'
 
 
+def product_tiles(rows: list[dict]) -> str:
+    """Channel deals as flyer tiles. A tile is one link straight to AliExpress (affiliate)."""
+    tiles = []
+    for p in rows:
+        price_v, orig, disc = float(p["price"]), p.get("original"), p.get("discount")
+        was = f'<span class="was">₪{float(orig):.2f}</span>' if orig and float(orig) > price_v + 0.5 else ""
+        burst = f'<span class="burst" aria-label="הנחה {disc:.0f}%">-{disc:.0f}%</span>' if disc and disc >= 5 else ""
+        cat = f'<span class="cat">{e(p["category"])}</span>' if p.get("category") else ""
+        tiles.append(f"""<li><a class="tile" href="{e(p['link'])}" rel="sponsored nofollow noopener" target="_blank">
+<span class="pic"><img src="{e(p['image'])}" alt="" width="300" height="300" loading="lazy" decoding="async" referrerpolicy="no-referrer"></span>
+{burst}
+<span class="tprice">{price(price_v)}{was}</span>
+<span class="ttl">{e(p['title'])}</span>
+{cat}
+</a></li>""")
+    return f'<ul class="tiles">{"".join(tiles)}</ul>'
+
+
 # ------------------------------------------------------------------ pages
 def build_home():
     body = f"""<section class="hero" aria-labelledby="hero-title"><div class="wrap">
 <div>
-<h1 id="hero-title">קודי קופון לאליאקספרס <em>שבאמת עובדים</em></h1>
-<p class="lead">שולחים לבוטן לינק של מוצר, ומקבלים מחיר בשקלים, הנחה וקוד מוכר אם יש. כל מה שמופיע כאן נבדק בקופה אמיתית.</p>
-{checker('home')}
+<h1 id="hero-title">דילים מאליאקספרס <em>שבאמת שווים</em></h1>
+<p class="lead">כל מוצר כאן עבר סינון של בוטן: דירוג גבוה, הרבה מכירות, מחיר בשקלים. ויש לכם מוצר משלכם? הדביקו אותו כאן.</p>
 </div>
-<div class="tag-slot">{hero_tag()}</div>
+{checker('home')}
 </div></section>
 
 <div class="wrap">
+{f'''<section aria-labelledby="hot-title">
+<div class="sec-head"><h2 id="hot-title">הדילים של השבוע</h2><a href="{CHANNEL}">כל הדילים בערוץ {ICON_ARROW}</a></div>
+{product_tiles(products)}
+<p class="tiles-note">המחירים נכונים לשעת הפרסום בערוץ ועשויים להשתנות. לחיצה על מוצר פותחת אותו באליאקספרס (קישור שותפים: המחיר שלכם לא משתנה).</p>
+</section>''' if products else ""}
+
 <section aria-labelledby="deals-title">
-<h2 id="deals-title">מבצעי השבוע</h2>
+<h2 id="deals-title">קודי מוכר שנבדקו</h2>
 <p class="lead">קודי מוכר שנבדקו, עם תאריך. את הקוד עצמו מקבלים בבוטן, יחד עם המחיר המעודכן.</p>
 {coupons(seller[:4], 'home')}
 </section>
@@ -344,9 +394,12 @@ def build_home():
 </ol>
 </section>
 
-<section aria-labelledby="log-title">
+<section aria-labelledby="log-title" class="proof">
+<div class="proof-text">
 <h2 id="log-title">יומן הבדיקות</h2>
 <p class="lead">רוב אתרי הקופונים מעתיקים רשימות בלי לבדוק. אנחנו בודקים בקופה, ומתעדים גם מה שלא עבד.</p>
+</div>
+<div class="tag-slot">{hero_tag()}</div>
 {checks_log()}
 </section>
 </div>

@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "17 3 * * *"        # daily ~06:17 Israel time: expired codes drop off, dates refresh
+    - cron: "17 * * * *"        # hourly: new channel deals appear as tiles, expired codes drop off
   workflow_dispatch:
 
 permissions:
@@ -28,6 +28,7 @@ jobs:
         env:
           SITE_URL: ${{ vars.SITE_URL || format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) }}
           CNAME: ${{ vars.CNAME }}
+          BOT_FEED_URL: ${{ vars.BOT_FEED_URL || 'https://worker-production-b0bb.up.railway.app/products.json' }}
         run: python build.py
       - uses: actions/upload-pages-artifact@v3
         with:
