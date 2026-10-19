@@ -1,0 +1,92 @@
+{
+ "categories": [
+  {
+   "slug": "phones",
+   "name": "סמארטפונים ואביזרים"
+  },
+  {
+   "slug": "audio",
+   "name": "אוזניות ורמקולים"
+  },
+  {
+   "slug": "computers",
+   "name": "מחשבים וציוד היקפי"
+  },
+  {
+   "slug": "gaming",
+   "name": "גיימינג"
+  },
+  {
+   "slug": "smart-home",
+   "name": "בית חכם"
+  },
+  {
+   "slug": "cleaning",
+   "name": "שואבי אבק וניקיון"
+  },
+  {
+   "slug": "kitchen-appliances",
+   "name": "מוצרי חשמל למטבח"
+  },
+  {
+   "slug": "kitchen",
+   "name": "מטבח וכלי בישול"
+  },
+  {
+   "slug": "tools",
+   "name": "כלי עבודה"
+  },
+  {
+   "slug": "car",
+   "name": "לרכב"
+  },
+  {
+   "slug": "lighting",
+   "name": "תאורה"
+  },
+  {
+   "slug": "camping",
+   "name": "קמפינג וטיולים"
+  },
+  {
+   "slug": "fitness",
+   "name": "ספורט וכושר"
+  },
+  {
+   "slug": "men",
+   "name": "אופנת גברים"
+  },
+  {
+   "slug": "women",
+   "name": "אופנת נשים"
+  },
+  {
+   "slug": "bags",
+   "name": "תיקים ומזוודות"
+  },
+  {
+   "slug": "watches",
+   "name": "שעונים"
+  },
+  {
+   "slug": "beauty",
+   "name": "טיפוח ויופי"
+  },
+  {
+   "slug": "kids",
+   "name": "ילדים ותינוקות"
+  },
+  {
+   "slug": "pets",
+   "name": "חיות מחמד"
+  },
+  {
+   "slug": "garden",
+   "name": "בית וגינה"
+  },
+  {
+   "slug": "under-50",
+   "name": "מתחת ל-₪50"
+  }
+ ]
+}

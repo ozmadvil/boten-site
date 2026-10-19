@@ -104,6 +104,38 @@ def load_products() -> list[dict]:
 
 products = load_products()
 
+# Product categories (the "קטגוריות" menu). Names and order come from the bot (site_categories.txt there);
+# data/categories_menu.json keeps the menu alive when the feed is unreachable.
+BOT_CATS_URL = os.environ.get("BOT_CATS_URL") or BOT_FEED_URL.replace("/products.json", "/categories.json")
+
+
+def load_categories() -> list[dict]:
+    import urllib.request
+    cache, menu = ROOT / "data" / "categories.json", ROOT / "data" / "categories_menu.json"
+    data = None
+    if os.environ.get("BOT_FEED_URL", "x") != "off":
+        try:
+            with urllib.request.urlopen(BOT_CATS_URL, timeout=20) as r:
+                data = json.loads(r.read().decode("utf-8"))
+            cache.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+        except Exception as ex:
+            print(f"categories feed unavailable ({ex})")
+    if data is None and cache.exists():
+        data = json.loads(cache.read_text(encoding="utf-8"))
+    if data is None and menu.exists():
+        data = json.loads(menu.read_text(encoding="utf-8"))
+    cats = []
+    for c in (data or {}).get("categories", []):
+        if not re.fullmatch(r"[a-z0-9-]+", c.get("slug", "")) or not c.get("name"):
+            continue
+        prods = [p for p in c.get("products", []) if p.get("title") and p.get("image")
+                 and str(p.get("link", "")).startswith("https://") and p.get("price")]
+        cats.append({"slug": c["slug"], "name": c["name"], "products": prods})
+    return cats
+
+
+categories = load_categories()
+
 
 def bot_link(product_id: str | None = None, src: str = "site") -> str:
     return f"{BOT}?start=" + (f"p_{product_id}-{src}" if product_id else src)
@@ -193,6 +225,14 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
             {"@type": "ListItem", "position": i, "name": n, "item": SITE_URL + p} for i, (p, n) in enumerate(items, 1)]})
     graph += schema or []
     nav = "".join(f'<a href="{BASE}{p}"{" aria-current=\"page\"" if p == path else ""}>{n}</a>' for p, n in NAV)
+    if categories:
+        links = ""
+        for c in categories:
+            href = f"/c/{c['slug']}/"
+            cur = ' aria-current="page"' if path == href else ""
+            links += f'<a href="{BASE}{href}"{cur}>{e(c["name"])}</a>'
+        nav = (f'<details class="cats"><summary>קטגוריות</summary><div class="cats-panel"><div class="wrap">{links}</div></div></details>'
+               + nav)
     crumb_html = ""
     if crumbs:
         parts = [f'<a href="{BASE}/">ראשי</a>'] + [
@@ -352,6 +392,8 @@ def product_tiles(rows: list[dict]) -> str:
         was = f'<span class="was">₪{float(orig):.2f}</span>' if orig and float(orig) > price_v + 0.5 else ""
         burst = f'<span class="burst" aria-label="הנחה {disc:.0f}%">-{disc:.0f}%</span>' if disc and disc >= 5 else ""
         cat = f'<span class="cat">{e(p["category"])}</span>' if p.get("category") else ""
+        if p.get("pick"):
+            cat = '<span class="cat pick">בחירה של בוטן</span>'
         tiles.append(f"""<li><a class="tile" href="{e(p['link'])}" rel="sponsored nofollow noopener" target="_blank">
 <span class="pic"><img src="{e(p['image'])}" alt="" width="300" height="300" loading="lazy" decoding="async" referrerpolicy="no-referrer"></span>
 {burst}
@@ -378,6 +420,8 @@ def build_home():
 {product_tiles(products)}
 <p class="tiles-note">המחירים נכונים לשעת הפרסום בערוץ ועשויים להשתנות. לחיצה על מוצר פותחת אותו באליאקספרס (קישור שותפים: המחיר שלכם לא משתנה).</p>
 </section>''' if products else ""}
+
+{f'''<nav class="chips home-chips" aria-label="קטגוריות">{"".join(f'<a class="chip" href="{BASE}/c/{c["slug"]}/">{e(c["name"])}</a>' for c in categories)}</nav>''' if categories else ""}
 
 <section aria-labelledby="deals-title">
 <h2 id="deals-title">קודי מוכר שנבדקו</h2>
@@ -557,6 +601,37 @@ def build_guides():
          body, crumbs=[("/guides/", "מדריכים")])
 
 
+def build_categories():
+    """A page per product category: Boten's picks first, then the automatic best deals."""
+    for c in categories:
+        url = f"/c/{c['slug']}/"
+        others = "".join(f'<a class="chip" href="{BASE}/c/{o["slug"]}/">{e(o["name"])}</a>'
+                         for o in categories if o["slug"] != c["slug"])
+        if c["products"]:
+            grid = (product_tiles(c["products"][:24]) +
+                    '<p class="tiles-note">בוטן בוחר לכל קטגוריה את הדילים הכי שווים לפי מחיר, הנחה, דירוג ומכירות, '
+                    'ומעדכן אותם כמה פעמים ביום. המחירים עשויים להשתנות. לחיצה פותחת את המוצר באליאקספרס '
+                    '(קישור שותפים: המחיר שלכם לא משתנה).</p>')
+        else:
+            grid = ('<div class="empty"><p><b>בוטן עוד מחפש את הדילים לקטגוריה הזו.</b> בינתיים אפשר לשלוח לו לינק '
+                    'של כל מוצר ולקבל מחיר, הנחה וקוד אם יש.</p>'
+                    f'<a class="btn" href="{bot_link(src="cat")}">{ICON_TG}בדקו מוצר בבוטן</a></div>')
+        body = f"""<header class="page-head"><h1>{e(c['name'])} מאליאקספרס: הדילים של השבוע</h1>
+<span class="updated">עודכן: {TODAY} · מחיר בשקלים, עם הנחה ודירוג</span></header>
+{grid}
+<h2>עוד קטגוריות</h2>
+<nav class="chips" aria-label="קטגוריות">{others}</nav>"""
+        items = [{"@type": "ListItem", "position": i, "url": p["link"], "name": p["title"]}
+                 for i, p in enumerate(c["products"][:24], 1)]
+        schema = [{"@type": "CollectionPage", "name": f"{c['name']} מאליאקספרס", "inLanguage": "he-IL",
+                   "mainEntity": {"@type": "ItemList", "itemListElement": items}}] if items else []
+        page(url, f"{c['name']} מאליאקספרס: דילים והנחות בשקלים | {NAME}",
+             f"הדילים הכי שווים ב{c['name']} מאליאקספרס, שבוטן בחר לפי מחיר, הנחה, דירוג ומכירות. מחיר בשקלים, מתעדכן כמה פעמים ביום.",
+             body, crumbs=[(url, c["name"])], schema=schema)
+        if not c["products"] and SITE_URL + url in SITEMAP:   # no thin pages in the sitemap
+            SITEMAP.remove(SITE_URL + url)
+
+
 def build_about():
     body = f"""<header class="page-head"><h1>אודות בוטן</h1></header>
 <div class="prose">
@@ -612,7 +687,7 @@ def main():
         shutil.rmtree(OUT)
     OUT.mkdir()
     shutil.copytree(ROOT / "assets", OUT / "assets")
-    build_home(); build_coupon_types(); build_not_working(); build_guides(); build_about(); build_404()
+    build_home(); build_coupon_types(); build_not_working(); build_guides(); build_categories(); build_about(); build_404()
     build_meta_files()
     print(f"built {len(SITEMAP)} pages into {OUT} (base={BASE or '/'}), {len(seller)} seller codes, "
           f"{len(platform_active)} platform codes active")
