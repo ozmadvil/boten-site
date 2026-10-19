@@ -172,7 +172,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
 
 
 # ------------------------------------------------------------------ layout
-NAV = [("/", "ראשי"), ("/guides/coupon-types/", "סוגי קופונים"),
+NAV = [("/", "ראשי"), ("/guides/", "מדריכים"), ("/guides/11-11/", "11.11"),
        ("/guides/code-not-working/", "קוד לא עובד?"), ("/about/", "אודות")]
 
 ORG = {"@type": "Organization", "@id": f"{SITE_URL}/#org", "name": NAME, "alternateName": "Boten",
@@ -394,6 +394,15 @@ def build_home():
 </ol>
 </section>
 
+<section aria-labelledby="guides-title">
+<div class="sec-head"><h2 id="guides-title">לפני שקונים</h2><a href="{BASE}/guides/">כל המדריכים {ICON_ARROW}</a></div>
+<ul class="guide-list">
+<li><a class="guide-card" href="{BASE}/guides/11-11/"><b>יום הרווקים 11.11: תאריכים וקופונים</b><span>מתי זה מתחיל בשעון ישראל ואיך משלבים קודים.</span></a></li>
+<li><a class="guide-card" href="{BASE}/guides/customs-tax/"><b>מכס ומע"מ: הפטור הוא 75 דולר</b><span>מה משלמים, מתי, ומה זה כלל 72 השעות.</span></a></li>
+<li><a class="guide-card" href="{BASE}/guides/shipping-israel/"><b>משלוח לישראל: חינם מ-139 ש"ח</b><span>כמה זמן לוקח ומה עושים כשהמעקב נתקע.</span></a></li>
+</ul>
+</section>
+
 <section aria-labelledby="log-title" class="proof">
 <div class="proof-text">
 <h2 id="log-title">יומן הבדיקות</h2>
@@ -446,7 +455,7 @@ def build_coupon_types():
 </div>"""
     page("/guides/coupon-types/", f"סוגי קופונים באליאקספרס ואיך משלבים אותם | {NAME}",
          "קוד קופון, קופון חנות, קופוני Select ומטבעות: מה ההבדל, מה אפשר לשלב באותה הזמנה, ולמה המינימום נבדק אחרי ההנחות.",
-         body, crumbs=[("/guides/coupon-types/", "סוגי קופונים")],
+         body, crumbs=[("/guides/", "מדריכים"), ("/guides/coupon-types/", "סוגי קופונים")],
          schema=[{"@type": "Article", "headline": "סוגי הקופונים באליאקספרס ואיך משלבים אותם", "inLanguage": "he-IL",
                   "dateModified": NOW.date().isoformat(), "author": {"@id": f"{SITE_URL}/#org"},
                   "publisher": {"@id": f"{SITE_URL}/#org"}}])
@@ -482,10 +491,70 @@ def build_not_working():
 </div>"""
     page("/guides/code-not-working/", f"קוד קופון לא עובד באליאקספרס? 3 סיבות והפתרון | {NAME}",
          "הודעות השגיאה האמיתיות מהקופה של אליאקספרס, מה כל אחת אומרת ומה עושים: מינימום אחרי הנחות, מכסה שנגמרה, קוד לא תקף.",
-         body, crumbs=[("/guides/code-not-working/", "קוד קופון לא עובד")],
+         body, crumbs=[("/guides/", "מדריכים"), ("/guides/code-not-working/", "קוד קופון לא עובד")],
          schema=[{"@type": "Article", "headline": "למה קוד הקופון לא עובד באליאקספרס", "inLanguage": "he-IL",
                   "dateModified": NOW.date().isoformat(), "author": {"@id": f"{SITE_URL}/#org"},
                   "publisher": {"@id": f"{SITE_URL}/#org"}}])
+
+
+def build_guides():
+    """Guide pages from guides_content.py, plus the guides hub."""
+    from guides_content import GUIDES
+    for g in GUIDES:
+        url = f"/guides/{g['slug']}/"
+        body_html = g["body"].replace("{BASE}", BASE).replace("{BOT}", BOT)
+        faq_html, faq_schema = faq_block(g.get("faq") or [])
+        upd = datetime.strptime(g["updated"], "%Y-%m-%d")
+        tiles = ""
+        if g.get("products") and products:
+            keys = g["products"]
+            rows = products if keys == ["*"] else [p for p in products if any(k in p["title"] for k in keys)]
+            if rows:
+                tiles = (f'<h2>דילים מהערוץ</h2>{product_tiles(rows[:8])}'
+                         '<p class="tiles-note">המחירים נכונים לשעת הפרסום בערוץ. קישורי שותפים: המחיר שלכם לא משתנה.</p>')
+        srcs = ""
+        if g.get("sources"):
+            srcs = ('<h2>מקורות</h2><ul class="sources">' + "".join(
+                f'<li><a href="{e(u)}" rel="noopener">{e(t)}</a></li>' for t, u in g["sources"]) + "</ul>")
+        faq_section = f"<h2>שאלות נפוצות</h2>{faq_html}" if faq_html else ""
+        body = f"""<header class="page-head"><h1>{e(g['h1'])}</h1>
+<span class="updated">עודכן: {upd.strftime('%d/%m/%Y')}</span></header>
+<div class="answer"><p>{g['answer']}</p></div>
+<div class="prose">
+{body_html}
+{tiles}
+{faq_section}
+{srcs}
+</div>"""
+        schema = [{"@type": "Article", "headline": g["h1"], "inLanguage": "he-IL", "description": g["desc"],
+                   "dateModified": g["updated"], "author": {"@id": f"{SITE_URL}/#org"},
+                   "publisher": {"@id": f"{SITE_URL}/#org"}, "mainEntityOfPage": SITE_URL + url}]
+        if faq_html:
+            schema.append(faq_schema)
+        page(url, g["title"], g["desc"], body, crumbs=[("/guides/", "מדריכים"), (url, g["nav"])], schema=schema)
+
+    # hub
+    groups = [
+        ("מבצעים", ["11-11", "sales-calendar"]),
+        ("מיסים, משלוח ואישורים", ["customs-tax", "shipping-israel", "wireless-approval", "dispute-refund"]),
+        ("קופונים", ["coupon-types", "code-not-working"]),
+        ("מוצרים", ["popular-products", "jump-starter"]),
+    ]
+    by_slug = {g["slug"]: (g["h1"], g["desc"]) for g in GUIDES}
+    by_slug["coupon-types"] = ("סוגי הקופונים באליאקספרס ואיך משלבים אותם",
+                               "קוד קופון, קופון חנות, Select ומטבעות: מה ההבדל ומה מצטרף למה.")
+    by_slug["code-not-working"] = ("למה קוד הקופון לא עובד?", "הודעות השגיאה האמיתיות מהקופה ומה עושים בכל אחת.")
+    sections = ""
+    for name, slugs in groups:
+        cards = "".join(f'<li><a class="guide-card" href="{BASE}/guides/{sl}/"><b>{e(by_slug[sl][0])}</b>'
+                        f'<span>{e(by_slug[sl][1])}</span></a></li>' for sl in slugs if sl in by_slug)
+        sections += f'<h2>{name}</h2><ul class="guide-list">{cards}</ul>'
+    body = f"""<header class="page-head"><h1>מדריכים לקנייה חכמה באליאקספרס</h1>
+<span class="updated">עודכן: {TODAY} · כל מה שצריך לדעת לפני שקונים מחו"ל</span></header>
+{sections}"""
+    page("/guides/", f"מדריכים לקנייה באליאקספרס: מבצעים, מכס, משלוח וקופונים | {NAME}",
+         "מדריכים בעברית לקונים באליאקספרס: מתי המבצעים, כמה מס משלמים, כמה זמן לוקח משלוח, אישור משרד התקשורת, החזרים וקופונים.",
+         body, crumbs=[("/guides/", "מדריכים")])
 
 
 def build_about():
@@ -529,7 +598,8 @@ def build_meta_files():
     (OUT / "llms.txt").write_text(
         f"# {NAME} (Boten)\n\n> קודי קופון לאליאקספרס בישראל שנבדקו בקופה, ובוט טלגרם חינמי (@Boten_IL_bot) שבודק כל מוצר.\n\n"
         f"- [סוגי קופונים ושילובים]({SITE_URL}/guides/coupon-types/)\n"
-        f"- [קוד קופון לא עובד]({SITE_URL}/guides/code-not-working/): הודעות השגיאה האמיתיות ופתרונות\n",
+        f"- [קוד קופון לא עובד]({SITE_URL}/guides/code-not-working/): הודעות השגיאה האמיתיות ופתרונות\n"
+        + "".join(f"- [{g['h1']}]({SITE_URL}/guides/{g['slug']}/)\n" for g in __import__("guides_content").GUIDES),
         encoding="utf-8")
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     cname = os.environ.get("CNAME")
@@ -542,7 +612,7 @@ def main():
         shutil.rmtree(OUT)
     OUT.mkdir()
     shutil.copytree(ROOT / "assets", OUT / "assets")
-    build_home(); build_coupon_types(); build_not_working(); build_about(); build_404()
+    build_home(); build_coupon_types(); build_not_working(); build_guides(); build_about(); build_404()
     build_meta_files()
     print(f"built {len(SITEMAP)} pages into {OUT} (base={BASE or '/'}), {len(seller)} seller codes, "
           f"{len(platform_active)} platform codes active")

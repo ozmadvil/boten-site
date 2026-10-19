@@ -309,6 +309,17 @@ details.faq p { margin: 8px 0 2px; }
 .notfound { padding: 56px 0 24px; }
 .notfound .now { font-size: clamp(96px, 20vw, 180px); color: var(--sale-text); }
 
+/* ---------- guides hub ---------- */
+.guide-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.guide-card { display: flex; flex-direction: column; gap: 6px; height: 100%; background: var(--paper); color: var(--ink); text-decoration: none; border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; border-top: 6px solid var(--sale); transition: transform .2s var(--ease-out); }
+.guide-card:hover { color: var(--ink); transform: translateY(-2px); }
+.guide-card:hover b { text-decoration: underline; text-decoration-color: var(--sale); }
+.guide-card b { font-size: 18px; line-height: 1.3; }
+.guide-card span { font-size: 15px; color: var(--ink-2); line-height: 1.5; }
+.sources { font-size: 14px; }
+.prose ol { padding-inline-start: 22px; }
+.prose .tiles { margin-top: 8px; }
+
 /* ---------- footer: the flyer's fine print ---------- */
 footer.site { padding: 22px 0 44px; background: var(--page); color: var(--ink-2); font-size: 14px; border-top: 6px solid var(--ink); }
 footer.site a { color: var(--ink); }
