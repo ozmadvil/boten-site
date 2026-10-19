@@ -1,5 +1,6 @@
 # יומן בדיקות בקופה — ראיות מקוריות. date,code,result,details
-date,code,result,details
-2026-10-18,ESSAGER404,עובד,"עם 2 יחידות (סל ₪187, אחרי הנחות ₪158.53) הקוד הוריד ₪12.65. עם יחידה אחת: ""below the minimum"""
-2026-10-18,ILAFFOCT01,לא עובד,"""used up by other shoppers"" — המכסה נגמרה (קוד שפורסם בבלוג קופונים בלי תאריכי תוקף)"
-2026-10-18,WOIL02,לא עובד,"""incorrect, inactive, or already used"" (קוד שפורסם בבלוג קופונים בלי תאריכי תוקף)"
+# אופציונלי (לתווית המחיר בראש האתר): product, units, cart_ils = סל לפני הנחות, auto_off_ils = הנחות אוטומטיות, code_off_ils = הקוד
+date,code,result,details,product,units,cart_ils,auto_off_ils,code_off_ils
+2026-10-18,ESSAGER404,עובד,"עם 2 יחידות (סל ₪187, אחרי הנחות ₪158.53) הקוד הוריד ₪12.65. עם יחידה אחת: ""below the minimum""",סוללה ניידת Essager 20000mAh 65W,2,187.00,28.47,12.65
+2026-10-18,ILAFFOCT01,לא עובד,"""used up by other shoppers"" — המכסה נגמרה (קוד שפורסם בבלוג קופונים בלי תאריכי תוקף)",,,,,
+2026-10-18,WOIL02,לא עובד,"""incorrect, inactive, or already used"" (קוד שפורסם בבלוג קופונים בלי תאריכי תוקף)",,,,,

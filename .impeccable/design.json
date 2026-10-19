@@ -1,0 +1,528 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-19T21:52:19+00:00",
+  "title": "Design System: בוטן (Boten)",
+  "extensions": {
+    "colorMeta": {
+      "flyer-yellow": {
+        "role": "secondary",
+        "displayName": "Fluorescent Flyer Yellow",
+        "canonical": "#ffe500",
+        "oklch": "oklch(91.5% 0.191 101.0)",
+        "cssVar": "--flyer",
+        "tonalRamp": [
+          "#0e0b00",
+          "#2a2401",
+          "#494001",
+          "#6a5f03",
+          "#8d7e01",
+          "#b2a007",
+          "#ddc602",
+          "#fff194"
+        ]
+      },
+      "sale-red": {
+        "role": "primary",
+        "displayName": "Sale Red",
+        "canonical": "#d8001a",
+        "oklch": "oklch(55.5% 0.226 26.6)",
+        "cssVar": "--sale",
+        "tonalRamp": [
+          "#1f0001",
+          "#4b0003",
+          "#7c010b",
+          "#b10314",
+          "#e52027",
+          "#ff645b",
+          "#feaba2",
+          "#fee9e6"
+        ]
+      },
+      "sale-red-pressed": {
+        "role": "primary",
+        "displayName": "Pressed Sale Red",
+        "canonical": "#b8001a",
+        "oklch": "oklch(49.3% 0.200 25.5)",
+        "cssVar": "--sale-hover",
+        "tonalRamp": [
+          "#1f0001",
+          "#4b0005",
+          "#7c000e",
+          "#b10219",
+          "#db3839",
+          "#ff645e",
+          "#ffaba3",
+          "#fee9e6"
+        ]
+      },
+      "sale-ink": {
+        "role": "primary",
+        "displayName": "Sale Ink",
+        "canonical": "#b00014",
+        "oklch": "oklch(47.6% 0.194 26.4)",
+        "cssVar": "--sale-ink",
+        "tonalRamp": [
+          "#1f0001",
+          "#4b0004",
+          "#7c010b",
+          "#b10315",
+          "#d83c39",
+          "#ff645c",
+          "#feaba2",
+          "#fee9e6"
+        ],
+        "dark": "#ff6b78"
+      },
+      "on-sale": {
+        "role": "neutral",
+        "displayName": "On Sale White",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100.0% 0.000 89.9)",
+        "cssVar": "--on-sale",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#242424",
+          "#404040",
+          "#5d5d5d",
+          "#7d7d7d",
+          "#9e9e9e",
+          "#c4c4c4",
+          "#eeeeee"
+        ]
+      },
+      "flyer-ink": {
+        "role": "neutral",
+        "displayName": "Flyer Ink",
+        "canonical": "#1d1606",
+        "oklch": "oklch(20.4% 0.030 86.7)",
+        "cssVar": "--ink",
+        "tonalRamp": [
+          "#110a00",
+          "#2a2312",
+          "#473f2d",
+          "#655d4a",
+          "#857c69",
+          "#a79e89",
+          "#cdc3ae",
+          "#f7eed8"
+        ],
+        "dark": "#f6f0dc"
+      },
+      "ink-secondary": {
+        "role": "neutral",
+        "displayName": "Secondary Ink",
+        "canonical": "#4f4428",
+        "oklch": "oklch(39.1% 0.045 88.8)",
+        "cssVar": "--ink-2",
+        "tonalRamp": [
+          "#100a00",
+          "#2d2306",
+          "#493f23",
+          "#685d40",
+          "#887c5e",
+          "#aa9d7f",
+          "#d0c3a3",
+          "#fbeecd"
+        ],
+        "dark": "#cbbf98"
+      },
+      "ink-on-flyer": {
+        "role": "neutral",
+        "displayName": "Ink on Flyer",
+        "canonical": "#3d3300",
+        "oklch": "oklch(32.2% 0.066 97.1)",
+        "cssVar": "--ink-on-flyer",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2b2401",
+          "#4a400f",
+          "#685e30",
+          "#887e4f",
+          "#aa9f6f",
+          "#d0c594",
+          "#fbefbd"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100.0% 0.000 89.9)",
+        "cssVar": "--paper",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#242424",
+          "#404040",
+          "#5d5d5d",
+          "#7d7d7d",
+          "#9e9e9e",
+          "#c4c4c4",
+          "#eeeeee"
+        ],
+        "dark": "#201d13"
+      },
+      "paper-yellow": {
+        "role": "neutral",
+        "displayName": "Pale Yellow Paper",
+        "canonical": "#fff7c2",
+        "oklch": "oklch(97.0% 0.068 100.4)",
+        "cssVar": "--paper-2",
+        "tonalRamp": [
+          "#0e0b00",
+          "#2a2400",
+          "#48400d",
+          "#665f2e",
+          "#867f4e",
+          "#a8a06e",
+          "#cec693",
+          "#f8f0bc"
+        ],
+        "dark": "#2b2614"
+      },
+      "newsprint": {
+        "role": "neutral",
+        "displayName": "Newsprint",
+        "canonical": "#eeede8",
+        "oklch": "oklch(94.5% 0.007 97.4)",
+        "cssVar": "--page",
+        "tonalRamp": [
+          "#0c0b08",
+          "#252420",
+          "#41403c",
+          "#5e5e59",
+          "#7e7d79",
+          "#9f9e9a",
+          "#c5c4bf",
+          "#efeeea"
+        ],
+        "dark": "#15130c"
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "#d9d7cd",
+        "oklch": "oklch(87.8% 0.014 97.5)",
+        "cssVar": "--rule",
+        "tonalRamp": [
+          "#0d0b05",
+          "#26241d",
+          "#424038",
+          "#605e55",
+          "#7f7d74",
+          "#a09f95",
+          "#c6c4ba",
+          "#f1efe5"
+        ],
+        "dark": "#3a341f"
+      },
+      "cut-line": {
+        "role": "neutral",
+        "displayName": "Cut Line",
+        "canonical": "#8f8c7e",
+        "oklch": "oklch(63.9% 0.021 97.0)",
+        "cssVar": "--cut",
+        "tonalRamp": [
+          "#0e0b03",
+          "#272419",
+          "#434034",
+          "#615e51",
+          "#807e70",
+          "#a29f90",
+          "#c8c4b6",
+          "#f2efdf"
+        ],
+        "dark": "#6e6440"
+      },
+      "checked-green": {
+        "role": "tertiary",
+        "displayName": "Checked Green",
+        "canonical": "#0f7a3d",
+        "oklch": "oklch(50.9% 0.130 151.5)",
+        "cssVar": "--ok",
+        "tonalRamp": [
+          "#001004",
+          "#012d12",
+          "#004e23",
+          "#047136",
+          "#339354",
+          "#58b574",
+          "#7fdc99",
+          "#c7ffd4"
+        ],
+        "dark": "#63d391"
+      },
+      "checked-green-soft": {
+        "role": "tertiary",
+        "displayName": "Checked Green Wash",
+        "canonical": "#dcf3e3",
+        "oklch": "oklch(94.3% 0.032 155.4)",
+        "cssVar": "--ok-soft",
+        "tonalRamp": [
+          "#010f06",
+          "#17291d",
+          "#324538",
+          "#4f6356",
+          "#6f8375",
+          "#8fa596",
+          "#b4cbbb",
+          "#def5e5"
+        ],
+        "dark": "#12301f"
+      },
+      "failed-soft": {
+        "role": "neutral",
+        "displayName": "Failed Wash",
+        "canonical": "#ffe1e3",
+        "oklch": "oklch(93.5% 0.033 13.2)",
+        "cssVar": "--bad-soft",
+        "tonalRamp": [
+          "#170507",
+          "#321d1f",
+          "#50393b",
+          "#6f5658",
+          "#907677",
+          "#b29698",
+          "#d9bcbe",
+          "#fee9ea"
+        ],
+        "dark": "#3a1418"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero headline only; payoff phrase in Sale Red."
+      },
+      "price": {
+        "displayName": "Price",
+        "purpose": "Large shekel amounts with raised underlined agorot; coupons clamp(56px,7vw,80px), 404 clamp(96px,20vw,180px)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page h1 on reading pages."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section h2; closing band uses clamp(30px,5vw,50px) at line-height 1."
+      },
+      "subtitle": {
+        "displayName": "Subtitle",
+        "purpose": "h3; 18px inside coupons."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "One paragraph under a heading, max 46ch."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text, max 70ch on reading pages; tabular numerals on."
+      },
+      "strip-label": {
+        "displayName": "Strip Label",
+        "purpose": "Text in red, green and ink strips; date drops to 500."
+      },
+      "fine-print": {
+        "displayName": "Fine Print",
+        "purpose": "Validity, minimums, disclosures, footer (13-14px)."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Quoted AliExpress error messages only, LTR."
+      }
+    },
+    "shadows": [
+      {
+        "name": "laid-on-paper",
+        "value": "0 1px 1px rgb(61 51 0 / .10), 0 8px 22px -6px rgb(61 51 0 / .28)",
+        "purpose": "Every lifted paper object on newsprint or yellow: shelf tags, checker field, log tags, tables, FAQ, answer box."
+      },
+      {
+        "name": "laid-on-paper-dark",
+        "value": "0 1px 1px rgb(0 0 0 / .3), 0 10px 24px -8px rgb(0 0 0 / .6)",
+        "purpose": "Same role in the dark scheme, outside the printed yellow fields."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "All transitions and the tag animations."
+      },
+      {
+        "name": "button-state",
+        "value": "150ms ease-out (background-color, transform)",
+        "purpose": "Button hover darkening and 1px press."
+      },
+      {
+        "name": "tag-drop",
+        "value": "900ms ease-out, 150ms delay, once on load: translateY(-36px) rotate(4deg) to rotate(-3deg)",
+        "purpose": "Hero shelf tag drops and settles; only under prefers-reduced-motion: no-preference."
+      },
+      {
+        "name": "tag-check",
+        "value": "500ms ease-out, once per submit: rotateX(18deg) lift then settle at -1deg",
+        "purpose": "Hero tag flips to \"בודק…\" when the price checker submits; reduced-motion respected."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "layout",
+        "value": "760px"
+      },
+      {
+        "name": "nav",
+        "value": "560px"
+      },
+      {
+        "name": "checker-stack",
+        "value": "420px"
+      },
+      {
+        "name": "wrap",
+        "value": "1080px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one primary action: Sale Red, almost square, label names where it goes.",
+      "html": "<div dir=\"rtl\" class=\"ds-root\"><button class=\"ds-btn\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9-4.7-1.5c-1-.3-1-1 .2-1.5L20.6 3c.9-.3 1.6.2 1.3 1.3z\"/></svg><span>בדקו בבוטן</span></button></div>",
+      "css": ":host{--flyer:#ffe500;--sale:#d8001a;--sale-ink:#b00014;--sale-hover:#b8001a;--sale-text:#d8001a;--on-sale:#fff;--ink:#1d1606;--ink-2:#4f4428;--ink-on-flyer:#3d3300;--paper:#fff;--paper-2:#fff7c2;--page:#eeede8;--rule:#d9d7cd;--cut:#8f8c7e;--ok:#0f7a3d;--ok-soft:#dcf3e3;--bad:#b00014;--bad-soft:#ffe1e3;--shadow:0 1px 1px rgb(61 51 0 / .10),0 8px 22px -6px rgb(61 51 0 / .28);--ease-out:cubic-bezier(.16,1,.3,1)} .ds-root{font-family:Rubik,system-ui,sans-serif;} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--sale);color:var(--on-sale);font:700 17px/1.2 Rubik,system-ui,sans-serif;padding:13px 22px;border:0;border-radius:2px;cursor:pointer;transition:background-color .15s var(--ease-out),transform .15s var(--ease-out)} .ds-btn:hover{background:var(--sale-hover)} .ds-btn:active{transform:translateY(1px)} .ds-btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px} .ds-icon{width:1.1em;height:1.1em}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ink-outlined companion to the primary on yellow bands; fills with ink, text turns yellow on hover.",
+      "html": "<div dir=\"rtl\" class=\"ds-root\"><a class=\"ds-btn-secondary\" href=\"#\">לערוץ הדילים</a></div>",
+      "css": ":host{--flyer:#ffe500;--sale:#d8001a;--sale-ink:#b00014;--sale-hover:#b8001a;--sale-text:#d8001a;--on-sale:#fff;--ink:#1d1606;--ink-2:#4f4428;--ink-on-flyer:#3d3300;--paper:#fff;--paper-2:#fff7c2;--page:#eeede8;--rule:#d9d7cd;--cut:#8f8c7e;--ok:#0f7a3d;--ok-soft:#dcf3e3;--bad:#b00014;--bad-soft:#ffe1e3;--shadow:0 1px 1px rgb(61 51 0 / .10),0 8px 22px -6px rgb(61 51 0 / .28);--ease-out:cubic-bezier(.16,1,.3,1)} .ds-root{background:var(--flyer);padding:20px;font-family:Rubik,system-ui,sans-serif;} .ds-btn-secondary{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink);font:700 17px/1.2 Rubik,system-ui,sans-serif;padding:13px 22px;border-radius:2px;text-decoration:none;transition:background-color .15s var(--ease-out),color .15s var(--ease-out)} .ds-btn-secondary:hover{background:var(--ink);color:var(--flyer)} .ds-btn-secondary:focus-visible{outline:3px solid var(--ink);outline-offset:3px}"
+    },
+    {
+      "name": "Price Checker",
+      "kind": "input",
+      "refersTo": "checker-field",
+      "description": "Signature input: white paper field on the yellow hero, LTR URL input plus the red action.",
+      "html": "<div dir=\"rtl\" class=\"ds-root\"><form class=\"ds-checker\" onsubmit=\"return false\"><label for=\"ds-link\">בודק מחירים: הדביקו לינק של מוצר מאליאקספרס</label><div class=\"ds-row\"><input id=\"ds-link\" type=\"url\" placeholder=\"https://aliexpress.com/item/…\"><button class=\"ds-btn\">בדקו בבוטן</button></div><p class=\"ds-msg\">בוטן מחזיר מחיר בשקלים, הנחה וקוד קופון אם יש. בחינם.</p></form></div>",
+      "css": ":host{--flyer:#ffe500;--sale:#d8001a;--sale-ink:#b00014;--sale-hover:#b8001a;--sale-text:#d8001a;--on-sale:#fff;--ink:#1d1606;--ink-2:#4f4428;--ink-on-flyer:#3d3300;--paper:#fff;--paper-2:#fff7c2;--page:#eeede8;--rule:#d9d7cd;--cut:#8f8c7e;--ok:#0f7a3d;--ok-soft:#dcf3e3;--bad:#b00014;--bad-soft:#ffe1e3;--shadow:0 1px 1px rgb(61 51 0 / .10),0 8px 22px -6px rgb(61 51 0 / .28);--ease-out:cubic-bezier(.16,1,.3,1)} .ds-root{background:var(--flyer);padding:24px;color:var(--ink);font-family:Rubik,system-ui,sans-serif;} .ds-checker{max-width:560px} .ds-checker label{display:block;font-weight:700;font-size:15px;margin-bottom:8px} .ds-row{display:flex;background:var(--paper);border-radius:4px;box-shadow:var(--shadow);padding:5px;gap:5px} .ds-row input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:400 16px/1.4 Rubik,system-ui,sans-serif;padding:12px;direction:ltr;text-align:left;border-radius:2px} .ds-row input::placeholder{color:#7d724e} .ds-row input:focus-visible{outline:2px solid var(--sale);outline-offset:0} .ds-btn{background:var(--sale);color:var(--on-sale);font:700 17px/1.2 Rubik,system-ui,sans-serif;padding:13px 22px;border:0;border-radius:2px;cursor:pointer;transition:background-color .15s var(--ease-out)} .ds-btn:hover{background:var(--sale-hover)} .ds-msg{font-size:15px;margin:10px 0 0;color:var(--ink-on-flyer)}"
+    },
+    {
+      "name": "Masthead Navigation",
+      "kind": "nav",
+      "refersTo": "nav-bot-pill",
+      "description": "The red flyer strip: logo, white links with a yellow underline for hover and current page, yellow bot pill.",
+      "html": "<div dir=\"rtl\" class=\"ds-root\"><header class=\"ds-mast\"><a class=\"ds-logo\" href=\"#\"><span class=\"ds-mascot\"></span>בוטן</a><nav class=\"ds-nav\"><a href=\"#\" aria-current=\"page\">ראשי</a><a href=\"#\">סוגי קופונים</a><a href=\"#\">קוד לא עובד?</a><a href=\"#\">אודות</a><a class=\"ds-pill\" href=\"#\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9-4.7-1.5c-1-.3-1-1 .2-1.5L20.6 3c.9-.3 1.6.2 1.3 1.3z\"/></svg>לבוט</a></nav></header></div>",
+      "css": ":host{--flyer:#ffe500;--sale:#d8001a;--sale-ink:#b00014;--sale-hover:#b8001a;--sale-text:#d8001a;--on-sale:#fff;--ink:#1d1606;--ink-2:#4f4428;--ink-on-flyer:#3d3300;--paper:#fff;--paper-2:#fff7c2;--page:#eeede8;--rule:#d9d7cd;--cut:#8f8c7e;--ok:#0f7a3d;--ok-soft:#dcf3e3;--bad:#b00014;--bad-soft:#ffe1e3;--shadow:0 1px 1px rgb(61 51 0 / .10),0 8px 22px -6px rgb(61 51 0 / .28);--ease-out:cubic-bezier(.16,1,.3,1)} .ds-root{font-family:Rubik,system-ui,sans-serif;} .ds-mast{background:var(--sale);color:var(--on-sale);display:flex;align-items:center;gap:12px 20px;min-height:64px;flex-wrap:wrap;padding:8px 16px} .ds-logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:26px;line-height:1;color:var(--on-sale);text-decoration:none} .ds-mascot{width:40px;height:40px;border-radius:10px;background:var(--sale-hover);box-shadow:0 0 0 2px var(--on-sale)} .ds-nav{display:flex;gap:4px 18px;flex-wrap:wrap;margin-inline-start:auto;font-size:15px;font-weight:500} .ds-nav a{color:var(--on-sale);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent} .ds-nav a:hover,.ds-nav a[aria-current]{border-bottom-color:var(--flyer)} .ds-nav a:focus-visible{outline:3px solid var(--on-sale);outline-offset:3px} .ds-nav a.ds-pill{display:inline-flex;align-items:center;gap:6px;background:var(--flyer);color:var(--ink);padding:4px 12px;border-radius:99px;border:0;font-weight:700} .ds-nav a.ds-pill:hover{background:var(--paper)} .ds-icon{width:1.1em;height:1.1em}"
+    },
+    {
+      "name": "Stickers",
+      "kind": "chip",
+      "refersTo": "sticker-ok",
+      "description": "Status pills: green for checked, red wash for failed, pale yellow for info.",
+      "html": "<div dir=\"rtl\" class=\"ds-root\"><span class=\"ds-sticker ds-ok\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M5 12.5l4.5 4.5L19 7.5\"/></svg>נבדק בקופה</span> <span class=\"ds-sticker ds-bad\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" d=\"M6 6l12 12M18 6 6 18\"/></svg>לא עובד</span> <span class=\"ds-sticker ds-info\">מפורטל השותפים הרשמי</span></div>",
+      "css": ":host{--flyer:#ffe500;--sale:#d8001a;--sale-ink:#b00014;--sale-hover:#b8001a;--sale-text:#d8001a;--on-sale:#fff;--ink:#1d1606;--ink-2:#4f4428;--ink-on-flyer:#3d3300;--paper:#fff;--paper-2:#fff7c2;--page:#eeede8;--rule:#d9d7cd;--cut:#8f8c7e;--ok:#0f7a3d;--ok-soft:#dcf3e3;--bad:#b00014;--bad-soft:#ffe1e3;--shadow:0 1px 1px rgb(61 51 0 / .10),0 8px 22px -6px rgb(61 51 0 / .28);--ease-out:cubic-bezier(.16,1,.3,1)} .ds-root{background:var(--page);padding:20px;display:flex;gap:10px;flex-wrap:wrap;font-family:Rubik,system-ui,sans-serif;} .ds-sticker{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;padding:2px 10px;border-radius:99px;white-space:nowrap;line-height:1.6} .ds-ok{background:var(--ok-soft);color:var(--ok)} .ds-bad{background:var(--bad-soft);color:var(--bad)} .ds-info{background:var(--paper-2);color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--rule)} .ds-icon{width:1.1em;height:1.1em}"
+    },
+    {
+      "name": "Shelf Tag",
+      "kind": "card",
+      "refersTo": "shelf-tag",
+      "description": "Signature container: red-stripped paper tag with dotted price lines, raised-agorot price, dated fine print and the green checkout stamp.",
+      "html": "<div dir=\"rtl\" class=\"ds-root\"><div class=\"ds-tag\"><div class=\"ds-strip\"><span>מבצע אמיתי</span><span>נבדק 18/10</span></div><div class=\"ds-body\"><p class=\"ds-name\">סוללה ניידת Essager 20000mAh 65W · 2 יח׳</p><ul class=\"ds-lines\"><li><span>סל לפני הנחות</span><span class=\"ds-num ds-was\">₪187.00</span></li><li><span>הנחות אוטומטיות</span><span class=\"ds-num ds-minus\">‎-₪28.47</span></li><li><span>קוד מוכר מבוטן</span><span class=\"ds-num ds-minus\">‎-₪12.65</span></li></ul><span class=\"ds-price ds-now\" aria-label=\"145.88 שקלים\"><span class=\"ds-cur\">₪</span><span>145</span><span class=\"ds-ag\">88</span></span><p class=\"ds-fine\">המחיר בקופה אחרי הקוד, בלי משלוח. נבדק 18/10/2026.</p></div><div class=\"ds-stamp\">נבדק<small>בקופה</small></div></div></div>",
+      "css": ":host{--flyer:#ffe500;--sale:#d8001a;--sale-ink:#b00014;--sale-hover:#b8001a;--sale-text:#d8001a;--on-sale:#fff;--ink:#1d1606;--ink-2:#4f4428;--ink-on-flyer:#3d3300;--paper:#fff;--paper-2:#fff7c2;--page:#eeede8;--rule:#d9d7cd;--cut:#8f8c7e;--ok:#0f7a3d;--ok-soft:#dcf3e3;--bad:#b00014;--bad-soft:#ffe1e3;--shadow:0 1px 1px rgb(61 51 0 / .10),0 8px 22px -6px rgb(61 51 0 / .28);--ease-out:cubic-bezier(.16,1,.3,1)} .ds-root{background:var(--flyer);padding:32px;font-family:Rubik,system-ui,sans-serif;} .ds-tag{position:relative;max-width:360px;margin-inline:auto;background:var(--paper);color:var(--ink);border-radius:4px;box-shadow:var(--shadow);padding:0 0 18px;overflow:hidden;transform:rotate(-3deg)} .ds-strip{background:var(--sale);color:var(--on-sale);font-weight:900;font-size:15px;padding:8px 16px;display:flex;justify-content:space-between;gap:8px} .ds-strip span:last-child{font-weight:500;font-size:13px} .ds-body{padding:14px 18px 0} .ds-name{font-weight:700;font-size:16px;line-height:1.35;margin:0 0 10px} .ds-lines{list-style:none;margin:0 0 12px;padding:0;font-size:15px} .ds-lines li{display:flex;justify-content:space-between;gap:12px;padding:2px 0;border-bottom:1px dotted var(--rule)} .ds-lines li:last-child{border-bottom:0} .ds-num{direction:ltr;unicode-bidi:isolate;font-weight:500} .ds-was{color:var(--ink-2);text-decoration:line-through;text-decoration-color:var(--sale);text-decoration-thickness:3px;font-weight:700} .ds-minus{color:var(--sale-ink)} .ds-now{font-size:88px;color:var(--sale-text)} .ds-price{font-weight:900;line-height:.9;letter-spacing:-.03em;white-space:nowrap;direction:ltr;unicode-bidi:isolate;display:inline-flex;align-items:flex-start} .ds-price .ds-cur{font-size:.42em;margin-top:.14em;margin-inline-end:.06em} .ds-price .ds-ag{font-size:.42em;margin-top:.1em;margin-inline-start:.04em;text-decoration:underline;text-decoration-thickness:.08em;text-underline-offset:.12em} .ds-fine{font-size:13px;line-height:1.5;color:var(--ink-2);margin:12px 0 0} .ds-stamp{position:absolute;inset-inline-end:16px;bottom:64px;color:var(--ok);border:3px solid currentColor;border-radius:6px;font-weight:900;font-size:15px;line-height:1.1;padding:4px 9px;transform:rotate(-9deg);text-align:center;background:color-mix(in srgb,var(--paper) 85%,transparent)} .ds-stamp small{display:block;font-weight:500;font-size:11px}"
+    },
+    {
+      "name": "Coupon Cut-out",
+      "kind": "card",
+      "refersTo": "coupon-cutout",
+      "description": "Flat dashed cut-out with red strip, big red amount, validity fine print, sticker, bot link and the scissors label. Never prints the code.",
+      "html": "<div dir=\"rtl\" class=\"ds-root\"><article class=\"ds-coupon\"><div class=\"ds-strip\">הנחה עם קוד מוכר</div><div class=\"ds-inner\"><span class=\"ds-price ds-off\" aria-label=\"12.65 שקלים\"><span class=\"ds-cur\">₪</span><span>12</span><span class=\"ds-ag\">65</span></span><h3>סוללה ניידת Essager 20000mAh 65W</h3><p class=\"ds-fine\">בקנייה מעל <b>₪126.55</b> (אחרי הנחות) · בתוקף עד 29/10 09:59</p><a class=\"ds-go\" href=\"#\">קבלו את הקוד והמחיר בבוטן ←</a></div><span class=\"ds-cut\"><svg class=\"ds-scissors\" viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"6\" cy=\"6\" r=\"3\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><path d=\"M8.1 8.1 20 20M8.1 15.9 20 4\"/></g></svg>גזור ושמור</span></article></div>",
+      "css": ":host{--flyer:#ffe500;--sale:#d8001a;--sale-ink:#b00014;--sale-hover:#b8001a;--sale-text:#d8001a;--on-sale:#fff;--ink:#1d1606;--ink-2:#4f4428;--ink-on-flyer:#3d3300;--paper:#fff;--paper-2:#fff7c2;--page:#eeede8;--rule:#d9d7cd;--cut:#8f8c7e;--ok:#0f7a3d;--ok-soft:#dcf3e3;--bad:#b00014;--bad-soft:#ffe1e3;--shadow:0 1px 1px rgb(61 51 0 / .10),0 8px 22px -6px rgb(61 51 0 / .28);--ease-out:cubic-bezier(.16,1,.3,1)} .ds-root{background:var(--page);padding:24px 24px 36px;font-family:Rubik,system-ui,sans-serif;} .ds-coupon{position:relative;max-width:420px;background:var(--paper);color:var(--ink);border:2px dashed var(--cut);border-radius:6px;padding:0 0 18px;display:flex;flex-direction:column} .ds-strip{background:var(--sale);color:var(--on-sale);font-weight:900;font-size:15px;padding:8px 20px;margin:-2px -2px 0;border-radius:4px 4px 0 0} .ds-inner{padding:14px 22px 0;display:flex;flex-direction:column} .ds-off{font-size:72px;color:var(--sale-text)} .ds-price{font-weight:900;line-height:.9;letter-spacing:-.03em;white-space:nowrap;direction:ltr;unicode-bidi:isolate;display:inline-flex;align-items:flex-start} .ds-price .ds-cur{font-size:.42em;margin-top:.14em;margin-inline-end:.06em} .ds-price .ds-ag{font-size:.42em;margin-top:.1em;margin-inline-start:.04em;text-decoration:underline;text-decoration-thickness:.08em;text-underline-offset:.12em} .ds-coupon h3{margin:10px 0 4px;font-size:18px;font-weight:700;line-height:1.12} .ds-fine{font-size:14px;color:var(--ink-2);margin:0 0 6px} .ds-go{padding-top:12px;font-weight:700;text-decoration:none;color:var(--sale-ink);align-self:flex-start} .ds-go:hover{text-decoration:underline;color:var(--sale)} .ds-go:focus-visible{outline:3px solid var(--ink);outline-offset:3px} .ds-cut{position:absolute;bottom:-12px;inset-inline-end:18px;display:inline-flex;align-items:center;gap:4px;background:var(--page);color:var(--cut);font-size:12px;font-weight:700;padding:0 6px;line-height:22px}"
+    },
+    {
+      "name": "Checks Log Tag",
+      "kind": "custom",
+      "refersTo": "log-tag-strip-ok",
+      "description": "Dated shelf tags for the checks log: green strip when it worked, ink strip when it failed, with the real error message.",
+      "html": "<div dir=\"rtl\" class=\"ds-root\"><ul class=\"ds-log\"><li><div class=\"ds-strip ds-s-ok\"><span><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M5 12.5l4.5 4.5L19 7.5\"/></svg> עובד</span><time>18/10/2026</time></div><p class=\"ds-what\">קוד מוכר (נשלח בבוטן)</p><p>עם 2 יחידות הקוד הוריד ₪12.65.</p></li><li><div class=\"ds-strip ds-s-bad\"><span><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" d=\"M6 6l12 12M18 6 6 18\"/></svg> לא עובד</span><time>18/10/2026</time></div><p class=\"ds-what\">קוד שפורסם בבלוג קופונים</p><p><bdi lang=\"en\">\"used up by other shoppers\"</bdi></p></li></ul></div>",
+      "css": ":host{--flyer:#ffe500;--sale:#d8001a;--sale-ink:#b00014;--sale-hover:#b8001a;--sale-text:#d8001a;--on-sale:#fff;--ink:#1d1606;--ink-2:#4f4428;--ink-on-flyer:#3d3300;--paper:#fff;--paper-2:#fff7c2;--page:#eeede8;--rule:#d9d7cd;--cut:#8f8c7e;--ok:#0f7a3d;--ok-soft:#dcf3e3;--bad:#b00014;--bad-soft:#ffe1e3;--shadow:0 1px 1px rgb(61 51 0 / .10),0 8px 22px -6px rgb(61 51 0 / .28);--ease-out:cubic-bezier(.16,1,.3,1)} .ds-root{background:var(--page);padding:20px;font-family:Rubik,system-ui,sans-serif;} .ds-log{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;align-items:start} .ds-log li{background:var(--paper);color:var(--ink);border-radius:4px;box-shadow:var(--shadow);overflow:hidden} .ds-strip{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 16px;font-weight:900;font-size:15px;color:#fff} .ds-s-ok{background:var(--ok)} .ds-s-bad{background:var(--ink);color:var(--page)} .ds-strip time{font-weight:500;font-size:14px;direction:ltr;unicode-bidi:isolate} .ds-what{font-weight:700;padding:12px 16px 0;margin:0} .ds-log p:not(.ds-what){margin:0;padding:4px 16px 16px;color:var(--ink-2);font-size:15px} .ds-icon{width:1.1em;height:1.1em;vertical-align:-.18em}"
+    },
+    {
+      "name": "Answer Box",
+      "kind": "card",
+      "refersTo": "answer-box",
+      "description": "Yellow printed answer that opens each guide page; stays light in dark mode.",
+      "html": "<div dir=\"rtl\" class=\"ds-root\"><div class=\"ds-answer\"><p><b>בקצרה:</b> רוב הקודים שמתפרסמים ברשימות כבר נגמרו. את קוד המוכר למוצר שלכם בוטן שולף ישירות מאליאקספרס.</p></div></div>",
+      "css": ":host{--flyer:#ffe500;--sale:#d8001a;--sale-ink:#b00014;--sale-hover:#b8001a;--sale-text:#d8001a;--on-sale:#fff;--ink:#1d1606;--ink-2:#4f4428;--ink-on-flyer:#3d3300;--paper:#fff;--paper-2:#fff7c2;--page:#eeede8;--rule:#d9d7cd;--cut:#8f8c7e;--ok:#0f7a3d;--ok-soft:#dcf3e3;--bad:#b00014;--bad-soft:#ffe1e3;--shadow:0 1px 1px rgb(61 51 0 / .10),0 8px 22px -6px rgb(61 51 0 / .28);--ease-out:cubic-bezier(.16,1,.3,1)} .ds-root{background:var(--page);padding:20px;font-family:Rubik,system-ui,sans-serif;} .ds-answer{background:var(--flyer);color:var(--ink);border-radius:4px;box-shadow:var(--shadow);padding:18px 20px;max-width:70ch;font-size:17px;line-height:1.7} .ds-answer p{margin:0} .ds-answer b{font-weight:900}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Honest Weekly Flyer",
+    "overview": "**Creative North Star: \"The Honest Weekly Flyer\"**\n\nThe site is a supermarket's weekly sale flyer that refuses to lie. Fluorescent yellow fields, a red masthead strip, heavy Hebrew numerals with raised agorot, shelf tags with a red top strip, dashed \"גזור ושמור\" cut lines and \"בתוקף עד\" small print: the vocabulary is borrowed wholesale from Israeli supermarket signage, because Israeli shoppers read it instantly as \"a deal\". What makes it Boten's is the honesty layer: every tag carries a check date, a green rubber stamp marks a real checkout check, and failed checks are printed in the same flyer as the successes.\n\nDensity is flyer-like but disciplined: one big field of yellow at the top and one at the bottom (the closing band), newsprint paper for everything in between, and reading pages that keep the flyer's furniture (red table headers, a yellow answer box, dashed cut-out calls to action) around a calm 70ch text column. The world is printed matter, so the yellow fields stay light paper with dark ink even in dark mode; only the newsprint and paper around them darken.\n\nThis world replaces the category default of a white card grid with an orange \"get code\" button. It is RTL Hebrew first; numerals, prices and URLs are isolated left-to-right inside it.",
+    "keyCharacteristics": [
+      "Fluorescent flyer yellow owns exactly two bands per page (hero and closer) plus the inline answer box.",
+      "Sale red carries prices, strips, table headers and the one primary action.",
+      "One family, Rubik, from 400 to 900; 900 is reserved for display, headings, prices and strip labels.",
+      "Prices are set as ₪ + whole number + raised, underlined agorot (₪12⁶⁵).",
+      "Shelf tags, coupon cut-outs and rubber stamps are the containers; there are no generic cards.",
+      "Soft, warm-tinted lift on paper objects; never offset or hard shadows."
+    ],
+    "rules": [
+      {
+        "name": "The Printed Matter Rule",
+        "body": "Yellow fields (hero, closer, answer box, bot pill) re-declare light paper and dark ink locally and stay light in dark mode. A flyer does not invert.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three Inks Rule",
+        "body": "Yellow, red and warm black do the work; green appears only where something was actually checked. No blues, no gradients, no brand-orange.",
+        "section": "colors"
+      },
+      {
+        "name": "The Red Means Price Or Go Rule",
+        "body": "Sale red marks money and the next action. If a red element is neither a price, a strip label, a table header nor the primary action, it is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Raised Agorot Rule",
+        "body": "Every shekel amount set large is ₪ + whole + raised underlined agorot, isolated LTR, with an `aria-label` reading the full number. Inline amounts in running text stay plain (₪126.55).",
+        "section": "typography"
+      },
+      {
+        "name": "The Black Weight Is Loud Rule",
+        "body": "900 is for headings, prices, strip labels and the stamp. Body copy never goes above 700.",
+        "section": "typography"
+      },
+      {
+        "name": "The Laid-On Rule",
+        "body": "Depth means \"a paper tag laid on the flyer\": one soft warm shadow, never an offset block shadow, never stacked elevations.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Cut-Not-Lifted Rule",
+        "body": "Anything the shopper would \"cut out and keep\" (coupons, inline calls to action, empty states) is flat with a 2px dashed cut-line border, not shadowed.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** set every large shekel amount as ₪ + whole + raised, underlined agorot, LTR-isolated, with an `aria-label` carrying the full number.",
+      "**Do** date every price, check and coupon (\"נבדק 18/10\", \"בתוקף עד 21/10 09:59\"); the date is the proof.",
+      "**Do** keep yellow fields as printed matter: light paper and dark ink in both schemes.",
+      "**Do** use Sale Ink (`sale-ink`), not Sale Red, for red text at body or fine-print size.",
+      "**Do** contain content in the flyer's own objects: shelf tags, dashed cut-outs, stamps, stickers, red-strip tables.",
+      "**Do** print failed checks with the same weight as successes, on an ink strip.",
+      "**Do** name the destination in action labels (\"בדקו בבוטן\", \"פתחו את בוטן\").",
+      "**Do** respect `prefers-reduced-motion`: the tag drop and checker flip are the only motion, each once."
+    ],
+    "donts": [
+      "**Don't** fill panels or cards with Flyer Ink; ink is for type, rules, borders and the failed-check strip only.",
+      "**Don't** use offset or hard block shadows; depth is the single soft laid-on shadow.",
+      "**Don't** build a white card grid with an orange \"get code\" button; that is the category default this world replaces.",
+      "**Don't** print coupon codes on the site; amounts, minimums and validity only, with the code in the bot.",
+      "**Don't** add a second typeface for headings; Rubik 900 is the display voice.",
+      "**Don't** rotate anything except the hero shelf tag and the rubber stamp.",
+      "**Don't** use green for decoration; it means \"checked at checkout\"."
+    ]
+  }
+}
