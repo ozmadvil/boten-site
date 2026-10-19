@@ -233,6 +233,11 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
             links += f'<a href="{BASE}{href}"{cur}>{e(c["name"])}</a>'
         nav = (f'<details class="cats"><summary>קטגוריות</summary><div class="cats-panel"><div class="wrap">{links}</div></div></details>'
                + nav)
+    menubar = f'<nav class="menubar" aria-label="ראשי"><div class="wrap">{nav}</div></nav>'
+    if full and "<!--MENUBAR-->" in body:          # home: the menu sits right under the yellow band
+        body, menubar_top = body.replace("<!--MENUBAR-->", menubar), ""
+    else:
+        menubar_top = menubar
     crumb_html = ""
     if crumbs:
         parts = [f'<a href="{BASE}/">ראשי</a>'] + [
@@ -272,8 +277,9 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <a class="skip" href="#main">דלגו לתוכן</a>
 <header class="site"><div class="wrap">
 <a class="logo" href="{BASE}/"><img src="{BASE}/assets/logo-192.png" alt="" width="40" height="40">{NAME}</a>
-<nav class="main" aria-label="ראשי">{nav}<a class="tg" href="{bot_link(src='nav')}">{ICON_TG}לבוט</a></nav>
+<a class="tg" href="{bot_link(src='nav')}">{ICON_TG}פתחו את בוטן</a>
 </div></header>
+{menubar_top}
 <main id="main">
 {body}
 </main>
@@ -413,6 +419,8 @@ def build_home():
 </div>
 {checker('home')}
 </div></section>
+<!--MENUBAR-->
+{f'''<nav class="cats-strip" aria-label="קטגוריות"><div class="wrap">{"".join(f'<a class="chip" href="{BASE}/c/{c["slug"]}/">{e(c["name"])}</a>' for c in categories)}</div></nav>''' if categories else ""}
 
 <div class="wrap">
 {f'''<section aria-labelledby="hot-title">
@@ -421,7 +429,6 @@ def build_home():
 <p class="tiles-note">המחירים נכונים לשעת הפרסום בערוץ ועשויים להשתנות. לחיצה על מוצר פותחת אותו באליאקספרס (קישור שותפים: המחיר שלכם לא משתנה).</p>
 </section>''' if products else ""}
 
-{f'''<nav class="chips home-chips" aria-label="קטגוריות">{"".join(f'<a class="chip" href="{BASE}/c/{c["slug"]}/">{e(c["name"])}</a>' for c in categories)}</nav>''' if categories else ""}
 
 <section aria-labelledby="deals-title">
 <h2 id="deals-title">קודי מוכר שנבדקו</h2>
