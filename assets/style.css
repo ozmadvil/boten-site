@@ -362,3 +362,18 @@ main > .wrap:last-child { padding-bottom: 80px; }
 .site .tg.ch .short { display: none; }
 @media (max-width: 480px) { .site .tg.ch .long { display: none; } .site .tg.ch .short { display: inline; } header.site .wrap { flex-wrap: nowrap; gap: 8px; } .site .tg { white-space: nowrap; } }
 .chip[aria-current="page"] { background: var(--ink); color: var(--paper); box-shadow: none; }
+/* coupon codes page */
+.table-wrap:has(table.codes) { max-width: none; }
+table.codes td { vertical-align: middle; }
+code.code { direction: ltr; unicode-bidi: isolate; display: inline-block; font: 700 16px/1.2 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; letter-spacing: .04em; background: var(--flyer); color: var(--ink); padding: 5px 10px; border-radius: 6px; border: 2px dashed var(--ink); user-select: all; white-space: nowrap; }
+code.code.bad { background: transparent; text-decoration: line-through; opacity: .75; border-style: solid; border-width: 1px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 8px; }
+@media (max-width: 640px) { table.codes { font-size: 14px; } table.codes th, table.codes td { padding: 9px 10px; } }
+@media (max-width: 640px) {
+  table.codes.cards thead { display: none; }
+  table.codes.cards, table.codes.cards tbody, table.codes.cards tr, table.codes.cards td { display: block; width: 100%; }
+  table.codes.cards tr { padding: 10px 12px; border-bottom: 2px solid var(--rule); }
+  table.codes.cards td { border: 0; padding: 3px 0; }
+  table.codes.cards td[data-l]::before { content: attr(data-l) ": "; font-weight: 700; color: var(--ink-soft, inherit); }
+  table.codes.cards td[data-l="קוד"]::before { content: none; }
+}

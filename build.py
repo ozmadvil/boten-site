@@ -22,6 +22,8 @@ CHANNEL = "https://t.me/Boten_deals"
 IL = timezone(timedelta(hours=3))
 NOW = datetime.now(IL)
 TODAY = NOW.strftime("%d/%m/%Y")
+HEB_MONTHS = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"]
+MONTH_YEAR = f"{HEB_MONTHS[NOW.month - 1]} {NOW.year}"
 NAME = "בוטן"
 e = html.escape
 
@@ -205,7 +207,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
 
 
 # ------------------------------------------------------------------ layout
-NAV = [("/", "ראשי"), ("/guides/", "מדריכים"), ("/guides/11-11/", "11.11"),
+NAV = [("/", "ראשי"), ("/coupons/", "קודי קופון"), ("/guides/", "מדריכים"), ("/guides/11-11/", "11.11"),
        ("/guides/code-not-working/", "קוד לא עובד?"), ("/about/", "אודות")]
 
 ORG = {"@type": "Organization", "@id": f"{SITE_URL}/#org", "name": NAME, "alternateName": "Boten",
@@ -484,6 +486,123 @@ def build_home():
          body, full=True, js=True)
 
 
+# ------------------------------------------------------------------ the coupon codes page (/coupons/)
+def _links() -> dict:
+    """Affiliate links made by the bot (data/site_links.json): {"home": url, "products": {product_id: url}}."""
+    try:
+        return json.loads((ROOT / "data" / "site_links.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def build_coupons_page():
+    links = _links()
+    home_link = links.get("home")
+    prod_links = links.get("products", {})
+    buy = (f'<a class="btn" href="{e(home_link)}" rel="sponsored nofollow noopener" target="_blank">🛒 לקנייה באליאקספרס</a>'
+           if home_link else "")
+    bot_btn = f'<a class="btn secondary" href="{bot_link(src="coupons")}">{ICON_TG}בדקו מוצר בבוטן</a>'
+
+    # --- verified seller codes (codes printed, with a buy link to that product)
+    rows = ""
+    for r in seller:
+        status = ("✅ עובד (נבדק בקופה " + datetime.strptime(r["checked"], "%Y-%m-%d").strftime("%d/%m") + ")"
+                  if r["verified"] == "checkout" else "מפורטל השותפים הרשמי של אליאקספרס")
+        link = prod_links.get(r["product_id"])
+        go = (f'<a href="{e(link)}" rel="sponsored nofollow noopener" target="_blank">למוצר ←</a>' if link
+              else f'<a href="{bot_link(r["product_id"], "coupons")}">למוצר בבוטן ←</a>')
+        rows += (f"<tr><td data-l=\"קוד\"><code class=\"code\">{e(r['code'])}</code></td><td data-l=\"מוצר\">{e(r['product'])}</td>"
+                 f"<td data-l=\"הנחה\">₪{float(r['off_ils']):.2f}</td><td data-l=\"מינימום\">מעל ₪{float(r['min_ils']):.2f}</td>"
+                 f"<td data-l=\"בתוקף עד\">{fmt_d(r['_end'], True)}</td><td data-l=\"סטטוס\">{status}</td><td>{go}</td></tr>")
+    seller_html = (f"""<div class="table-wrap"><table class="codes cards"><thead><tr><th>קוד</th><th>מוצר</th><th>הנחה</th>
+<th>מינימום לסל (אחרי הנחות)</th><th>בתוקף עד</th><th>סטטוס</th><th></th></tr></thead><tbody>{rows}</tbody></table></div>"""
+                   if rows else '<p>כרגע אין קודי מוכר מאומתים בתוקף. בוטן בודק כל מוצר שתשלחו ומחזיר קוד אם יש.</p>')
+
+    # --- Israel platform codes (ILAFF): active set, or the last one
+    if platform_active:
+        end = min(r["_end"] for r in platform_active)
+        prow = "".join(f"<tr><td><code class=\"code\">{e(r['code'])}</code></td><td>${float(r['off_usd']):g}</td>"
+                       f"<td>מעל ${float(r['min_usd']):g}</td></tr>" for r in platform_active)
+        platform_html = (f"<p><b>סט קודי ישראל פעיל עד {fmt_d(end, True)}.</b> מזינים קוד אחד, לפי הסכום בסל אחרי הנחות.</p>"
+                         f'<div class="table-wrap"><table class="codes"><thead><tr><th>קוד</th><th>הנחה</th><th>מינימום לסל</th>'
+                         f"</tr></thead><tbody>{prow}</tbody></table></div>")
+        answer_now = f"יש סט פעיל של קודי ישראל (ILAFF) עד {fmt_d(end, True)}, ראו בטבלה."
+    else:
+        last = sorted([r for r in platform_all if r["_end"] and r["_end"] < NOW], key=lambda r: float(r["min_usd"]))
+        prow = "".join(f"<tr><td><code class=\"code bad\">{e(r['code'])}</code></td><td>${float(r['off_usd']):g}</td>"
+                       f"<td>מעל ${float(r['min_usd']):g}</td><td>❌ פג תוקף</td></tr>" for r in last)
+        when = (f"מ-{fmt_d(last[0]['_start'], True)} עד {fmt_d(last[0]['_end'], True)}" if last else "")
+        platform_html = ("<p>אליאקספרס מוציאה סט קודים לישראל (ILAFF…) לקראת אירועי מבצע, לחלון של כשבוע. "
+                         "אנחנו מפרסמים סט רק כשיש לו חלון תוקף רשמי, ומעדכנים כאן ביום שהוא יוצא.</p>"
+                         + (f"<p>הסט האחרון היה בתוקף {when}:</p>"
+                            f'<div class="table-wrap"><table class="codes"><thead><tr><th>קוד</th><th>הנחה</th><th>מינימום לסל</th>'
+                            f"<th>סטטוס</th></tr></thead><tbody>{prow}</tbody></table></div>" if prow else ""))
+        answer_now = "אין כרגע סט רשמי פעיל של קודי ישראל (ILAFF). הסט הבא צפוי לקראת 11.11."
+
+    # --- codes that circulate online and failed at checkout (the thing nobody else tells you)
+    bad = [r for r in checks if r["result"] != "עובד"]
+    brow = ""
+    for r in bad:
+        parts = re.split(r'("[^"]+")', r["details"])
+        det = "".join(f'<bdi lang="en">{e(x)}</bdi>' if x.startswith('"') else e(x) for x in parts)
+        brow += (f"<tr><td data-l=\"קוד\"><code class=\"code bad\">{e(r['code'])}</code></td>"
+                 f"<td data-l=\"נבדק\">{datetime.strptime(r['date'], '%Y-%m-%d').strftime('%d/%m/%Y')}</td><td data-l=\"בקופה\">❌ {det}</td></tr>")
+    bad_html = (f"""<h2 id="not-working">קודים שמופיעים באתרי קופונים ולא עובדים</h2>
+<p>את הקודים האלה ניסינו בקופה אמיתית, עם כתובת משלוח בישראל, והם נכשלו. אם אתר אחר מציג אותם כ"פעילים", עדיף לא לבזבז עליהם זמן.</p>
+<div class="table-wrap"><table class="codes cards"><thead><tr><th>קוד</th><th>נבדק</th><th>מה קרה בקופה</th></tr></thead>
+<tbody>{brow}</tbody></table></div>""" if brow else "")
+
+    seller_now = (", ".join(f"{r['code']} (₪{float(r['off_ils']):.2f} הנחה מעל ₪{float(r['min_ils']):.2f})" for r in seller)
+                  if seller else "")
+    faq_html, faq_schema = faq_block([
+        ("יש עכשיו קוד קופון לאליאקספרס שעובד בישראל?",
+         f"{answer_now} " + (f"קודי מוכר שעובדים כרגע: {e(seller_now)}. " if seller_now else "")
+         + f"לכל מוצר אחר אפשר לשלוח את הלינק <a href=\"{bot_link(src='faq')}\">לבוטן</a>, והוא מחזיר קוד מוכר אם יש."),
+        ("למה הקוד לא עובד לי בקופה?",
+         "שלוש סיבות כמעט תמיד: הסל מתחת למינימום, המכסה של הקוד נגמרה, או שהקוד פג תוקף. "
+         f'<a href="{BASE}/guides/code-not-working/">הודעות השגיאה המדויקות ומה עושים ←</a>'),
+        ("המינימום נבדק לפני או אחרי ההנחות?",
+         "אחרי. בדקנו: סוללה ב-₪93.50 ירדה בסל ל-₪77.68 אחרי ההנחות האוטומטיות, ולכן קוד עם מינימום ₪126.55 נדחה. "
+         "עם שתי יחידות הסל עבר את המינימום והקוד נכנס."),
+        ("כמה קודים אפשר להזין בהזמנה אחת?",
+         "בשדה Promo code נכנס קוד אחד. קופוני חנות שאוספים בדף המוצר, קופוני Select ומטבעות מצטרפים אליו. "
+         "אם אפשר לשלב קוד מוכר עם קוד ישראל (ILAFF) באותה הזמנה עוד לא אימתנו בעצמנו."),
+        ("מה ההבדל בין קוד מוכר לקוד ישראל (ILAFF)?",
+         "קוד מוכר עובד רק על המוצרים של אותו מוכר. קוד ישראל הוא קוד של אליאקספרס שעובד על כל הסל, במדרגות לפי הסכום, "
+         "ורק במשלוח לישראל."),
+        ("למה באתרים אחרים יש הרבה יותר קודים?",
+         "כי הם מעתיקים רשימות בלי לבדוק. חלק מהקודים שמופיעים שם בדקנו בקופה, והם נגמרו או לא תקפים "
+         "(ראו את הטבלה \"קודים שלא עובדים\"). אנחנו מפרסמים רק מה שנבדק או שמופיע בפורטל הרשמי של אליאקספרס."),
+        ("מתי יוצאים קודים חדשים?",
+         f'סביב אירועי מבצע: 11.11, Black Friday, 12.12 והמבצע של סוף השנה. <a href="{BASE}/guides/11-11/">מה צפוי ב-11.11 ←</a>'),
+        ("איך מקבלים קוד למוצר מסוים?",
+         f'שולחים את הלינק של המוצר <a href="{bot_link(src="faq")}">לבוטן בטלגרם</a>. הוא בודק את המוצר ומחזיר מחיר בשקלים, '
+         "הנחה וקוד מוכר אם יש, ואם אין, מחפש מוכר זול יותר."),
+    ])
+    body = f"""<header class="page-head"><h1>קודי קופון לאליאקספרס בישראל ({MONTH_YEAR}): רק קודים שנבדקו בקופה</h1>
+<span class="updated">עודכן ונבדק: {TODAY}</span></header>
+<div class="answer"><p><b>בקצרה, נכון ל-{TODAY}:</b> {answer_now} {('קודי מוכר שעובדים: ' + e(seller_now) + '.') if seller_now else ''}
+את המצב של כל קוד בדקנו בקופה אמיתית, כולל קודים שמופיעים באתרים אחרים ולא עובדים.</p></div>
+<p class="actions">{buy}{bot_btn}</p>
+<h2>קודי מוכר בתוקף</h2>
+<p>קוד מוכר עובד על המוצרים של מוכר אחד. שימו לב למינימום: הוא נבדק על הסל <b>אחרי</b> ההנחות האוטומטיות.</p>
+{seller_html}
+<h2>קודי ישראל של אליאקספרס (ILAFF)</h2>
+{platform_html}
+{bad_html}
+<h2>איך בוחרים קוד ומזינים אותו</h2>
+<p>מוסיפים לסל, נכנסים לתשלום, ובשדה Promo code מדביקים את הקוד ולוחצים Apply. מזינים קוד אחד. אם יש כמה מדרגות,
+בוחרים את הגבוהה ביותר שהסל עובר אחרי ההנחות. מחיר המשלוח לא נספר למינימום. ההנחה מופיעה רק אחרי Apply.</p>
+<p>לפני שמזינים קוד, כדאי לאסוף בדף המוצר את קופוני החנות ("קבלו קופונים"). הם מצטרפים לקוד ולא תופסים את מקומו.</p>
+<h2>שאלות נפוצות</h2>
+{faq_html}
+<p class="fine">* הקישורים בדף הם קישורי שותפים של אליאקספרס. הקודים והתוקף נכונים ליום הבדיקה בלבד, וקודים עלולים להיגמר במכסה לפני התאריך.</p>"""
+    page("/coupons/", f"קודי קופון לאליאקספרס ({MONTH_YEAR}): רק קודים שנבדקו בקופה | {NAME}",
+         f"קודי קופון לאליאקספרס בישראל, {MONTH_YEAR}: קודי מוכר שנבדקו בקופה, קודי ישראל (ILAFF) עם תוקף, "
+         "ורשימת קודים שמסתובבים ברשת ולא עובדים. מתעדכן כל יום.",
+         body, crumbs=[("/coupons/", "קודי קופון")], schema=[faq_schema])
+
+
 def build_coupon_types():
     body = f"""<header class="page-head"><h1>סוגי הקופונים באליאקספרס ואיך משלבים אותם</h1>
 <span class="updated">עודכן: {TODAY}</span></header>
@@ -704,7 +823,7 @@ def main():
     shutil.copytree(ROOT / "assets", OUT / "assets")
     for f in ROOT.glob("google*.html"):           # Google Search Console verification file
         shutil.copy(f, OUT / f.name)
-    build_home(); build_coupon_types(); build_not_working(); build_guides(); build_categories(); build_about(); build_404()
+    build_home(); build_coupons_page(); build_coupon_types(); build_not_working(); build_guides(); build_categories(); build_about(); build_404()
     build_meta_files()
     print(f"built {len(SITEMAP)} pages into {OUT} (base={BASE or '/'}), {len(seller)} seller codes, "
           f"{len(platform_active)} platform codes active")
