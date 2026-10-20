@@ -539,18 +539,25 @@ def build_coupons_page():
                             f"<th>סטטוס</th></tr></thead><tbody>{prow}</tbody></table></div>" if prow else ""))
         answer_now = "אין כרגע סט רשמי פעיל של קודי ישראל (ILAFF). הסט הבא צפוי לקראת 11.11."
 
-    # --- codes that circulate online and failed at checkout (the thing nobody else tells you)
-    bad = [r for r in checks if r["result"] != "עובד"]
-    brow = ""
-    for r in bad:
-        parts = re.split(r'("[^"]+")', r["details"])
-        det = "".join(f'<bdi lang="en">{e(x)}</bdi>' if x.startswith('"') else e(x) for x in parts)
-        brow += (f"<tr><td data-l=\"קוד\"><code class=\"code bad\">{e(r['code'])}</code></td>"
-                 f"<td data-l=\"נבדק\">{datetime.strptime(r['date'], '%Y-%m-%d').strftime('%d/%m/%Y')}</td><td data-l=\"בקופה\">❌ {det}</td></tr>")
-    bad_html = (f"""<h2 id="not-working">קודים שמופיעים באתרי קופונים ולא עובדים</h2>
-<p>את הקודים האלה ניסינו בקופה אמיתית, עם כתובת משלוח בישראל, והם נכשלו. אם אתר אחר מציג אותם כ"פעילים", עדיף לא לבזבז עליהם זמן.</p>
-<div class="table-wrap"><table class="codes cards"><thead><tr><th>קוד</th><th>נבדק</th><th>מה קרה בקופה</th></tr></thead>
-<tbody>{brow}</tbody></table></div>""" if brow else "")
+    # --- codes that circulate on coupon sites, with what we actually know about each (sorted by cart size)
+    circ = sorted(read_csv("circulating_codes.csv"), key=lambda r: float(r["min_usd"] or 0))
+    crow = ""
+    for r in circ:
+        if r["status"] == "failed":
+            d = datetime.strptime(r["checked"], "%Y-%m-%d").strftime("%d/%m")
+            parts = re.split(r'("[^"]+")', r["details"])
+            det = "".join(f'<bdi lang="en">{e(x)}</bdi>' if x.startswith('"') else e(x) for x in parts)
+            st, cls = f"❌ נכשל בבדיקה שלנו ({d}): {det}", "code bad"
+        else:
+            st, cls = "⚠️ לא נבדק: נסו בקופה, ייתכן שהמכסה נגמרה", "code"
+        crow += (f"<tr><td data-l=\"מינימום לסל\">מעל ${float(r['min_usd']):g}</td><td data-l=\"הנחה\">${float(r['off_usd']):g}</td>"
+                 f"<td data-l=\"קוד\"><code class=\"{cls}\">{e(r['code'])}</code></td>"
+                 f"<td data-l=\"מה ידוע\">{e(r['claimed'])}. {st}</td></tr>")
+    bad_html = (f"""<h2 id="not-working">הקודים שמסתובבים באתרי קופונים ({MONTH_YEAR}), ומה המצב שלהם</h2>
+<p>אלה הקודים שאתרי קופונים ישראליים (וגם ChatGPT, שמצטט אותם) מציגים החודש. לא מצאנו לסט ILAFFOCT מקור רשמי של אליאקספרס או חלון תוקף רשמי.
+מה שבדקנו בקופה אמיתית עם משלוח לישראל מסומן, וכך גם מה שלא הספקנו לבדוק. בוחרים את המדרגה הגבוהה ביותר שהסל עובר אחרי ההנחות.</p>
+<div class="table-wrap"><table class="codes cards"><thead><tr><th>מינימום לסל</th><th>הנחה</th><th>קוד</th><th>מה ידוע</th></tr></thead>
+<tbody>{crow}</tbody></table></div>""" if crow else "")
 
     seller_now = (", ".join(f"{r['code']} (₪{float(r['off_ils']):.2f} הנחה מעל ₪{float(r['min_ils']):.2f})" for r in seller)
                   if seller else "")
@@ -558,6 +565,16 @@ def build_coupons_page():
         ("יש עכשיו קוד קופון לאליאקספרס שעובד בישראל?",
          f"{answer_now} " + (f"קודי מוכר שעובדים כרגע: {e(seller_now)}. " if seller_now else "")
          + f"לכל מוצר אחר אפשר לשלוח את הלינק <a href=\"{bot_link(src='faq')}\">לבוטן</a>, והוא מחזיר קוד מוכר אם יש."),
+        ("הקודים ILAFFOCT01–ILAFFOCT010 עובדים?",
+         "ILAFFOCT01 (‏$3 מעל $29) נכשל בבדיקה שלנו בקופה ב-18/10: \"used up by other shoppers\", כלומר המכסה נגמרה. "
+         "את שאר המדרגות לא בדקנו, כי הן דורשות סל גדול (מעל $59). לא מצאנו לסט הזה מקור רשמי של אליאקספרס. אפשר לנסות, "
+         "ואם הקוד נדחה, כנראה שגם המכסה שלו נגמרה."),
+        ("יש הטבה למשתמש חדש באליאקספרס?",
+         "בדרך כלל כן: לחשבון חדש אליאקספרס מציעה הטבות פתיחה באפליקציה, שמופיעות אוטומטית בחשבון אחרי ההרשמה. "
+         "הן משתנות ותלויות בחשבון, ולכן אין להן קוד קבוע שאפשר לפרסם."),
+        ("האם הקודים בדף הזה נבדקו?",
+         "קודי המוכר מסומנים לפי המקור: נבדק בקופה, או מופיע בפורטל השותפים הרשמי של אליאקספרס. בטבלת הקודים שמסתובבים ברשת "
+         "כתוב ליד כל קוד אם בדקנו אותו ומה קרה. אנחנו לא מסמנים קוד כ\"עובד\" בלי בדיקה."),
         ("למה הקוד לא עובד לי בקופה?",
          "שלוש סיבות כמעט תמיד: הסל מתחת למינימום, המכסה של הקוד נגמרה, או שהקוד פג תוקף. "
          f'<a href="{BASE}/guides/code-not-working/">הודעות השגיאה המדויקות ומה עושים ←</a>'),
@@ -582,7 +599,7 @@ def build_coupons_page():
     body = f"""<header class="page-head"><h1>קודי קופון לאליאקספרס בישראל ({MONTH_YEAR}): רק קודים שנבדקו בקופה</h1>
 <span class="updated">עודכן ונבדק: {TODAY}</span></header>
 <div class="answer"><p><b>בקצרה, נכון ל-{TODAY}:</b> {answer_now} {('קודי מוכר שעובדים: ' + e(seller_now) + '.') if seller_now else ''}
-את המצב של כל קוד בדקנו בקופה אמיתית, כולל קודים שמופיעים באתרים אחרים ולא עובדים.</p></div>
+הסט ILAFFOCT שמופיע באתרי קופונים עם תוקף "עד 31/10": הקוד הראשון (ILAFFOCT01) נגמר בבדיקה שלנו, ואת השאר לא הצלחנו לאמת, <a href="#not-working">פירוט בטבלה</a>.</p></div>
 <p class="actions">{buy}{bot_btn}</p>
 <h2>קודי מוכר בתוקף</h2>
 <p>קוד מוכר עובד על המוצרים של מוכר אחד. שימו לב למינימום: הוא נבדק על הסל <b>אחרי</b> ההנחות האוטומטיות.</p>

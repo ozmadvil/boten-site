@@ -1,0 +1,14 @@
+# קודים שמסתובבים באתרי קופונים ישראליים — עם המצב האמיתי שלהם. status: failed = נכשל בבדיקה בקופה, untested = לא נבדק.
+# claimed = מה שהאתרים טוענים (תוקף/מקור). אין לנו מקור רשמי לסט הזה.
+code,off_usd,min_usd,claimed,status,checked,details
+ILAFFOCT01,3,29,"באתרי קופונים: בתוקף עד 31/10",failed,2026-10-18,"used up by other shoppers" — המכסה נגמרה
+ILAFFOCT02,6,59,"באתרי קופונים: בתוקף עד 31/10",untested,,
+ILAFFOCT03,9,89,"באתרי קופונים: בתוקף עד 31/10",untested,,
+ILAFFOCT04,16,149,"באתרי קופונים: בתוקף עד 31/10",untested,,
+ILAFFOCT05,23,199,"באתרי קופונים: בתוקף עד 31/10",untested,,
+ILAFFOCT06,30,269,"באתרי קופונים: בתוקף עד 31/10",untested,,
+ILAFFOCT07,40,369,"באתרי קופונים: בתוקף עד 31/10",untested,,
+ILAFFOCT08,50,469,"באתרי קופונים: בתוקף עד 31/10",untested,,
+ILAFFOCT09,60,599,"באתרי קופונים: בתוקף עד 31/10",untested,,
+ILAFFOCT010,70,699,"באתרי קופונים: בתוקף עד 31/10",untested,,
+WOIL02,2,15,"באתרי קופונים: בלי תאריך תוקף",failed,2026-10-18,"incorrect, inactive, or already used" — הקוד לא תקף
