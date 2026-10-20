@@ -208,7 +208,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
 
 
 # ------------------------------------------------------------------ layout
-NAV = [("/", "ראשי"), ("/coupons/", "קודי קופון"), ("/guides/", "מדריכים"), ("/guides/11-11/", "11.11"),
+NAV = [("/", "ראשי"), ("/coupons/", "קודי קופון"), ("/guides/", "מדריכים"), ("/guides/11-11/", "11.11"), ("/guides/black-friday/", "בלאק פריידי"),
        ("/guides/code-not-working/", "קוד לא עובד?"), ("/about/", "אודות")]
 
 ORG = {"@type": "Organization", "@id": f"{SITE_URL}/#org", "name": NAME, "alternateName": "Boten",
