@@ -236,8 +236,9 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
     menubar = f'<nav class="menubar" aria-label="ראשי"><div class="wrap">{nav}</div></nav>' + strip
     if full and "<!--MENUBAR-->" in body:          # home: the menu sits right under the yellow band
         body, menubar_top = body.replace("<!--MENUBAR-->", menubar), ""
-    else:
-        menubar_top = menubar
+    else:                                      # every other page gets the same yellow band on top
+        menubar_top = hero("page", False) + menubar
+        js = True
     crumb_html = ""
     if crumbs:
         parts = [f'<a href="{BASE}/">ראשי</a>'] + [
@@ -413,14 +414,21 @@ def product_tiles(rows: list[dict]) -> str:
 
 
 # ------------------------------------------------------------------ pages
-def build_home():
-    body = f"""<section class="hero" aria-labelledby="hero-title"><div class="wrap">
+def hero(src: str, main_heading: bool) -> str:
+    """The yellow band with the price checker. On the home page its title is the page's h1; elsewhere the page
+    keeps its own h1, so the band's title is a styled paragraph (one h1 per page)."""
+    tag = "h1" if main_heading else "p"
+    return f"""<section class="hero" aria-labelledby="hero-title"><div class="wrap">
 <div>
-<h1 id="hero-title">דילים מאליאקספרס <em>שבאמת שווים</em></h1>
+<{tag} id="hero-title" class="hero-title">דילים מאליאקספרס <em>שבאמת שווים</em></{tag}>
 <p class="lead">כל מוצר כאן עבר סינון של בוטן: דירוג גבוה, הרבה מכירות, מחיר בשקלים. ויש לכם מוצר משלכם? הדביקו אותו כאן.</p>
 </div>
-{checker('home')}
-</div></section>
+{checker(src)}
+</div></section>"""
+
+
+def build_home():
+    body = f"""{hero('home', True)}
 <!--MENUBAR-->
 
 <div class="wrap">
