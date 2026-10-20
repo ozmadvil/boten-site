@@ -694,6 +694,8 @@ def main():
         shutil.rmtree(OUT)
     OUT.mkdir()
     shutil.copytree(ROOT / "assets", OUT / "assets")
+    for f in ROOT.glob("google*.html"):           # Google Search Console verification file
+        shutil.copy(f, OUT / f.name)
     build_home(); build_coupon_types(); build_not_working(); build_guides(); build_categories(); build_about(); build_404()
     build_meta_files()
     print(f"built {len(SITEMAP)} pages into {OUT} (base={BASE or '/'}), {len(seller)} seller codes, "
