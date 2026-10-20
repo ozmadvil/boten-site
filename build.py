@@ -597,7 +597,7 @@ def build_coupons_page():
          "הנחה וקוד מוכר אם יש, ואם אין, מחפש מוכר זול יותר."),
     ])
     body = f"""<header class="page-head"><h1>קודי קופון לאליאקספרס בישראל ({MONTH_YEAR}): רק קודים שנבדקו בקופה</h1>
-<span class="updated">עודכן ונבדק: {TODAY}</span></header>
+<span class="updated">עודכן: {TODAY} · ליד כל קוד מופיע מתי נבדק</span></header>
 <div class="answer"><p><b>בקצרה, נכון ל-{TODAY}:</b> {answer_now} {('קודי מוכר שעובדים: ' + e(seller_now) + '.') if seller_now else ''}
 הסט ILAFFOCT שמופיע באתרי קופונים עם תוקף "עד 31/10": הקוד הראשון (ILAFFOCT01) נגמר בבדיקה שלנו, ואת השאר לא הצלחנו לאמת, <a href="#not-working">פירוט בטבלה</a>.</p></div>
 <p class="actions">{buy}{bot_btn}</p>
