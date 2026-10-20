@@ -173,6 +173,7 @@ def checker(src: str, field_id: str = "link") -> str:
 <button class="btn" type="submit">{ICON_TG}<span>בדקו בבוטן</span></button>
 </div>
 <p class="msg" id="{field_id}-msg" role="status" aria-live="polite">בוטן מחזיר מחיר בשקלים, הנחה וקוד קופון אם יש. בחינם.</p>
+<p class="also">📢 דילים חדשים כל יום: <a href="{CHANNEL}">הצטרפו לערוץ הדילים של בוטן בטלגרם</a></p>
 </form>"""
 
 
@@ -249,7 +250,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 {crumb_html}
 {body}
 <aside class="cta-inline"><p>יש לכם מוצר מאליאקספרס? שלחו את הלינק לבוטן וקבלו מחיר, הנחה וקוד קופון אם יש.</p>
-<a class="btn" href="{bot_link(src='guide')}">{ICON_TG}פתחו את בוטן</a></aside>
+<a class="btn" href="{bot_link(src='guide')}">{ICON_TG}פתחו את בוטן</a><a class="btn secondary" href="{CHANNEL}">📢 לערוץ הדילים</a></aside>
 </div>"""
     doc = f"""<!doctype html>
 <html lang="he" dir="rtl">
@@ -278,6 +279,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <header class="site"><div class="wrap">
 <a class="logo" href="{BASE}/"><img src="{BASE}/assets/logo-192.png" alt="" width="40" height="40">{NAME}</a>
 <a class="tg" href="{bot_link(src='nav')}">{ICON_TG}פתחו את בוטן</a>
+<a class="tg ch" href="{CHANNEL}" aria-label="ערוץ הדילים בטלגרם">📢 <span class="long">ערוץ הדילים</span><span class="short">ערוץ</span></a>
 </div></header>
 {menubar_top}
 <main id="main">
@@ -340,7 +342,8 @@ def hero_tag() -> str:
 def coupons(rows: list[dict], src: str) -> str:
     if not rows:
         return ('<div class="empty"><p><b>כרגע אין קודי מוכר מאומתים בתוקף.</b> בוטן בודק כל מוצר שתשלחו ומחזיר קוד אם יש.</p>'
-                f'<a class="btn" href="{bot_link(src=src)}">{ICON_TG}בדקו מוצר בבוטן</a></div>')
+                f'<a class="btn" href="{bot_link(src=src)}">{ICON_TG}בדקו מוצר בבוטן</a> '
+                f'<a class="btn secondary" href="{CHANNEL}">📢 לערוץ הדילים</a></div>')
     out = []
     for r in rows:
         badge = (f'<span class="sticker ok">{ICON_CHECK}נבדק בקופה</span>' if r["verified"] == "checkout"
@@ -622,7 +625,8 @@ def build_categories():
         else:
             grid = ('<div class="empty"><p><b>בוטן עוד מחפש את הדילים לקטגוריה הזו.</b> בינתיים אפשר לשלוח לו לינק '
                     'של כל מוצר ולקבל מחיר, הנחה וקוד אם יש.</p>'
-                    f'<a class="btn" href="{bot_link(src="cat")}">{ICON_TG}בדקו מוצר בבוטן</a></div>')
+                    f'<a class="btn" href="{bot_link(src="cat")}">{ICON_TG}בדקו מוצר בבוטן</a> '
+                    f'<a class="btn secondary" href="{CHANNEL}">📢 לערוץ הדילים</a></div>')
         body = f"""<header class="page-head"><h1>{e(c['name'])} מאליאקספרס: הדילים של השבוע</h1>
 <span class="updated">עודכן: {TODAY} · מחיר בשקלים, עם הנחה ודירוג</span></header>
 {grid}

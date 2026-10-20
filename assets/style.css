@@ -354,3 +354,10 @@ footer.site a { color: var(--ink); }
 footer.site .links { display: flex; gap: 6px 20px; flex-wrap: wrap; margin-bottom: 14px; font-weight: 500; }
 footer.site p { margin: 0 0 8px; max-width: 90ch; }
 main > .wrap:last-child { padding-bottom: 80px; }
+.site .tg.ch { margin-inline-start: 8px; background: transparent; box-shadow: inset 0 0 0 2px currentColor; }
+.site .tg.ch:hover { background: var(--paper); }
+@media (max-width: 480px) { .site .tg { padding: 6px 11px; font-size: 14px; } }
+.checker .also { margin: 8px 0 0; font-size: 15px; }
+.empty .btn + .btn { margin-inline-start: 8px; }
+.site .tg.ch .short { display: none; }
+@media (max-width: 480px) { .site .tg.ch .long { display: none; } .site .tg.ch .short { display: inline; } header.site .wrap { flex-wrap: nowrap; gap: 8px; } .site .tg { white-space: nowrap; } }
