@@ -377,3 +377,5 @@ code.code.bad { background: transparent; text-decoration: line-through; opacity:
   table.codes.cards td[data-l]::before { content: attr(data-l) ": "; font-weight: 700; color: var(--ink-soft, inherit); }
   table.codes.cards td[data-l="קוד"]::before { content: none; }
 }
+.checker .tip { margin: 8px 0 0; font-size: 15px; }
+.checker .tip .btn-name { display: inline-block; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 1px 8px; font-weight: 700; white-space: nowrap; }
