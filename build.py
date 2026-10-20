@@ -563,7 +563,7 @@ def build_coupons_page():
                   if seller else "")
     faq_html, faq_schema = faq_block([
         ("יש עכשיו קוד קופון לאליאקספרס שעובד בישראל?",
-         f"{answer_now} " + (f"קודי מוכר שעובדים כרגע: {e(seller_now)}. " if seller_now else "")
+         f"{answer_now} "
          + f"לכל מוצר אחר אפשר לשלוח את הלינק <a href=\"{bot_link(src='faq')}\">לבוטן</a>, והוא מחזיר קוד מוכר אם יש."),
         ("הקודים ILAFFOCT01–ILAFFOCT010 עובדים?",
          "ILAFFOCT01 (‏$3 מעל $29) נכשל בבדיקה שלנו בקופה ב-18/10: \"used up by other shoppers\", כלומר המכסה נגמרה. "
@@ -598,12 +598,9 @@ def build_coupons_page():
     ])
     body = f"""<header class="page-head"><h1>קודי קופון לאליאקספרס בישראל ({MONTH_YEAR}): רק קודים שנבדקו בקופה</h1>
 <span class="updated">עודכן: {TODAY} · ליד כל קוד מופיע מתי נבדק</span></header>
-<div class="answer"><p><b>בקצרה, נכון ל-{TODAY}:</b> {answer_now} {('קודי מוכר שעובדים: ' + e(seller_now) + '.') if seller_now else ''}
+<div class="answer"><p><b>בקצרה, נכון ל-{TODAY}:</b> {answer_now}
 הסט ILAFFOCT שמופיע באתרי קופונים עם תוקף "עד 31/10": הקוד הראשון (ILAFFOCT01) נגמר בבדיקה שלנו, ואת השאר לא הצלחנו לאמת, <a href="#not-working">פירוט בטבלה</a>.</p></div>
 <p class="actions">{buy}{bot_btn}</p>
-<h2>קודי מוכר בתוקף</h2>
-<p>קוד מוכר עובד על המוצרים של מוכר אחד. שימו לב למינימום: הוא נבדק על הסל <b>אחרי</b> ההנחות האוטומטיות.</p>
-{seller_html}
 <h2>קודי ישראל של אליאקספרס (ILAFF)</h2>
 {platform_html}
 {bad_html}
