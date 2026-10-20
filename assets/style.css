@@ -361,3 +361,4 @@ main > .wrap:last-child { padding-bottom: 80px; }
 .empty .btn + .btn { margin-inline-start: 8px; }
 .site .tg.ch .short { display: none; }
 @media (max-width: 480px) { .site .tg.ch .long { display: none; } .site .tg.ch .short { display: inline; } header.site .wrap { flex-wrap: nowrap; gap: 8px; } .site .tg { white-space: nowrap; } }
+.chip[aria-current="page"] { background: var(--ink); color: var(--paper); box-shadow: none; }

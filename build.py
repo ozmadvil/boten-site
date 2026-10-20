@@ -226,15 +226,14 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
             {"@type": "ListItem", "position": i, "name": n, "item": SITE_URL + p} for i, (p, n) in enumerate(items, 1)]})
     graph += schema or []
     nav = "".join(f'<a href="{BASE}{p}"{" aria-current=\"page\"" if p == path else ""}>{n}</a>' for p, n in NAV)
-    if categories:
-        links = ""
-        for c in categories:
-            href = f"/c/{c['slug']}/"
-            cur = ' aria-current="page"' if path == href else ""
-            links += f'<a href="{BASE}{href}"{cur}>{e(c["name"])}</a>'
-        nav = (f'<details class="cats"><summary>קטגוריות</summary><div class="cats-panel"><div class="wrap">{links}</div></div></details>'
-               + nav)
-    menubar = f'<nav class="menubar" aria-label="ראשי"><div class="wrap">{nav}</div></nav>'
+    strip = ""
+    if categories:                             # the category chips under the menu, on every page
+        chips = "".join(
+            f'<a class="chip" href="{BASE}/c/{c["slug"]}/"'
+            f'{" aria-current=\"page\"" if path == "/c/" + c["slug"] + "/" else ""}>{e(c["name"])}</a>'
+            for c in categories)
+        strip = f'<nav class="cats-strip" aria-label="קטגוריות"><div class="wrap">{chips}</div></nav>'
+    menubar = f'<nav class="menubar" aria-label="ראשי"><div class="wrap">{nav}</div></nav>' + strip
     if full and "<!--MENUBAR-->" in body:          # home: the menu sits right under the yellow band
         body, menubar_top = body.replace("<!--MENUBAR-->", menubar), ""
     else:
@@ -423,7 +422,6 @@ def build_home():
 {checker('home')}
 </div></section>
 <!--MENUBAR-->
-{f'''<nav class="cats-strip" aria-label="קטגוריות"><div class="wrap">{"".join(f'<a class="chip" href="{BASE}/c/{c["slug"]}/">{e(c["name"])}</a>' for c in categories)}</div></nav>''' if categories else ""}
 
 <div class="wrap">
 {f'''<section aria-labelledby="hot-title">
