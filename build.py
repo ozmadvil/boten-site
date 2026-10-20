@@ -627,9 +627,7 @@ def build_categories():
                     f'<a class="btn secondary" href="{CHANNEL}">📢 לערוץ הדילים</a></div>')
         body = f"""<header class="page-head"><h1>{e(c['name'])} מאליאקספרס: הדילים של השבוע</h1>
 <span class="updated">עודכן: {TODAY} · מחיר בשקלים, עם הנחה ודירוג</span></header>
-{grid}
-<h2>עוד קטגוריות</h2>
-<nav class="chips" aria-label="קטגוריות">{others}</nav>"""
+{grid}"""
         items = [{"@type": "ListItem", "position": i, "url": p["link"], "name": p["title"]}
                  for i, p in enumerate(c["products"][:24], 1)]
         schema = [{"@type": "CollectionPage", "name": f"{c['name']} מאליאקספרס", "inLanguage": "he-IL",
