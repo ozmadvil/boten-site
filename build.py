@@ -175,7 +175,7 @@ def checker(src: str, field_id: str = "link") -> str:
 <button class="btn" type="submit">{ICON_TG}<span>בדקו בבוטן</span></button>
 </div>
 <p class="msg" id="{field_id}-msg" role="status" aria-live="polite">בוטן מחזיר מחיר בשקלים, הנחה וקוד קופון אם יש. בחינם.</p>
-<p class="tip">💡 בתשובה של בוטן לחצו על <b class="btn-name">🔍 מצא מוכר זול יותר</b>, והוא יחפש את אותו מוצר אצל מוכרים אחרים.</p>
+<p class="tip">🔍 בוטן גם בודק לבד אם מוכרים אחרים מוכרים את אותו מוצר בזול יותר, ומציג אותם מיד אחרי המוצר.</p>
 <p class="also">📢 דילים חדשים כל יום: <a href="{CHANNEL}">הצטרפו לערוץ הדילים של בוטן בטלגרם</a></p>
 </form>"""
 
