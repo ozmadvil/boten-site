@@ -89,21 +89,9 @@ header.site .wrap { display: flex; align-items: center; gap: 12px 20px; min-heig
 /* the menu bar: its own row (under the yellow band on home) */
 .menubar { position: relative; z-index: 4; background: var(--paper); border-bottom: 1px solid var(--rule); box-shadow: 0 6px 14px -10px rgb(29 22 6 / .25); }
 .menubar .wrap { display: flex; align-items: center; flex-wrap: wrap; gap: 0 26px; min-height: 52px; }
-.menubar a, .menubar summary { color: var(--ink); text-decoration: none; font-weight: 500; font-size: 16px; padding: 13px 0 11px; border-bottom: 3px solid transparent; }
-.menubar a:hover, .menubar a[aria-current], .menubar summary:hover, .menubar details[open] summary { border-bottom-color: var(--sale); color: var(--ink); }
-@media (max-width: 560px) { .menubar .wrap { gap: 0 18px; min-height: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; } .menubar .wrap::-webkit-scrollbar { display: none; } .menubar a, .menubar summary { font-size: 15px; padding: 11px 0 9px; white-space: nowrap; flex: none; } }
-
-/* categories menu: a dropdown from the masthead */
-details.cats { display: contents; }
-details.cats summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-weight: 700 !important; }
-details.cats summary::-webkit-details-marker { display: none; }
-details.cats summary::after { content: ""; width: 7px; height: 7px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg) translateY(-2px); margin-inline-start: 2px; }
-details.cats[open] summary::after { transform: rotate(-135deg) translateY(-1px); }
-.cats-panel { position: absolute; inset-inline: 0; top: 100%; background: var(--paper); box-shadow: 0 18px 30px -12px rgb(29 22 6 / .35); border-top: 1px solid var(--rule); }
-.menubar .cats-panel .wrap { display: grid; min-height: 0; align-items: stretch; min-height: 0; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 2px 20px; padding-block: 18px 22px; }
-.menubar .cats-panel a { color: var(--ink); text-decoration: none; padding: 8px 0; border-bottom: 1px solid var(--rule); font-weight: 500; font-size: 16px; }
-.menubar .cats-panel a:hover, .menubar .cats-panel a[aria-current] { color: var(--sale-ink); border-bottom-color: var(--sale); }
-@media (max-width: 560px) { .menubar .cats-panel .wrap { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-block: 10px 14px; } }
+.menubar a { color: var(--ink); text-decoration: none; font-weight: 500; font-size: 16px; padding: 13px 0 11px; border-bottom: 3px solid transparent; }
+.menubar a:hover, .menubar a[aria-current] { border-bottom-color: var(--sale); color: var(--ink); }
+@media (max-width: 560px) { .menubar .wrap { gap: 0 18px; min-height: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; } .menubar .wrap::-webkit-scrollbar { display: none; } .menubar a { font-size: 15px; padding: 11px 0 9px; white-space: nowrap; flex: none; } }
 
 /* category chips */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -147,6 +135,11 @@ p { margin: 0 0 14px; }
 @media (max-width: 760px) {
   .hero .wrap { grid-template-columns: minmax(0, 1fr); padding-block: 22px 20px; gap: 16px; }
 }
+/* inner pages: the slim band, a line and the checker, so the page's own answer stays on the first phone screen */
+.hero.compact .wrap { grid-template-columns: auto minmax(0, 560px); justify-content: space-between; padding-block: 16px 14px; gap: 10px 40px; }
+.hero.compact .hero-title { font-size: clamp(24px, 2.8vw, 32px); margin: 0; letter-spacing: -.02em; }
+.hero.compact .checker .msg { font-size: 14px; margin-top: 6px; }
+@media (max-width: 760px) { .hero.compact .wrap { grid-template-columns: minmax(0, 1fr); padding-block: 14px 12px; gap: 10px; } }
 
 /* the price checker: the bot's job, in the flyer's hand */
 .checker { max-width: 560px; }
@@ -160,8 +153,6 @@ p { margin: 0 0 14px; }
 .checker input:focus-visible { outline: 2px solid var(--sale); outline-offset: 0; }
 .checker .msg { font-size: 15px; margin: 10px 0 0; min-height: 1.5em; color: var(--ink-on-flyer); }
 .checker .msg.err { color: var(--sale-ink); font-weight: 700; }
-.checker .alt { font-size: 15px; margin: 4px 0 0; color: var(--ink-on-flyer); }
-.checker .alt a { color: var(--ink); font-weight: 700; }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--sale); color: var(--on-sale);
@@ -173,7 +164,10 @@ p { margin: 0 0 14px; }
 .btn[aria-busy="true"] { cursor: progress; }
 .btn.secondary { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
 .btn.secondary:hover { background: var(--ink); color: var(--flyer); }
-@media (max-width: 420px) { .checker .row { flex-direction: column; } .checker .btn { width: 100%; } }
+@media (max-width: 420px) {
+  .checker .row { flex-direction: column; } .checker .btn { width: 100%; }
+  .hero.compact .checker .row { flex-direction: row; } .hero.compact .checker .btn { width: auto; padding-inline: 14px; white-space: nowrap; }
+}
 
 /* ---------- the shelf tag ---------- */
 .tag {
@@ -232,7 +226,19 @@ p { margin: 0 0 14px; }
 .tile .tprice .price { font-size: 34px; color: var(--sale-text); }
 .tile .tprice .was { font-size: 14px; margin-bottom: 3px; }
 .tile .ttl { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 500; font-size: 15px; line-height: 1.4; margin: 8px 4px 0; }
-.tile .cat { margin: auto 4px 0; padding-top: 8px; font-size: 13px; color: var(--ink-2); }
+.tile .tfoot { margin: auto 4px 0; padding-top: 8px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 10px; font-size: 13px; color: var(--ink-2); }
+.tile .asof { margin-inline-start: auto; white-space: nowrap; }
+.tiles > li { position: relative; }
+/* a seller code waits in the bot: a sticker on the photo's corner opens the bot on this product */
+.tcode {
+  position: absolute; top: 10px; inset-inline-start: 10px; z-index: 1; display: inline-flex; align-items: center; gap: 5px;
+  background: var(--sale); color: var(--on-sale); font-size: 13px; font-weight: 700; line-height: 1.2; padding: 6px 10px;
+  border-radius: 99px; text-decoration: none; box-shadow: 0 2px 6px -1px rgb(61 51 0 / .35); white-space: nowrap;
+  transition: background-color .15s var(--ease-out), transform .2s var(--ease-out);
+}
+.tcode:hover { background: var(--sale-hover); color: var(--on-sale); }
+.tiles > li:hover .tcode { transform: translateY(-3px); }   /* rides with the tile as it lifts */
+.tcode .icon { width: 1em; height: 1em; }
 .tiles-note { font-size: 13px; color: var(--ink-2); margin: 14px 0 0; max-width: 80ch; }
 @media (max-width: 520px) {
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
@@ -240,6 +246,7 @@ p { margin: 0 0 14px; }
   .tile .tprice .price { font-size: 26px; }
   .tile .burst { width: 46px; height: 46px; font-size: 14px; }
   .tile .ttl { font-size: 14px; }
+  .tcode { top: 6px; inset-inline-start: 6px; font-size: 12px; padding: 5px 8px; }
 }
 
 /* ---------- proof: the checks log with the shelf tag ---------- */
@@ -317,6 +324,8 @@ p { margin: 0 0 14px; }
 }
 .answer p { margin: 0; }
 .answer b { font-weight: 900; }
+.cat-intro { max-width: 70ch; font-size: 16px; line-height: 1.6; color: var(--ink-2); margin: 14px 0 22px; }
+.cat-intro a { font-weight: 700; white-space: nowrap; }
 .error-msg { direction: ltr; text-align: left; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius); padding: 10px 14px; font: 400 14px/1.5 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; color: var(--ink-2); margin: 8px 0 10px; max-width: 70ch; }
 
 .table-wrap { overflow-x: auto; border-radius: var(--radius); background: var(--paper); box-shadow: var(--shadow); max-width: 70ch; }
@@ -357,7 +366,6 @@ main > .wrap:last-child { padding-bottom: 80px; }
 .site .tg.ch { margin-inline-start: 8px; background: transparent; box-shadow: inset 0 0 0 2px currentColor; }
 .site .tg.ch:hover { background: var(--paper); }
 @media (max-width: 480px) { .site .tg { padding: 6px 11px; font-size: 14px; } }
-.checker .also { margin: 8px 0 0; font-size: 15px; }
 .empty .btn + .btn { margin-inline-start: 8px; }
 .site .tg.ch .short { display: none; }
 @media (max-width: 480px) { .site .tg.ch .long { display: none; } .site .tg.ch .short { display: inline; } header.site .wrap { flex-wrap: nowrap; gap: 8px; } .site .tg { white-space: nowrap; } }
@@ -377,5 +385,3 @@ code.code.bad { background: transparent; text-decoration: line-through; opacity:
   table.codes.cards td[data-l]::before { content: attr(data-l) ": "; font-weight: 700; color: var(--ink-soft, inherit); }
   table.codes.cards td[data-l="קוד"]::before { content: none; }
 }
-.checker .tip { margin: 8px 0 0; font-size: 15px; }
-.checker .tip .btn-name { display: inline-block; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 1px 8px; font-weight: 700; white-space: nowrap; }

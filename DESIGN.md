@@ -160,6 +160,11 @@ components:
     textColor: "{colors.ink-secondary}"
     rounded: "{rounded.pill}"
     padding: "2px 10px"
+  code-sticker:
+    backgroundColor: "{colors.sale-red}"
+    textColor: "{colors.on-sale}"
+    rounded: "{rounded.pill}"
+    padding: "6px 10px"
   answer-box:
     backgroundColor: "{colors.flyer-yellow}"
     textColor: "{colors.flyer-ink}"
@@ -245,13 +250,15 @@ Dark scheme (redefined on `:root`, `prefers-color-scheme: dark` and `[data-theme
 - **Fine print** (400, 13–14px, 1.5): "בתוקף עד", minimums, disclosures, the footer.
 
 ### Named Rules
-**The Raised Agorot Rule.** Every shekel amount set large is ₪ + whole + raised underlined agorot, isolated LTR, with an `aria-label` reading the full number. Inline amounts in running text stay plain (₪126.55).
+**The Raised Agorot Rule.** Every shekel amount set large is ₪ + whole + raised underlined agorot, isolated LTR, with a visually hidden decimal point between whole and agorot, so search engines, AI answers and screen readers read ₪126.55 and never ₪12655. Inline amounts in running text stay plain (₪126.55).
 
 **The Black Weight Is Loud Rule.** 900 is for headings, prices, strip labels and the stamp. Body copy never goes above 700.
 
 ## Layout
 
 A single 1080px column (`--wrap`) with a 16px side gutter at every width. The hero is a two-column grid (1.25fr text, 0.9fr tag) that collapses to one column at 760px with the tag moved below the checker. The deals use a 12-column flyer grid: the first coupon spans 7 and takes the pale-yellow lead treatment, the next spans 5 (or 6/6 for more), and every coupon goes full width under 760px. The checks log is an auto-fit grid of 260px-minimum tags. The instructions box is three equal cells split by dashed rules, stacked under 760px. Reading pages hold text, answer boxes, tables and FAQs at 70ch.
+
+Inner pages (guides, categories, coupons, about) carry the slim band instead of the full hero: a one-line title ("יש לכם לינק? בוטן בודק.") beside the checker on desktop, above it on phones, with the field and button kept on one row, so the page's own h1 and answer box are on the first phone screen.
 
 Rhythm: section headings sit 64px below the previous block; the closing band starts 80px down; the hero pads 44px/56px (28px/40px on mobile). Inner padding on paper objects is 14–22px. Breakpoints in use: 760px (layout), 560px (nav wraps full width, bot pill hidden), 420px (checker stacks, button full width).
 
@@ -281,13 +288,19 @@ Blunt and printed, like the price sticker gun.
 - **Secondary:** transparent with a 2px inset Flyer Ink outline; on hover it fills with ink and turns its text yellow. Used beside a primary on yellow bands.
 
 ### Price Checker
-The signature interaction: a white paper field on yellow (5px inner padding, 4px radius, laid-on shadow) holding an LTR URL input and the primary button side by side; stacks under 420px. Input focus is a 2px Sale Red outline. A polite live status line sits under it in Ink on Flyer and turns Sale Ink bold for errors. On submit the hero tag's strip turns ink and flips once while reading "בודק את הלינק שלכם…".
+The signature interaction: a white paper field on yellow (5px inner padding, 4px radius, laid-on shadow) holding an LTR URL input and the primary button side by side; stacks under 420px (except in the slim band, where it stays one row). Input focus is a 2px Sale Red outline. One polite live status line sits under it in Ink on Flyer ("מחיר בשקלים, הנחה, קוד אם יש ומוכר זול יותר. בחינם.") and turns Sale Ink bold for errors; nothing else under the field. On submit the hero tag's strip turns ink and flips once while reading "בודק את הלינק שלכם…".
 
 ### Shelf Tag (signature)
 White paper, 4px radius, laid-on shadow, a red strip across the top (label at 900 15px, date at 500 13px), a product name at 700 16px, dotted price lines (struck-through "was" price with a 3px red strike, Sale Ink minus lines), the big raised-agorot price in red, and fine print with the check date. In the hero it hangs at -3deg, drops and settles once on load (0.9s, reduced-motion respected), and carries the green "נבדק בקופה" rubber stamp.
 
 ### Coupon Cut-out
 Paper with a 2px dashed Cut Line border and 6px radius, flat; red strip on top; big red amount; minimum and "בתוקף עד" fine print; a status sticker; a Sale Ink "get the code in the bot" link at the foot; a "גזור ושמור" scissors label breaking the bottom border. The first coupon is the lead (pale yellow, wider). Codes themselves are never printed.
+
+### Product Tile
+The channel's deals as flyer tiles: white paper, laid-on shadow, the photo on white, the yellow discount burst, the red raised-agorot price with the struck original, a two-line title (AliExpress's long titles are cut at the first separator), and a fine-print foot with the collection name (no emoji) and the price's date ("נכון ל-21/10"). The whole tile is one affiliate link to AliExpress. When the product has a seller code, a **code sticker** sits on the photo's top start corner: a Sale Red pill with the Telegram icon and white 700 13px text ("קוד ₪5 בבוטן", or "יש קוד הנחה בבוטן" when the code needs a bigger cart than one unit). It is a separate link that opens the bot on that product; the code itself is never printed.
+
+### Category Note
+Under a category page's head, two or three sentences of real buying advice drawn from the site's guides (16px, Secondary Ink, 70ch), ending with a bold link to that guide.
 
 ### Checks Log Tag
 A shelf tag variant: green strip with check icon for "עובד", ink strip for "לא עובד", LTR date on the strip, bold "what" line, then the real AliExpress error message isolated in English.
@@ -306,11 +319,15 @@ A shelf tag variant: green strip with check icon for "עובד", ink strip for "
 ### Navigation
 The red masthead strip: logo (40px mascot with a 2px white ring, 10px radius) and the name at 900 26px in white; nav links in white 500 15px with a 2px yellow underline on hover and on the current page; a yellow bot pill with Telegram icon at the end. Under 560px the nav wraps full width, spreads evenly at 14px and drops the pill. The footer is the flyer's fine print: newsprint under a 6px Flyer Ink rule, 14px secondary ink, asterisked disclosures.
 
+## Share Cards
+
+Every page has its own 1200x630 share picture (`share_cards.py`, drawn at build time into `_site/og/`): the red masthead strip with the mascot and the name, the fluorescent yellow field, the page's headline in Rubik 900 (as large as fits in three lines, right-aligned) with a Rubik 500 subline in Ink on Flyer, and the heavy ink rule at the foot. The home page and category pages add up to three of the page's own deals as paper tags (red strip with the discount, the product photo, the raised-agorot price); the coupons page adds the green "נבדק בקופה" stamp at its -9deg. Provenance: text comes from the page itself and product photos are the AliExpress product images the bot's feed points to, downloaded during the build and never committed. Without Pillow and python-bidi the pages fall back to the logo.
+
 ## Do's and Don'ts
 
 ### Do:
 - **Do** set every large shekel amount as ₪ + whole + raised, underlined agorot, LTR-isolated, with an `aria-label` carrying the full number.
-- **Do** date every price, check and coupon ("נבדק 18/10", "בתוקף עד 21/10 09:59"); the date is the proof.
+- **Do** date every price, check and coupon ("נבדק 18/10", "נכון ל-21/10", "בתוקף עד 21/10 09:59"); the date is the proof. A date on the page is the date the content changed, never just the build time.
 - **Do** keep yellow fields as printed matter: light paper and dark ink in both schemes.
 - **Do** use Sale Ink (`sale-ink`), not Sale Red, for red text at body or fine-print size.
 - **Do** contain content in the flyer's own objects: shelf tags, dashed cut-outs, stamps, stickers, red-strip tables.
