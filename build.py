@@ -200,6 +200,8 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     if (tag && ts) { tag.classList.remove('checking'); void tag.offsetWidth; tag.classList.add('checking'); ts.textContent = 'בודק את הלינק שלכם…'; }
     function go(url) { window.location.href = url; setTimeout(function () { btn.removeAttribute('aria-busy'); btn.querySelector('span').textContent = label; if (tag && ts) { tag.classList.remove('checking'); ts.textContent = ts.dataset.idle; } }, 2500); }
     if (m) { say('פותח את בוטן על המוצר הזה…'); go(bot + '?start=p_' + m[1] + '-' + src); return; }
+    var sh = v.match(/a\.aliexpress\.[a-z.]+\/_([A-Za-z0-9]{3,40})/i);
+    if (sh) { say('פותח את בוטן על המוצר הזה…'); go(bot + '?start=s_' + sh[1] + '-' + src); return; }
     var done = function () { say('הלינק הועתק. בטלגרם הדביקו אותו לבוטן ושלחו.'); setTimeout(function () { go(bot + '?start=' + src); }, 900); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(done, done); else done();
   });
