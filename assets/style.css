@@ -390,3 +390,6 @@ code.code.bad { background: transparent; text-decoration: line-through; opacity:
 .sresults { padding: 8px 0 24px; scroll-margin-top: 12px; }
 .sresults:empty { display: none; }
 .sresults .sec-head { margin-top: 24px; }
+
+.icon.tglogo { width: 1.25em; height: 1.25em; flex: none; }   /* Telegram's logo keeps its own colours */
+@media (max-width: 360px) { .site .tg { padding-inline: 10px; gap: 5px; font-size: 14px; } }

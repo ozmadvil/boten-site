@@ -261,6 +261,10 @@ def bot_link(product_id: str | None = None, src: str = "site") -> str:
 # ------------------------------------------------------------------ small parts
 ICON_TG = ('<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" '
            'stroke-linecap="round" stroke-linejoin="round"><path d="M21 4 3 11l6 2.4M21 4l-3.5 16L9 13.4M21 4 9 13.4v5.3l3-3"/></svg>')
+# Telegram's own round logo (blue circle, white plane), so it's clear at a glance that the buttons open Telegram
+ICON_TG_LOGO = ('<svg class="icon tglogo" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#229ED9"/>'
+                '<path fill="#fff" d="M5.4 11.8 16.9 7.4c.5-.2 1 .1.8.9l-2 9.3c-.1.6-.5.8-1 .5l-2.9-2.1-1.4 1.4c-.2.2-.3.3-.6.3l.2-3 '
+                '5.4-4.9c.2-.2 0-.3-.3-.1l-6.7 4.2-2.9-.9c-.6-.2-.6-.6.1-.9Z"/></svg>')
 ICON_ARROW = ('<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" '
               'stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m6-6-6 6 6 6"/></svg>')
 ICON_CHECK = ('<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" '
@@ -461,7 +465,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 {crumb_html}
 {body}
 <aside class="cta-inline"><p>יש לכם מוצר מאליאקספרס? שלחו את הלינק לבוטן וקבלו מחיר, הנחה וקוד קופון אם יש.</p>
-<a class="btn" href="{bot_link(src=src_for('inline', path))}">{ICON_TG}פתחו את בוטן</a><a class="btn secondary" href="{CHANNEL}">{ICON_MEGAPHONE}לערוץ הדילים</a></aside>
+<a class="btn" href="{bot_link(src=src_for('inline', path))}">{ICON_TG}פתחו את בוטן בטלגרם</a><a class="btn secondary" href="{CHANNEL}">{ICON_MEGAPHONE}לערוץ הדילים בטלגרם</a></aside>
 </div>"""
     og_url, og_w, og_h = share_image(path, card)
     footer_date = f"<p>עודכן לאחרונה: {updated.strftime('%d/%m/%Y')}</p>" if updated else ""
@@ -495,8 +499,8 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <a class="skip" href="#main">דלגו לתוכן</a>
 <header class="site"><div class="wrap">
 <a class="logo" href="{BASE}/"><img src="{BASE}/assets/logo-192.png" alt="" width="40" height="40">{NAME}</a>
-<a class="tg" href="{bot_link(src=src_for('nav', path))}">{ICON_TG}פתחו את בוטן</a>
-<a class="tg ch" href="{CHANNEL}" aria-label="ערוץ הדילים בטלגרם">{ICON_MEGAPHONE}<span class="long">ערוץ הדילים</span><span class="short">ערוץ</span></a>
+<a class="tg" href="{bot_link(src=src_for('nav', path))}" aria-label="בוטן בטלגרם">{ICON_TG_LOGO}בוטן בטלגרם</a>
+<a class="tg ch" href="{CHANNEL}" aria-label="ערוץ הדילים בטלגרם">{ICON_TG_LOGO}<span class="long">ערוץ הדילים</span><span class="short">ערוץ</span></a>
 </div></header>
 {menubar_top}
 <main id="main">
@@ -560,7 +564,7 @@ def coupons(rows: list[dict], src: str) -> str:
     if not rows:
         return ('<div class="empty"><p><b>כרגע אין קודי מוכר מאומתים בתוקף.</b> בוטן בודק כל מוצר שתשלחו ומחזיר קוד אם יש.</p>'
                 f'<a class="btn" href="{bot_link(src=src)}">{ICON_TG}בדקו מוצר בבוטן</a> '
-                f'<a class="btn secondary" href="{CHANNEL}">{ICON_MEGAPHONE}לערוץ הדילים</a></div>')
+                f'<a class="btn secondary" href="{CHANNEL}">{ICON_MEGAPHONE}לערוץ הדילים בטלגרם</a></div>')
     out = []
     for r in rows:
         badge = (f'<span class="sticker ok">{ICON_CHECK}נבדק בקופה</span>' if r["verified"] == "checkout"
@@ -754,8 +758,8 @@ def build_home():
 <section class="closer" aria-labelledby="closer-title"><div class="wrap">
 <div><h2 id="closer-title">יש לכם לינק? בוטן בודק.</h2>
 <p>חינם, בטלגרם, בלי הרשמה. והדילים הכי טובים של השבוע מחכים בערוץ.</p></div>
-<div class="actions"><a class="btn" href="{bot_link(src=src_for('closer', path))}">{ICON_TG}פתחו את בוטן</a>
-<a class="btn secondary" href="{CHANNEL}">{ICON_MEGAPHONE}לערוץ הדילים</a></div>
+<div class="actions"><a class="btn" href="{bot_link(src=src_for('closer', path))}">{ICON_TG}פתחו את בוטן בטלגרם</a>
+<a class="btn secondary" href="{CHANNEL}">{ICON_MEGAPHONE}לערוץ הדילים בטלגרם</a></div>
 </div></section>"""
     updated = latest(EDITED[path], *[p.get("checked") or p.get("posted") for p in products],
                      *[r["_date"] for r in checks], *[r.get("checked") for r in seller],
@@ -1109,7 +1113,7 @@ def build_categories():
             grid = ('<div class="empty"><p><b>בוטן עוד מחפש את הדילים לקטגוריה הזו.</b> בינתיים אפשר לשלוח לו לינק '
                     'של כל מוצר ולקבל מחיר, הנחה וקוד אם יש.</p>'
                     f'<a class="btn" href="{bot_link(src=src_for("empty", url))}">{ICON_TG}בדקו מוצר בבוטן</a> '
-                    f'<a class="btn secondary" href="{CHANNEL}">{ICON_MEGAPHONE}לערוץ הדילים</a></div>')
+                    f'<a class="btn secondary" href="{CHANNEL}">{ICON_MEGAPHONE}לערוץ הדילים בטלגרם</a></div>')
         stamp = iso_dt(c.get("updated"))                 # when the bot last refreshed this category
         updated = latest(stamp, *[p.get("checked") or p.get("posted") for p in c["products"]]) if c["products"] else None
         upd_txt = f"עודכן: {fmt_d(stamp, True) if stamp else updated.strftime('%d/%m/%Y')} · " if updated else ""
