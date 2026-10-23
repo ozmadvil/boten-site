@@ -682,7 +682,7 @@ def hero(src: str, main_heading: bool, compact: bool = False) -> str:
     tag = "h1" if main_heading else "p"
     return f"""<section class="hero" aria-labelledby="hero-title"><div class="wrap">
 <div>
-<{tag} id="hero-title" class="hero-title">הבוט שמוצא <em class="big">הכל</em> באליאקספרס</{tag}>
+<{tag} id="hero-title" class="hero-title">מהיר ועצמאי,<br>מצאו את <em class="nowrap">הדיל המשתלם</em> עבורכם</{tag}>
 </div>
 {checker(src)}
 </div></section>"""
@@ -771,7 +771,7 @@ def build_home():
     page(path, f"{NAME}: קודי קופון לאליאקספרס שנבדקו + בוט שבודק כל מוצר",
          "קודי קופון לאליאקספרס בישראל שנבדקו בקופה, עם תאריך. ובוט טלגרם חינמי שמחזיר לכל מוצר מחיר בשקלים, הנחה וקוד מוכר.",
          body, full=True, js=True, updated=updated,
-         card={"lines": [("הבוט שמוצא", "ink"), ("הכל", "red"), ("באליאקספרס", "ink")],
+         card={"lines": [("מהיר ועצמאי,", "ink"), ("מצאו את הדיל המשתלם", "red"), ("עבורכם", "ink")],
                "sub": "מחיר בשקלים, הנחה וקוד אם יש. בבוט טלגרם חינמי.", "products": products[:3]})
 
 

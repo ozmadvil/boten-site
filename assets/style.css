@@ -399,3 +399,4 @@ code.code.bad { background: transparent; text-decoration: line-through; opacity:
 
 .icon.tglogo { width: 1.25em; height: 1.25em; flex: none; }   /* Telegram's logo keeps its own colours */
 @media (max-width: 360px) { .site .tg { padding-inline: 10px; gap: 5px; font-size: 14px; } }
+.hero .hero-title em.nowrap { white-space: nowrap; }
