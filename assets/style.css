@@ -100,9 +100,15 @@ header.site .wrap { display: flex; align-items: center; gap: 12px 20px; min-heig
 .cats-strip { padding: 14px 0 4px; }
 .cats-strip .wrap { display: flex; flex-wrap: wrap; gap: 8px; }
 @media (max-width: 560px) {
-  .cats-strip .wrap { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 6px; }
+  /* phones: two rows that scroll sideways; the far edge fades out and a line says there's more */
+  .cats-strip .wrap {
+    display: grid; grid-auto-flow: column; grid-template-rows: repeat(2, auto); grid-auto-columns: max-content; justify-items: start;
+    gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 6px;
+    -webkit-mask-image: linear-gradient(to left, #000 82%, transparent); mask-image: linear-gradient(to left, #000 82%, transparent);
+  }
   .cats-strip .wrap::-webkit-scrollbar { display: none; }
   .cats-strip .chip { flex: none; }
+  .cats-strip::after { content: "← החליקו לעוד קטגוריות"; display: block; padding: 2px 16px 0; font-size: 13px; color: var(--ink-2); }
 }
 .tile .cat.pick { color: var(--sale-ink); font-weight: 700; }
 
