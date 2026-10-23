@@ -2,8 +2,8 @@
 name: בוטן (Boten)
 description: The weekly supermarket sale flyer, honest edition. Every price tag on the page is a real, dated checkout check.
 colors:
-  flyer-yellow: "#ffe500"
-  sale-red: "#d8001a"
+  flyer-yellow: "#fff3c4"   # butter (was #ffe500, changed 2026-10-23)
+  sale-red: "#d03b37"   # softer (was #d8001a)
   sale-red-pressed: "#b8001a"
   sale-ink: "#b00014"
   on-sale: "#ffffff"
