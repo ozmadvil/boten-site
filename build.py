@@ -317,10 +317,24 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     btn.setAttribute('aria-busy', 'true'); btn.querySelector('span').textContent = 'בודק…';
     var tag = document.querySelector('.proof .tag'), ts = tag && tag.querySelector('.strip span');
     if (tag && ts) { tag.classList.remove('checking'); void tag.offsetWidth; tag.classList.add('checking'); ts.textContent = 'בודק את הלינק שלכם…'; }
-    function go(url) { window.location.href = url; setTimeout(function () { btn.removeAttribute('aria-busy'); btn.querySelector('span').textContent = label; if (tag && ts) { tag.classList.remove('checking'); ts.textContent = ts.dataset.idle; } }, 2500); }
-    if (m) { say('פותח את בוטן על המוצר הזה…'); go(bot + '?start=p_' + m[1] + '-' + src); return; }
+    function reset() { btn.removeAttribute('aria-busy'); btn.querySelector('span').textContent = label; if (tag && ts) { tag.classList.remove('checking'); ts.textContent = ts.dataset.idle; } }
+    // On phones open the Telegram app directly (tg://), so the start parameter isn't lost on the way through
+    // the t.me web page; if the app doesn't open within a moment, fall back to t.me.
+    var mobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
+    function go(url) {
+      var start = (url.split('?start=')[1] || '');
+      if (mobile && start) {
+        var user = bot.replace(/^https?:\/\/t\.me\//, '');
+        var t = setTimeout(function () { if (!document.hidden) window.location.href = url; }, 1500);
+        document.addEventListener('visibilitychange', function () { if (document.hidden) clearTimeout(t); }, { once: true });
+        window.location.href = 'tg://resolve?domain=' + user + '&start=' + start;
+      } else { window.location.href = url; }
+      setTimeout(reset, 2500);
+    }
+    try { navigator.clipboard.writeText(v); } catch (e) {}   // backup: the link is on the clipboard too
+    if (m) { say('פותח את בוטן על המוצר…'); go(bot + '?start=p_' + m[1] + '-' + src); return; }
     var sh = v.match(/a\.aliexpress\.[a-z.]+\/_([A-Za-z0-9]{3,40})/i);
-    if (sh) { try { navigator.clipboard.writeText(v); } catch (e) {} say('פותח את בוטן על המוצר הזה…'); go(bot + '?start=s_' + sh[1] + '-' + src); return; }
+    if (sh) { say('פותח את בוטן על המוצר…'); go(bot + '?start=s_' + sh[1] + '-' + src); return; }
     var done = function () { say('הלינק הועתק. בטלגרם הדביקו אותו לבוטן ושלחו.'); setTimeout(function () { go(bot + '?start=' + src); }, 900); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(done, done); else done();
   });
