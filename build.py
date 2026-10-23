@@ -488,7 +488,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <meta property="og:image:height" content="{og_h}">
 <meta property="og:image:alt" content="{e(title)}">
 <meta name="twitter:card" content="{'summary_large_image' if og_w > og_h else 'summary'}">
-<meta name="theme-color" content="#d8001a">
+<meta name="theme-color" content="#d03b37">
 <link rel="icon" href="{BASE}/assets/favicon.png">
 <link rel="preload" href="{BASE}/assets/fonts/rubik-hebrew-900-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{BASE}/assets/fonts/rubik-hebrew-400-normal.woff2" as="font" type="font/woff2" crossorigin>

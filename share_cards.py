@@ -23,7 +23,7 @@ except ImportError:                                  # older python-bidi
     from bidi.algorithm import get_display
 
 W, H = 1200, 630
-YELLOW, RED, INK, INK_ON_FLYER = (255, 229, 0), (216, 0, 26), (29, 22, 6), (61, 51, 0)
+YELLOW, RED, INK, INK_ON_FLYER = (255, 243, 196), (208, 59, 55), (29, 22, 6), (91, 74, 28)   # butter palette
 WHITE, GREEN, RULE = (255, 255, 255), (15, 122, 61), (228, 220, 192)
 COLORS = {"ink": INK, "red": RED}
 MARGIN = 48

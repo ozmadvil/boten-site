@@ -9,18 +9,18 @@
 
 /* ---------- tokens: the weekly sale flyer ---------- */
 :root {
-  --flyer: #ffe500;          /* fluorescent flyer yellow: owns the hero and the closing band */
-  --flyer-deep: #f5c800;     /* yellow in shadow, for depth on the field */
-  --sale: #d8001a;           /* sale red: prices, the masthead, the primary action */
-  --sale-ink: #b00014;       /* red small text on yellow or white (AA) */
-  --sale-hover: #b8001a;
-  --sale-text: #d8001a;      /* big red numerals on paper */
+  --flyer: #fff3c4;          /* soft butter yellow: owns the hero and the closing band */
+  --flyer-deep: #f6df8c;     /* yellow in shadow, for depth on the field */
+  --sale: #d03b37;           /* sale red: prices, the masthead, the primary action */
+  --sale-ink: #b3322e;       /* red small text on yellow or white (AA) */
+  --sale-hover: #b8322e;
+  --sale-text: #d9443f;      /* big red numerals on paper */
   --on-sale: #ffffff;
   --ink: #1d1606;            /* warm flyer black */
   --ink-2: #4f4428;          /* secondary text on paper */
-  --ink-on-flyer: #3d3300;   /* secondary text on yellow */
+  --ink-on-flyer: #5b4a1c;   /* secondary text on yellow */
   --paper: #ffffff;
-  --paper-2: #fff7c2;        /* pale yellow: table stripes, stickers */
+  --paper-2: #fff8dc;        /* pale yellow: table stripes, stickers */
   --page: #eeede8;           /* newsprint: neutral, faintly grey */
   --rule: #d9d7cd;
   --cut: #8f8c7e;            /* dashed cut lines */
@@ -51,7 +51,7 @@
 
 /* the yellow fields are printed matter: light paper and dark ink in every scheme */
 .hero, .closer, .answer, .site .tg {
-  --sale-text: #d8001a; --paper: #ffffff; --paper-2: #fff7c2; --ink: #1d1606; --ink-2: #4f4428; --rule: #e4dcc0; --sale-ink: #b00014;
+  --sale-text: #d9443f; --paper: #ffffff; --paper-2: #fff8dc; --ink: #1d1606; --ink-2: #4f4428; --rule: #e4dcc0; --sale-ink: #b3322e;
   --ok: #0f7a3d; --ok-soft: #dcf3e3;
   color-scheme: light;
 }
@@ -219,7 +219,7 @@ p { margin: 0 0 14px; }
 .tile .pic { display: block; aspect-ratio: 1; background: #fff; border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
 .tile .pic img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .tile .burst {
-  position: absolute; top: 2px; inset-inline-start: 2px; width: 58px; height: 58px; border-radius: 50%; background: var(--flyer); color: #b00014;
+  position: absolute; top: 2px; inset-inline-start: 2px; width: 58px; height: 58px; border-radius: 50%; background: var(--flyer); color: var(--sale-ink);
   display: grid; place-items: center; font-weight: 900; font-size: 17px; letter-spacing: -.02em; transform: rotate(-12deg);
   box-shadow: 0 0 0 3px var(--sale), 0 4px 10px -2px rgb(61 51 0 / .35); direction: ltr;
 }
