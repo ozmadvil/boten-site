@@ -401,3 +401,5 @@ code.code.bad { background: transparent; text-decoration: line-through; opacity:
 @media (max-width: 360px) { .site .tg { padding-inline: 10px; gap: 5px; font-size: 14px; } }
 .hero .hero-title em.nowrap { white-space: nowrap; }
 .hero .hero-title .sub { font-size: .62em; line-height: 1.15; display: inline-block; margin-top: 6px; }
+/* a thin, soft ring around the "paste a link" hint */
+.checker .msg .ring { display: inline-block; padding: 1px 10px; border: 1px solid rgb(208 59 55 / .45); border-radius: 99px; line-height: 1.5; }

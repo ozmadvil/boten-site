@@ -300,7 +300,7 @@ def checker(src: str, field_id: str = "link", compact: bool = False) -> str:
 <input id="{field_id}" class="q" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false" placeholder="לינק או שם מוצר, למשל: סוללה ניידת" aria-describedby="{field_id}-msg">
 <button class="btn" type="submit">{ICON_TG}<span>חפש</span></button>
 </div>
-<p class="msg" id="{field_id}-msg" role="status" aria-live="polite">חפשו מוצרים או <u>הדביקו קישור מאליאקספרס להשוואה</u>.</p>
+<p class="msg" id="{field_id}-msg" role="status" aria-live="polite">חפשו מוצרים או <span class="ring">הדביקו קישור מאליאקספרס להשוואה</span></p>
 </form>"""
 
 
