@@ -354,7 +354,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
       if (!box) { box = document.createElement('section'); box.id = 'sresults'; box.className = 'sresults'; box.setAttribute('aria-live', 'polite'); band.insertAdjacentElement('afterend', box); }
       btn.setAttribute('aria-busy', 'true'); btn.querySelector('span').textContent = 'מחפש…'; say('בוטן מחפש את הדילים הכי שווים…');
       var done = function () { btn.removeAttribute('aria-busy'); btn.querySelector('span').textContent = label; };
-      fetch(f.dataset.search + '?q=' + encodeURIComponent(q)).then(function (r) {
+      fetch(f.dataset.search + '?q=' + encodeURIComponent(q) + '&v=2').then(function (r) {
         if (r.status === 429) throw new Error('slow'); if (!r.ok) throw new Error('bad'); return r.json();
       }).then(function (d) {
         done();
