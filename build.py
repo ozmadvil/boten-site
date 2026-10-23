@@ -249,8 +249,9 @@ def load_categories() -> list[dict]:
 
 categories = load_categories()
 BOT_STORES_URL = os.environ.get("BOT_STORES_URL") or BOT_FEED_URL.replace("/products.json", "/stores.json")
+STORES_ENABLED = False                  # "חנויות במבצע" switched off 2026-10-24 (no real value to shoppers for now)
 stores = []
-for _s in (load_feed("stores.json", BOT_STORES_URL, "stores") or {}).get("stores", []):
+for _s in ([] if not STORES_ENABLED else (load_feed("stores.json", BOT_STORES_URL, "stores") or {}).get("stores", [])):
     _end = parse_dt(_s.get("code", {}).get("ends") or "")
     _prods = [p for p in _s.get("products", []) if _usable(p)]
     if (not _end or _end >= NOW) and len(_prods) >= 2:
