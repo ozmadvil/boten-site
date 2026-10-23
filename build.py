@@ -292,7 +292,7 @@ def price(v: float, cls: str = "") -> str:
 def checker(src: str, field_id: str = "link", compact: bool = False) -> str:
     """The price checker: paste a product link, land in the bot on that product. Works without JS (opens the bot).
     One status line under it; in the slim band of inner pages the band's title is the visible label."""
-    label_cls = ' class="sr-only"' if compact else ""
+    label_cls = ' class="sr-only"'                 # the label is for screen readers only (the field's hint says it)
     return f"""<form class="checker" action="{BOT}" method="get" data-bot="{BOT}" data-src="{src}" data-search="{SEARCH_URL}" novalidate>
 <label for="{field_id}"{label_cls}>הדביקו לינק מאליאקספרס או כתבו מה אתם מחפשים</label>
 <input type="hidden" name="start" value="{src}">
