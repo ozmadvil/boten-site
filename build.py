@@ -300,7 +300,7 @@ def checker(src: str, field_id: str = "link", compact: bool = False) -> str:
 <input id="{field_id}" class="q" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false" placeholder="לינק או שם מוצר, למשל: סוללה ניידת" aria-describedby="{field_id}-msg">
 <button class="btn" type="submit">{ICON_TG}<span>חפש</span></button>
 </div>
-<p class="msg" id="{field_id}-msg" role="status" aria-live="polite">חפשו מוצרים או הדביקו קישור מאליאקספרס להשוואה.</p>
+<p class="msg" id="{field_id}-msg" role="status" aria-live="polite">חפשו מוצרים או <u>הדביקו קישור מאליאקספרס להשוואה</u>.</p>
 </form>"""
 
 
@@ -317,10 +317,10 @@ function codeLabel(p) {
 }
 document.querySelectorAll('form.checker').forEach(function (f) {
   var input = f.querySelector('input.q'), btn = f.querySelector('button'), msg = f.querySelector('.msg');
-  var idle = msg.textContent, label = btn.querySelector('span').textContent;
+  var idle = msg.innerHTML, label = btn.querySelector('span').textContent;
   var bot = f.dataset.bot, src = f.dataset.src;
   function say(t, err) { msg.textContent = t; msg.classList.toggle('err', !!err); }
-  input.addEventListener('input', function () { if (msg.classList.contains('err')) say(idle); });
+  input.addEventListener('input', function () { if (msg.classList.contains('err')) { msg.innerHTML = idle; msg.classList.remove('err'); } });
   f.addEventListener('submit', function (ev) {
     ev.preventDefault();
     var v = input.value.trim();
