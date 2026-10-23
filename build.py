@@ -573,6 +573,7 @@ def coupons(rows: list[dict], src: str) -> str:
     out = []
     for r in rows:
         badge = (f'<span class="sticker ok">{ICON_CHECK}נבדק בקופה</span>' if r["verified"] == "checkout"
+                 else '<span class="sticker info">קוד רשמי של המוכר · לא נבדק בקופה</span>' if r["verified"] == "api"
                  else '<span class="sticker info">מפורטל השותפים הרשמי</span>')
         note = f'<p class="fine">{e(r["note"])}</p>' if r.get("note") else ""
         out.append(f"""<article class="coupon">
@@ -719,9 +720,9 @@ def build_home():
     deals = ""
     if seller:                 # no verified seller code in force = no section: an empty box here says nothing useful
         deals = f"""<section aria-labelledby="deals-title">
-<h2 id="deals-title">קודי מוכר שנבדקו</h2>
-<p class="lead">קודי מוכר שנבדקו, עם תאריך. את הקוד עצמו מקבלים בבוטן, יחד עם המחיר המעודכן.</p>
-{coupons(seller[:4], src_for("deal", path))}
+<h2 id="deals-title">דילים עם קוד קופון</h2>
+<p class="lead">מוצרים עם דירוג גבוה וקוד הנחה של המוכר, עם תאריך סיום. את הקוד עצמו מקבלים בבוטן, יחד עם המחיר המעודכן.</p>
+{coupons(seller[:8], src_for("deal", path))}
 </section>"""
     body = f"""{hero(src_for('hero', path), True)}
 <!--MENUBAR-->
