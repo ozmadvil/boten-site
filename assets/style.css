@@ -403,3 +403,10 @@ code.code.bad { background: transparent; text-decoration: line-through; opacity:
 .hero .hero-title .sub { font-size: .62em; line-height: 1.15; display: inline-block; margin-top: 6px; }
 /* a thin, soft ring around the "paste a link" hint */
 .checker .msg .ring { display: inline-block; padding: 1px 10px; border: 1px solid rgb(208 59 55 / .45); border-radius: 99px; line-height: 1.5; }
+/* stores on sale */
+.chip.hot { background: var(--sale); color: var(--on-sale); box-shadow: none; font-weight: 700; }
+.chip.hot:hover { background: var(--sale-hover); color: var(--on-sale); }
+.store { margin: 34px 0; }
+.store .sec-head { margin: 0 0 6px; }
+.store-deal { margin: 0 0 12px; }
+.store .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }

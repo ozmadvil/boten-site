@@ -248,6 +248,13 @@ def load_categories() -> list[dict]:
 
 
 categories = load_categories()
+BOT_STORES_URL = os.environ.get("BOT_STORES_URL") or BOT_FEED_URL.replace("/products.json", "/stores.json")
+stores = []
+for _s in (load_feed("stores.json", BOT_STORES_URL, "stores") or {}).get("stores", []):
+    _end = parse_dt(_s.get("code", {}).get("ends") or "")
+    _prods = [p for p in _s.get("products", []) if _usable(p)]
+    if (not _end or _end >= NOW) and len(_prods) >= 2:
+        stores.append(dict(_s, products=_prods, _end=_end))
 try:
     INTROS = json.loads((ROOT / "data" / "category_intros.json").read_text(encoding="utf-8"))
 except (OSError, ValueError):
@@ -452,6 +459,9 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
             f'<a class="chip" href="{BASE}/c/{c["slug"]}/"'
             f'{" aria-current=\"page\"" if path == "/c/" + c["slug"] + "/" else ""}>{e(c["name"])}</a>'
             for c in categories)
+        if stores:                             # stores on sale lead the strip while there are any
+            chips = (f'<a class="chip hot" href="{BASE}/stores/"{" aria-current=\"page\"" if path == "/stores/" else ""}>'
+                     f'🏷️ חנויות במבצע</a>') + chips
         strip = f'<nav class="cats-strip" aria-label="קטגוריות"><div class="wrap">{chips}</div></nav>'
     menubar = f'<nav class="menubar" aria-label="ראשי"><div class="wrap">{nav}</div></nav>' + strip
     if full and "<!--MENUBAR-->" in body:          # home: the menu sits right under the yellow band
@@ -1139,6 +1149,41 @@ def build_categories():
             SITEMAP[:] = [(u, d) for u, d in SITEMAP if u != SITE_URL + url]
 
 
+def build_stores():
+    """Stores with a worthwhile seller code this week, each with its best sellers (from the bot's weekly scan)."""
+    url = "/stores/"
+    if not stores:
+        return
+    blocks = []
+    for s_ in stores:
+        c = s_["code"]
+        off = num(c.get("off")); pct = num(c.get("pct")); minimum = num(c.get("min"))
+        amount = ils(off) if off else (f"{pct:.0f}%" if pct else "")
+        cond = f" בקנייה מעל {ils(minimum)} מהחנות" if minimum and minimum > 1 else ""
+        until = f" · בתוקף עד {s_['_end'].strftime('%d/%m')}" if s_.get("_end") else ""
+        shop_btn = (f'<a class="btn secondary" href="{e(s_["link"])}" rel="sponsored nofollow noopener" target="_blank">'
+                    f'{ICON_CART}לחנות באליאקספרס</a>' if s_.get("link") else "")
+        code_btn = (f'<a class="btn" href="{bot_link(c.get("product"), src_for("deal", url))}">{ICON_TG}קבלו את הקוד בבוטן</a>'
+                    if c.get("product") else "")
+        blocks.append(f"""<section class="store" aria-label="{e(s_['name'])}">
+<div class="sec-head"><h2>{e(s_['name'])}</h2></div>
+<p class="store-deal"><b>קוד מוכר: {amount} הנחה</b>{cond}{until}</p>
+<div class="actions">{code_btn} {shop_btn}</div>
+{product_tiles(s_['products'], url)}
+</section>""")
+    stamp = iso_dt((FEEDS.get("stores.json") or {}).get("updated"))
+    body = f"""<header class="page-head"><h1>חנויות במבצע באליאקספרס</h1>
+<span class="updated">{"עודכן: " + fmt_d(stamp, True) + " · " if stamp else ""}מתעדכן פעם בשבוע</span></header>
+<p class="lead">חנויות שיש להן השבוע קוד הנחה של המוכר ששווה לפחות ₪20, עם המוצרים הנמכרים שלהן. בדרך כלל הקוד חל על כל החנות: אפשר לשלב כמה מוצרים מאותה חנות כדי להגיע למינימום. את הקוד עצמו מקבלים בבוטן. קודים רשמיים של המוכרים, לא נבדקו בקופה.</p>
+{"".join(blocks)}
+<p class="tiles-note">המוצרים הם הנמכרים ביותר של כל חנות מתוך מה שבוטן סרק השבוע. המחירים נכונים לתאריך על כל מוצר. קישורי שותפים: המחיר שלכם לא משתנה.</p>"""
+    page(url, f"חנויות במבצע באליאקספרס: קודי מוכר מעל ₪20 | {NAME}",
+         "חנויות באליאקספרס עם קוד הנחה של המוכר ששווה לפחות ₪20 השבוע, והמוצרים הנמכרים שלהן. מתעדכן פעם בשבוע.",
+         body, crumbs=[(url, "חנויות במבצע")], updated=stamp.date() if stamp else None,
+         card={"lines": [("חנויות במבצע", "ink"), ("באליאקספרס", "red")], "sub": "קודי מוכר מעל ₪20 והמוצרים הנמכרים",
+               "products": [p for s_ in stores for p in s_["products"][:1]][:3]})
+
+
 def build_about():
     path = "/about/"
     updated = latest(EDITED[path]) or NOW.date()
@@ -1209,7 +1254,7 @@ def main():
                              [p["image"] for c in categories for p in c["products"][:3]], OUT)
     except Exception as ex:
         print(f"share cards: no prefetch ({ex})")
-    build_home(); build_coupons_page(); build_coupon_types(); build_not_working(); build_guides(); build_categories(); build_about(); build_404()
+    build_home(); build_coupons_page(); build_coupon_types(); build_not_working(); build_guides(); build_categories(); build_stores(); build_about(); build_404()
     build_meta_files()
     print(f"built {len(SITEMAP)} pages into {OUT} (base={BASE or '/'}), {len(seller)} seller codes, "
           f"{len(platform_active)} platform codes active, {len(events_live)} sale events ahead")
