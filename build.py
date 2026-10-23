@@ -360,16 +360,21 @@ document.querySelectorAll('form.checker').forEach(function (f) {
         done();
         var items = (d.products || []);
         if (!items.length) { say('לא מצאתי תוצאות טובות ל"' + q + '". נסו מילה אחרת, או באנגלית (למשל power bank).', true); box.innerHTML = ''; return; }
-        say('נמצאו ' + items.length + ' דילים ל"' + q + '" 👇');
+        say('נמצאו ' + items.length + ' דילים ל"' + q + '"' + (items.some(function (p) { return p.coupon; }) ? ', כולל עם קוד קופון' : '') + ' 👇');
         var codeSrc = 'k' + src.slice(1);
-        box.innerHTML = '<div class="wrap"><div class="sec-head"><h2>הכי שווים ל"' + esc(q) + '"</h2></div><ul class="tiles">' + items.map(function (p) {
+        var tile = function (p) {
           var was = p.original && p.original > p.price + 0.5 ? '<span class="was">₪' + p.original.toFixed(2) + '</span>' : '';
           var burst = p.discount && p.discount >= 5 ? '<span class="burst"><span class="sr-only">הנחה של </span>-' + Math.round(p.discount) + '%</span>' : '';
           var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
           var lab = codeLabel(p), code = lab ? '<a class="tcode" href="' + bot + '?start=p_' + p.id + '-' + codeSrc + '">' + esc(lab) + '</a>' : '';
           return '<li><a class="tile" href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"><span class="pic"><img src="' + esc(p.image) + '_350x350.jpg" onerror="this.onerror=null;this.src=\'' + esc(p.image) + '\'" alt="" width="300" height="300" loading="lazy" referrerpolicy="no-referrer"></span>' + burst +
             '<span class="tprice">' + priceHtml(p.price) + was + '</span><span class="ttl">' + esc(p.title) + '</span><span class="tfoot"><span class="cat">' + meta + '</span></span></a>' + code + '</li>';
-        }).join('') + '</ul><p class="tiles-note">תוצאות חיות מאליאקספרס, נבחרו לפי קופון, הנחה, דירוג ומכירות. לחיצה על מוצר פותחת אותו באליאקספרס (קישור שותפים: המחיר שלכם לא משתנה). רוצים גם מוכר זול יותר למוצר מסוים? הדביקו את הלינק שלו למעלה.</p></div>';
+        };
+        var coded = items.filter(function (p) { return p.coupon; }), rest = items.filter(function (p) { return !p.coupon; });
+        var group = function (title, list) { return list.length ? '<div class="sec-head"><h2>' + title + '</h2></div><ul class="tiles">' + list.map(tile).join('') + '</ul>' : ''; };
+        box.innerHTML = '<div class="wrap">' + (coded.length
+            ? group('🎟️ עם קוד קופון: "' + esc(q) + '"', coded) + group('עוד דילים מומלצים', rest)
+            : group('הכי שווים ל"' + esc(q) + '"', rest)) + '<p class="tiles-note">תוצאות חיות מאליאקספרס, נבחרו לפי קופון, הנחה, דירוג ומכירות. לחיצה על מוצר פותחת אותו באליאקספרס (קישור שותפים: המחיר שלכם לא משתנה). רוצים גם מוכר זול יותר למוצר מסוים? הדביקו את הלינק שלו למעלה.</p></div>';
         box.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }).catch(function (e) {
         done(); say(e.message === 'slow' ? 'רגע, יותר מדי חיפושים. נסו שוב בעוד דקה.' : 'החיפוש לא זמין כרגע. נסו שוב בעוד רגע, או חפשו ישר בבוט.', true);
