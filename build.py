@@ -683,7 +683,6 @@ def hero(src: str, main_heading: bool, compact: bool = False) -> str:
     return f"""<section class="hero" aria-labelledby="hero-title"><div class="wrap">
 <div>
 <{tag} id="hero-title" class="hero-title">הבוט שמוצא <em class="big">הכל</em> באליאקספרס</{tag}>
-<p class="lead">כל מוצר כאן עבר סינון של בוטן: דירוג גבוה, הרבה מכירות, מחיר בשקלים. ויש לכם מוצר משלכם? הדביקו אותו כאן.</p>
 </div>
 {checker(src)}
 </div></section>"""
