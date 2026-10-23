@@ -191,6 +191,7 @@ events_menu = [r for r in events_live if r.get("guide") and r.get("nav") and r["
 # site) → the local cache. A published copy older than FEED_MAX_AGE is not used: no tiles beat stale tiles.
 BOT_FEED_URL = os.environ.get("BOT_FEED_URL", "https://worker-production-b0bb.up.railway.app/products.json")
 BOT_CATS_URL = os.environ.get("BOT_CATS_URL") or BOT_FEED_URL.replace("/products.json", "/categories.json")
+SEARCH_URL = os.environ.get("SEARCH_URL") or BOT_FEED_URL.replace("/products.json", "/search")   # live product search
 FEED_MAX_AGE = timedelta(hours=72)
 FEEDS: dict[str, dict] = {}                 # what this build used, republished under /feed/
 
@@ -288,20 +289,30 @@ def checker(src: str, field_id: str = "link", compact: bool = False) -> str:
     """The price checker: paste a product link, land in the bot on that product. Works without JS (opens the bot).
     One status line under it; in the slim band of inner pages the band's title is the visible label."""
     label_cls = ' class="sr-only"' if compact else ""
-    return f"""<form class="checker" action="{BOT}" method="get" data-bot="{BOT}" data-src="{src}" novalidate>
-<label for="{field_id}"{label_cls}>בודק מחירים: הדביקו לינק של מוצר מאליאקספרס</label>
+    return f"""<form class="checker" action="{BOT}" method="get" data-bot="{BOT}" data-src="{src}" data-search="{SEARCH_URL}" novalidate>
+<label for="{field_id}"{label_cls}>הדביקו לינק מאליאקספרס או כתבו מה אתם מחפשים</label>
 <input type="hidden" name="start" value="{src}">
 <div class="row">
-<input id="{field_id}" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://aliexpress.com/item/…" aria-describedby="{field_id}-msg">
-<button class="btn" type="submit">{ICON_TG}<span>בדקו בבוטן</span></button>
+<input id="{field_id}" class="q" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false" placeholder="לינק או שם מוצר, למשל: סוללה ניידת" aria-describedby="{field_id}-msg">
+<button class="btn" type="submit">{ICON_TG}<span>בדקו</span></button>
 </div>
 <p class="msg" id="{field_id}-msg" role="status" aria-live="polite">מחיר בשקלים, הנחה, קוד אם יש ומוכר זול יותר. בחינם.</p>
 </form>"""
 
 
 CHECKER_JS = r"""<script>
+function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function priceHtml(v) { var p = Number(v).toFixed(2).split('.'); return '<span class="price"><span class="cur">₪</span><span>' + p[0] + '</span>' + (p[1] !== '00' ? '<span class="sr-only">.</span><span class="ag">' + p[1] + '</span>' : '') + '</span>'; }
+function codeLabel(p) {
+  var c = p.code; if (!c || typeof c !== 'object') return null;
+  if (c.ends && new Date(c.ends.replace(' ', 'T')) < new Date()) return null;
+  if (c.min && c.min > p.price + 0.01) return 'יש קוד הנחה בבוטן';
+  if (c.off) return 'קוד ₪' + (Math.abs(c.off - Math.round(c.off)) < 0.005 ? Math.round(c.off) : c.off.toFixed(2)) + ' בבוטן';
+  if (c.pct) return 'קוד ' + Math.round(c.pct) + '% בבוטן';
+  return 'יש קוד הנחה בבוטן';
+}
 document.querySelectorAll('form.checker').forEach(function (f) {
-  var input = f.querySelector('input[type=url]'), btn = f.querySelector('button'), msg = f.querySelector('.msg');
+  var input = f.querySelector('input.q'), btn = f.querySelector('button'), msg = f.querySelector('.msg');
   var idle = msg.textContent, label = btn.querySelector('span').textContent;
   var bot = f.dataset.bot, src = f.dataset.src;
   function say(t, err) { msg.textContent = t; msg.classList.toggle('err', !!err); }
@@ -310,8 +321,11 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     ev.preventDefault();
     var v = input.value.trim();
     if (!v) { say('הדביקו קודם לינק של מוצר מאליאקספרס.', true); input.focus(); return; }
-    if (!/aliexpress|aliexpi|s\.click\.ali|\d{13,}/i.test(v)) {
-      say('זה לא נראה כמו לינק מאליאקספרס. באפליקציה: שיתוף ← העתק קישור.', true); input.focus(); return;
+    var isLink = /aliexpress|aliexpi|s\.click\.ali|\d{13,}/i.test(v);
+    if (!isLink) {
+      if (/https?:|www\./i.test(v)) { say('זה לא לינק מאליאקספרס. באפליקציה: שיתוף ← העתק קישור.', true); input.focus(); return; }
+      if (v.length < 2) { say('כתבו שם של מוצר, למשל: סוללה ניידת', true); input.focus(); return; }
+      siteSearch(v); return;
     }
     var m = v.match(/(?:\/item\/|productIds?=|[?&]id=|\/i\/)(\d{10,20})/) || v.match(/(\d{13,20})/);
     btn.setAttribute('aria-busy', 'true'); btn.querySelector('span').textContent = 'בודק…';
@@ -331,6 +345,33 @@ document.querySelectorAll('form.checker').forEach(function (f) {
       } else { window.location.href = url; }
       setTimeout(reset, 2500);
     }
+    function siteSearch(q) {
+      var band = f.closest('section') || f, box = document.getElementById('sresults');
+      if (!box) { box = document.createElement('section'); box.id = 'sresults'; box.className = 'sresults'; box.setAttribute('aria-live', 'polite'); band.insertAdjacentElement('afterend', box); }
+      btn.setAttribute('aria-busy', 'true'); btn.querySelector('span').textContent = 'מחפש…'; say('בוטן מחפש את הדילים הכי שווים…');
+      var done = function () { btn.removeAttribute('aria-busy'); btn.querySelector('span').textContent = label; };
+      fetch(f.dataset.search + '?q=' + encodeURIComponent(q)).then(function (r) {
+        if (r.status === 429) throw new Error('slow'); if (!r.ok) throw new Error('bad'); return r.json();
+      }).then(function (d) {
+        done();
+        var items = (d.products || []);
+        if (!items.length) { say('לא מצאתי תוצאות טובות ל"' + q + '". נסו מילה אחרת, או באנגלית (למשל power bank).', true); box.innerHTML = ''; return; }
+        say('נמצאו ' + items.length + ' דילים ל"' + q + '" 👇');
+        var codeSrc = 'k' + src.slice(1);
+        box.innerHTML = '<div class="wrap"><div class="sec-head"><h2>הכי שווים ל"' + esc(q) + '"</h2></div><ul class="tiles">' + items.map(function (p) {
+          var was = p.original && p.original > p.price + 0.5 ? '<span class="was">₪' + p.original.toFixed(2) + '</span>' : '';
+          var burst = p.discount && p.discount >= 5 ? '<span class="burst"><span class="sr-only">הנחה של </span>-' + Math.round(p.discount) + '%</span>' : '';
+          var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
+          var lab = codeLabel(p), code = lab ? '<a class="tcode" href="' + bot + '?start=p_' + p.id + '-' + codeSrc + '">' + esc(lab) + '</a>' : '';
+          return '<li><a class="tile" href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"><span class="pic"><img src="' + esc(p.image) + '_350x350.jpg" onerror="this.onerror=null;this.src=\'' + esc(p.image) + '\'" alt="" width="300" height="300" loading="lazy" referrerpolicy="no-referrer"></span>' + burst +
+            '<span class="tprice">' + priceHtml(p.price) + was + '</span><span class="ttl">' + esc(p.title) + '</span><span class="tfoot"><span class="cat">' + meta + '</span></span></a>' + code + '</li>';
+        }).join('') + '</ul><p class="tiles-note">תוצאות חיות מאליאקספרס, נבחרו לפי קופון, הנחה, דירוג ומכירות. לחיצה על מוצר פותחת אותו באליאקספרס (קישור שותפים: המחיר שלכם לא משתנה). רוצים גם מוכר זול יותר למוצר מסוים? הדביקו את הלינק שלו למעלה.</p></div>';
+        box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }).catch(function (e) {
+        done(); say(e.message === 'slow' ? 'רגע, יותר מדי חיפושים. נסו שוב בעוד דקה.' : 'החיפוש לא זמין כרגע. נסו שוב בעוד רגע, או חפשו ישר בבוט.', true);
+      });
+    }
+    if (!isLink) return;
     try { navigator.clipboard.writeText(v); } catch (e) {}   // backup: the link is on the clipboard too
     if (m) { say('פותח את בוטן על המוצר…'); go(bot + '?start=p_' + m[1] + '-' + src); return; }
     var sh = v.match(/a\.aliexpress\.[a-z.]+\/_([A-Za-z0-9]{3,40})/i);

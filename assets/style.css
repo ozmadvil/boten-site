@@ -385,3 +385,7 @@ code.code.bad { background: transparent; text-decoration: line-through; opacity:
   table.codes.cards td[data-l]::before { content: attr(data-l) ": "; font-weight: 700; color: var(--ink-soft, inherit); }
   table.codes.cards td[data-l="קוד"]::before { content: none; }
 }
+/* live search results, right under the yellow band */
+.sresults { padding: 8px 0 24px; scroll-margin-top: 12px; }
+.sresults:empty { display: none; }
+.sresults .sec-head { margin-top: 24px; }
