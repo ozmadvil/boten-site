@@ -10,12 +10,10 @@ related_targets: []
 Scope: home page `/`, plus the shell every page inherits. Mode: Persuade (home); guides and about inherit the world in Read mode.
 Audience: Israeli AliExpress shoppers on phones, from Google and from TikTok/Telegram. Action: paste a product link and open it in the bot. Proof: dated checkout checks from data/checks.csv. Constraint: coupon codes never printed on the site.
 
-## Direction contract
+## Direction contract (replaced 2026-11-01)
 
-THESIS: The weekly supermarket sale flyer, honest edition: every price tag on the page is a real checkout check with a date. Refuses the category default of a white card grid with an orange "get code" button.
-OWN-WORLD: Fluorescent flyer yellow owns the hero and the closing band; sale red carries prices, the "מבצע" strip and the primary action; newsprint white paper for reading. Heavy Hebrew display (Rubik Black) for prices with raised agorot (₪12⁶⁵); shelf-tag labels with a red top strip; dashed "גזור ושמור" cut lines; "בתוקף עד" small print. Coupons are dashed cut-outs with a red strip and "גזור ושמור"; the checks log is a row of dated shelf tags; the footer is the flyer's fine print on newsprint under a heavy ink rule. No black boxes, no offset shadows.
-STORY: I see a real price drop I can trust, I understand Boten checks it for me, I paste my own link.
-FIRST VIEWPORT (revised 20/10 at the owner's request): Red masthead strip. A short yellow band: headline + lead on the right, the price checker on the left. Directly below, the channel's latest deals as flyer product tiles (image, red raised-agorot price, struck original, yellow discount burst, title), each linking straight to AliExpress. The tilted shelf tag with the real check (₪187 → ₪145.88) moved beside the checks log as proof. Below the headline, the price-checker: paste field + red "בדקו בבוטן" button (wording names where it goes), full width on mobile. A green "נבדק בקופה" rubber stamp on the tag marks it as a real check.
-FORM: Supermarket sale signage / weekly flyer, candidate 1 of my list (user chose IMPECCABLE'S PICK over assigned candidate 3, thermal receipt). seed:944c7b9a2c6f761e
-Signature interaction: price-checker kiosk — paste link, the tag flips to "בודק…", then opens the bot on that product (p_<id>). Motion grammar: tags drop and settle once on load, reduced-motion respected.
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+THESIS: NiceBuy, light and clean commerce with an indigo hand: owner's brief and comp (SaaS + quality e-commerce). Replaces the sale-flyer world.
+OWN-WORLD: see DESIGN.md. Near-white page, white cards, indigo for every action and price, lime only for savings.
+STORY: I see real, dated price drops, I search or paste my own link, the bot gives me the coupon.
+FIRST VIEWPORT: light header with menu and Telegram buttons; indigo-washed hero with the headline and the big search; icon category chips; the week's deals as product cards with a lime discount pill and a "לצפייה במוצר" button.
+Signature interaction: the search: product name shows live results under the hero; a product link opens the bot on that product.
