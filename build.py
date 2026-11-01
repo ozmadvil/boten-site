@@ -919,15 +919,6 @@ def build_home():
 
 {deals}
 
-<section aria-labelledby="how-title">
-<h2 id="how-title">איך מקבלים קוד קופון עדכני?</h2>
-<ol class="how">
-<li><span class="n" aria-hidden="true">1</span><b>מעתיקים את הלינק למוצר</b><p>באפליקציה של אליאקספרס לוחצים "שיתוף" ואז "העתק קישור".</p></li>
-<li><span class="n" aria-hidden="true">2</span><b>שולחים את הלינק ומחכים לקופון</b><p>מדביקים את הלינק בבוט בטלגרם, או בשדה החיפוש למעלה.</p></li>
-<li><span class="n" aria-hidden="true">3</span><b>מקבלים קוד קופון</b><p>הבוט מחזיר את קוד הקופון העדכני למוצר ואת המחיר אחרי הקופון. אין קופון? הבוט מראה מוכר זול יותר.</p></li>
-</ol>
-</section>
-
 <section aria-labelledby="guides-title">
 <div class="sec-head"><h2 id="guides-title">לפני שקונים</h2><a href="{BASE}/guides/">כל המדריכים {ICON_ARROW}</a></div>
 <ul class="guide-list">
