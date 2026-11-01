@@ -701,7 +701,7 @@ def hero(src: str, main_heading: bool, compact: bool = False) -> str:
 
 
 # The date someone last changed each page's own text here in build.py (data-driven parts date themselves).
-EDITED = {"/": "2026-10-23", "/coupons/": "2026-10-21", "/guides/": "2026-10-21", "/guides/coupon-types/": "2026-10-20",
+EDITED = {"/": "2026-11-01", "/coupons/": "2026-10-21", "/guides/": "2026-10-21", "/guides/coupon-types/": "2026-10-20",
           "/guides/code-not-working/": "2026-10-20", "/about/": "2026-10-20"}
 
 
@@ -744,11 +744,11 @@ def build_home():
 {deals}
 
 <section aria-labelledby="how-title">
-<h2 id="how-title">איך NiceBuy עובד</h2>
+<h2 id="how-title">איך מקבלים קוד קופון עדכני?</h2>
 <ol class="how">
-<li><span class="n" aria-hidden="true">1</span><b>מעתיקים לינק</b><p>באפליקציה של אליאקספרס: שיתוף ← העתק קישור.</p></li>
-<li><span class="n" aria-hidden="true">2</span><b>שולחים לבוט</b><p>מדביקים בצ'אט עם הבוט בטלגרם, או בבודק המחירים למעלה.</p></li>
-<li><span class="n" aria-hidden="true">3</span><b>מקבלים מחיר וקוד</b><p>ואם אין קופון, הבוט מציע לחפש חלופה זולה יותר.</p></li>
+<li><span class="n" aria-hidden="true">1</span><b>מעתיקים את הלינק למוצר</b><p>באפליקציה של אליאקספרס לוחצים "שיתוף" ואז "העתק קישור".</p></li>
+<li><span class="n" aria-hidden="true">2</span><b>שולחים את הלינק ומחכים לקופון</b><p>מדביקים את הלינק בבוט בטלגרם, או בשדה הצהוב למעלה.</p></li>
+<li><span class="n" aria-hidden="true">3</span><b>מקבלים קוד קופון</b><p>הבוט מחזיר את קוד הקופון העדכני למוצר ואת המחיר אחרי הקופון. אין קופון? הבוט מראה מוכר זול יותר.</p></li>
 </ol>
 </section>
 
