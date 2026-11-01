@@ -11,6 +11,7 @@ or a download fails, build.py falls back to the logo; a card never fails a build
 from __future__ import annotations
 
 import io
+import re
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -27,6 +28,7 @@ YELLOW, RED, INK, INK_ON_FLYER = (238, 242, 255), (79, 70, 229), (17, 24, 39), (
 WHITE, GREEN, RULE = (255, 255, 255), (21, 128, 61), (229, 231, 235)
 COLORS = {"ink": INK, "red": RED}
 MARGIN = 48
+MAX_IMAGE = 5 * 1024 * 1024                  # bytes; product photos are ~100 KB
 
 _fonts: dict[tuple[str, int], tuple] = {}
 _images: dict[str, bytes | None] = {}
@@ -117,9 +119,14 @@ def _load_image(src: str, out: Path) -> bytes | None:
     if src.startswith("/"):                          # a file inside the built site (local test data)
         f = out / src.lstrip("/")
         return f.read_bytes() if f.exists() else None
+    from urllib.parse import urlsplit
+    host = (urlsplit(src).hostname or "").lower()
+    if not (src.startswith("https://") and re.search(r"(^|\.)(aliexpress-media\.com|alicdn\.com|aliexpress\.com)$", host)):
+        return None                                  # only AliExpress photos, over https
     req = urllib.request.Request(src, headers={"User-Agent": "Mozilla/5.0 (boten-site share cards)"})
     with urllib.request.urlopen(req, timeout=8) as r:
-        return r.read()
+        data = r.read(MAX_IMAGE + 1)
+    return data if len(data) <= MAX_IMAGE else None   # a photo, not a huge file
 
 
 def prefetch(urls: list[str], out: Path) -> None:
