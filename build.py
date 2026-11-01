@@ -162,12 +162,12 @@ platform_active.sort(key=lambda r: r["_min"])
 
 
 def platform_for(price: float) -> dict | None:
-    """The Israel code that fits one unit of this product: the biggest tier whose minimum the price reaches,
-    else the lowest tier (its minimum is shown, for a bigger cart)."""
+    """The Israel code that fits one unit of this product: the biggest tier whose minimum the price reaches.
+    None when the price is under every minimum (owner's choice 02/11: no code on cards it doesn't fit)."""
     if not platform_active:
         return None
     fit = [r for r in platform_active if r["_min"] <= price + 0.01]
-    return max(fit, key=lambda r: r["_off"]) if fit else platform_active[0]
+    return max(fit, key=lambda r: r["_off"]) if fit else None
 
 
 def platform_what(r: dict) -> str:
@@ -388,8 +388,8 @@ function coupons(p) {
   var pl = window.NB_PLATFORM || [];
   if (pl.length) {
     var fit = pl.filter(function (r) { return r.min <= p.price + 0.01; });
-    var r = fit.length ? fit.reduce(function (a, b) { return b.off > a.off ? b : a; }) : pl[0];
-    out += couponBtn(r.code, 'קוד ישראל', r.what, p.link);
+    if (fit.length) { var r = fit.reduce(function (a, b) { return b.off > a.off ? b : a; });
+      out += couponBtn(r.code, 'קוד ישראל', r.what, p.link); }
   }
   return out ? '<span class="tcoupons">' + out + '</span>' : '';
 }
