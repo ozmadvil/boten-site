@@ -8,6 +8,7 @@ Dates are honest: every page carries the date its content last changed (footer, 
 never just the build time. Every link into the bot carries the page and the place it came from (see src_for).
 """
 import csv
+import hashlib
 import html
 import json
 import os
@@ -35,6 +36,12 @@ HEB_MONTHS = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "�
 MONTH_YEAR = f"{HEB_MONTHS[NOW.month - 1]} {NOW.year}"
 NAME = "NiceBuy"
 e = html.escape
+
+
+def json_script(obj) -> str:
+    """JSON for inside a <script> element: '</' and '<!--' can't end or bend the element (product titles come
+    from AliExpress sellers)."""
+    return json.dumps(obj, ensure_ascii=False).replace("</", "<\\/").replace("<!--", "\\u003c!--")
 
 
 # ------------------------------------------------------------------ data
@@ -216,6 +223,22 @@ BOT_FEED_URL = os.environ.get("BOT_FEED_URL", "https://worker-production-b0bb.up
 BOT_CATS_URL = os.environ.get("BOT_CATS_URL") or BOT_FEED_URL.replace("/products.json", "/categories.json")
 SEARCH_URL = os.environ.get("SEARCH_URL") or BOT_FEED_URL.replace("/products.json", "/search")   # live product search
 PRODUCT_URL = os.environ.get("PRODUCT_URL") or BOT_FEED_URL.replace("/products.json", "/product")  # a pasted link, answered on the site
+
+
+def _origin(u: str) -> str:
+    from urllib.parse import urlsplit
+    p = urlsplit(u)
+    return f"{p.scheme}://{p.netloc}" if p.scheme in ("http", "https") and p.netloc else ""
+
+
+# Content Security Policy (as a <meta>: GitHub Pages can't send headers). Scripts and styles only from the site;
+# photos from AliExpress; live search and link checks from the bot; the search form may only go to Telegram.
+CSP = "; ".join([
+    "default-src 'self'", "script-src 'self'", "style-src 'self'", "font-src 'self'", "object-src 'none'",
+    "base-uri 'self'", "form-action https://t.me",
+    "img-src 'self' data: https://*.aliexpress-media.com https://*.alicdn.com https://*.aliexpress.com",
+    "connect-src 'self' " + " ".join(sorted({o for o in map(_origin, (SEARCH_URL, PRODUCT_URL)) if o})),
+])
 FEED_MAX_AGE = timedelta(hours=72)
 FEEDS: dict[str, dict] = {}                 # what this build used, republished under /feed/
 
@@ -370,7 +393,16 @@ def checker(src: str, field_id: str = "link", compact: bool = False) -> str:
 </form>"""
 
 
-CHECKER_JS = r"""<script>
+CHECKER_JS = r"""
+var NB_PLATFORM = (function () { try { return JSON.parse(document.getElementById('nb-platform').textContent) || []; } catch (e) { return []; } })();
+// only the owner's AliExpress links and AliExpress photos, whatever a response holds
+function safeLink(u) { try { var x = new URL(u); return x.protocol === 'https:' && /(^|\.)aliexpress\.(com|ru|us)$/i.test(x.hostname) ? x.href : ''; } catch (e) { return ''; } }
+function safeImg(u) { try { var x = new URL(u); return x.protocol === 'https:' && /(^|\.)(aliexpress-media\.com|alicdn\.com|aliexpress\.com)$/i.test(x.hostname) ? x.href : ''; } catch (e) { return ''; } }
+function imgTag(src, w) { var s = safeImg(src); return s ? '<img src="' + esc(s) + '_350x350.jpg" data-fallback="' + esc(s) + '" alt="" width="' + w + '" height="' + w + '" loading="lazy" referrerpolicy="no-referrer">' : ''; }
+// a photo that fails in the small size falls back to the original (no inline handlers: the CSP forbids them)
+document.addEventListener('error', function (ev) {
+  var t = ev.target; if (t && t.tagName === 'IMG' && t.dataset.fallback) { var f = t.dataset.fallback; delete t.dataset.fallback; t.src = f; }
+}, true);
 function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function priceHtml(v) { var p = Number(v).toFixed(2).split('.'); return '<span class="price"><span class="cur">₪</span><span>' + p[0] + '</span>' + (p[1] !== '00' ? '<span class="sr-only">.</span><span class="ag">' + p[1] + '</span>' : '') + '</span>'; }
 function ils(v) { return '₪' + (Math.abs(v - Math.round(v)) < 0.005 ? Math.round(v) : Number(v).toFixed(2)); }
@@ -386,7 +418,7 @@ function coupons(p) {
     if (c.min && c.min > 1) what += ' מעל ' + ils(c.min);
     out += couponBtn(c.code, 'קוד מוכר', what, p.link);
   }
-  var pl = window.NB_PLATFORM || [];
+  var pl = NB_PLATFORM;
   if (pl.length) {
     var fit = pl.filter(function (r) { return r.min <= p.price + 0.01; });
     if (fit.length) { var r = fit.reduce(function (a, b) { return b.off > a.off ? b : a; });
@@ -400,7 +432,7 @@ document.addEventListener('click', function (ev) {
   var code = b.dataset.code, txt = b.querySelector('.tc-txt'), act = b.querySelector('.tc-act');
   var done = function (ok) { txt.textContent = code; act.textContent = ok ? 'הועתק ✓' : 'העתיקו ידנית'; b.classList.add('shown'); };
   try { navigator.clipboard.writeText(code).then(function () { done(true); }, function () { done(false); }); } catch (e) { done(false); }
-  if (b.dataset.href) window.open(b.dataset.href, '_blank', 'noopener');
+  var href = safeLink(b.dataset.href); if (href) window.open(href, '_blank', 'noopener');
 });
 function codeLabel(p) {
   var c = p.code; if (!c || typeof c !== 'object') return null;
@@ -440,22 +472,24 @@ document.querySelectorAll('form.checker').forEach(function (f) {
   }
   function botLink(start) { return bot + '?start=' + start + '-' + src; }
   function tile(p) {
+    p.link = safeLink(p.link); if (!p.link) return '';
     var was = p.original && p.original > p.price + 0.5 ? '<span class="was">₪' + p.original.toFixed(2) + '</span>' : '';
     var burst = p.discount && p.discount >= 5 ? '<span class="burst"><span class="sr-only">הנחה של </span>-' + Math.round(p.discount) + '%</span>' : '';
     var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
     var attrs = 'href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"';
-    return '<li><div class="tile"><a class="tlink" ' + attrs + '><span class="pic"><img src="' + esc(p.image) + '_350x350.jpg" onerror="this.onerror=null;this.src=\'' + esc(p.image) + '\'" alt="" width="300" height="300" loading="lazy" referrerpolicy="no-referrer"></span>' + burst +
+    return '<li><div class="tile"><a class="tlink" ' + attrs + '><span class="pic">' + imgTag(p.image, 300) + '</span>' + burst +
       '<span class="tprice">' + priceHtml(p.price) + was + '</span><span class="ttl">' + esc(p.title) + '</span><span class="tfoot"><span class="cat">' + meta + '</span></span></a>' + coupons(p) +
       '<a class="cta" ' + attrs + ' tabindex="-1">לצפייה במוצר</a></div></li>';
   }
   // one product as a wide card in the answer (the pasted link, or an alternative)
   function wide(p, alt) {
+    p.link = safeLink(p.link); if (!p.link) return '';
     var attrs = 'href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"';
     var was = p.original && p.original > p.price + 0.5 ? '<span class="was">₪' + p.original.toFixed(2) + '</span>' : '';
     var disc = p.discount && p.discount >= 5 ? '<span class="pill">-' + Math.round(p.discount) + '%</span>' : '';
     var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
     var save = alt && p.saving > 0.5 ? '<span class="save">חוסכים ' + ils(p.saving) + '</span>' : '';
-    return '<div class="wcard' + (alt ? ' alt' : '') + '"><a class="wpic" ' + attrs + ' tabindex="-1"><img src="' + esc(p.image) + '_350x350.jpg" onerror="this.onerror=null;this.src=\'' + esc(p.image) + '\'" alt="" width="160" height="160" loading="lazy" referrerpolicy="no-referrer"></a>' +
+    return '<div class="wcard' + (alt ? ' alt' : '') + '"><a class="wpic" ' + attrs + ' tabindex="-1">' + imgTag(p.image, 160) + '</a>' +
       '<div class="wbody"><a class="wttl" ' + attrs + '>' + esc(p.title) + '</a>' +
       '<div class="wprice">' + priceHtml(p.price) + was + disc + save + '</div>' + (meta ? '<p class="wmeta">' + meta + '</p>' : '') +
       coupons(p) + '<a class="btn wbtn" ' + attrs + '>' + (alt ? 'לצפייה במוצר' : 'לקנייה באליאקספרס') + '</a></div></div>';
@@ -523,7 +557,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     linkCheck(v); input.value = '';
   });
 });
-</script>"""
+"""
 
 
 # ------------------------------------------------------------------ layout
@@ -615,6 +649,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="{CSP}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)}</title>
 <meta name="description" content="{e(description)}">
@@ -635,7 +670,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <link rel="preload" href="{BASE}/assets/fonts/rubik-hebrew-900-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{BASE}/assets/fonts/rubik-hebrew-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{BASE}/assets/style.css">
-<script type="application/ld+json">{json.dumps({"@context": "https://schema.org", "@graph": graph}, ensure_ascii=False)}</script>
+<script type="application/ld+json">{json_script({"@context": "https://schema.org", "@graph": graph})}</script>
 </head>
 <body>
 <a class="skip" href="#main">דלגו לתוכן</a>
@@ -657,7 +692,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <p>* NiceBuy אינו קשור לאליאקספרס ואינו מייצג אותה. AliExpress הוא סימן מסחר של בעליו. המחירים וההנחות נכונים ליום הבדיקה בלבד.</p>
 {footer_date}
 </div></footer>
-{platform_js() if js else ""}{CHECKER_JS if js else ""}
+{platform_js() if js else ""}{'<script src="' + BASE + '/assets/app.js?v=' + hashlib.sha256(CHECKER_JS.encode('utf-8')).hexdigest()[:10] + '" defer></script>' if js else ""}
 </body>
 </html>
 """
@@ -815,7 +850,7 @@ def tile_coupons(p: dict) -> str:
 
 def platform_js() -> str:
     data = [{"code": r["code"], "off": r["_off"], "min": r["_min"], "what": platform_what(r)} for r in platform_active]
-    return f"<script>window.NB_PLATFORM = {json.dumps(data)};</script>"
+    return f'<script type="application/json" id="nb-platform">{json_script(data)}</script>'
 
 
 def product_tiles(rows: list[dict], path: str) -> str:
@@ -1409,6 +1444,7 @@ def main():
         shutil.rmtree(OUT)
     OUT.mkdir()
     shutil.copytree(ROOT / "assets", OUT / "assets")
+    (OUT / "assets" / "app.js").write_text(CHECKER_JS, encoding="utf-8")
     for f in ROOT.glob("google*.html"):           # Google Search Console verification file
         shutil.copy(f, OUT / f.name)
     try:                                          # product photos for the share cards, fetched in parallel
