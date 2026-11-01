@@ -720,11 +720,7 @@ def product_tiles(rows: list[dict], path: str) -> str:
 
 
 # ------------------------------------------------------------------ pages
-HERO_ART = ('<svg class="art art-tag" viewBox="0 0 120 120" aria-hidden="true"><g transform="rotate(-24 60 60)">'
-            '<path d="M30 22h46l22 22v58a6 6 0 0 1-6 6H30a6 6 0 0 1-6-6V28a6 6 0 0 1 6-6Z" fill="#A3E635"/>'
-            '<circle cx="80" cy="40" r="6" fill="#F8FAFC"/><path d="M80 40c10-8 20-14 30-12" stroke="#4F46E5" stroke-width="3" fill="none" stroke-linecap="round"/>'
-            '<path d="M44 86l28-34" stroke="#fff" stroke-width="7" stroke-linecap="round"/><circle cx="47" cy="58" r="7" fill="none" stroke="#fff" stroke-width="6"/>'
-            '<circle cx="69" cy="82" r="7" fill="none" stroke="#fff" stroke-width="6"/></g></svg>'
+HERO_ART = (f'<img class="art art-bag" src="{BASE}/assets/hero-bag.jpg" alt="" width="690" height="724" decoding="async">'
             '<svg class="art art-badge" viewBox="0 0 80 80" aria-hidden="true">'
             '<path d="M40 4l8 7 10-2 4 10 10 4-2 10 7 8-7 8 2 10-10 4-4 10-10-2-8 7-8-7-10 2-4-10-10-4 2-10-7-8 7-8-2-10 10-4 4-10 10 2Z" fill="#4F46E5"/>'
             '<path d="M30 52l20-24" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="31" cy="31" r="5" fill="none" stroke="#fff" stroke-width="4"/>'
