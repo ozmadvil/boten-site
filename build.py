@@ -215,6 +215,7 @@ events_menu = [r for r in events_live if r.get("guide") and r.get("nav") and r["
 BOT_FEED_URL = os.environ.get("BOT_FEED_URL", "https://worker-production-b0bb.up.railway.app/products.json")
 BOT_CATS_URL = os.environ.get("BOT_CATS_URL") or BOT_FEED_URL.replace("/products.json", "/categories.json")
 SEARCH_URL = os.environ.get("SEARCH_URL") or BOT_FEED_URL.replace("/products.json", "/search")   # live product search
+PRODUCT_URL = os.environ.get("PRODUCT_URL") or BOT_FEED_URL.replace("/products.json", "/product")  # a pasted link, answered on the site
 FEED_MAX_AGE = timedelta(hours=72)
 FEEDS: dict[str, dict] = {}                 # what this build used, republished under /feed/
 
@@ -358,7 +359,7 @@ def checker(src: str, field_id: str = "link", compact: bool = False) -> str:
     """The price checker: paste a product link, land in the bot on that product. Works without JS (opens the bot).
     One status line under it; in the slim band of inner pages the band's title is the visible label."""
     label_cls = ' class="sr-only"'                 # the label is for screen readers only (the field's hint says it)
-    return f"""<form class="checker" action="{BOT}" method="get" data-bot="{BOT}" data-src="{src}" data-search="{SEARCH_URL}" novalidate>
+    return f"""<form class="checker" action="{BOT}" method="get" data-bot="{BOT}" data-src="{src}" data-search="{SEARCH_URL}" data-product="{PRODUCT_URL}" novalidate>
 <label for="{field_id}"{label_cls}>הדביקו לינק מאליאקספרס או כתבו מה אתם מחפשים</label>
 <input type="hidden" name="start" value="{src}">
 <div class="row">
@@ -414,74 +415,112 @@ document.querySelectorAll('form.checker').forEach(function (f) {
   var idle = msg.innerHTML, label = btn.querySelector('span').textContent;
   var bot = f.dataset.bot, src = f.dataset.src;
   function say(t, err) { msg.textContent = t; msg.classList.toggle('err', !!err); }
+  function busy(on, t) { if (on) { btn.setAttribute('aria-busy', 'true'); btn.querySelector('span').textContent = t; } else { btn.removeAttribute('aria-busy'); btn.querySelector('span').textContent = label; } }
   input.addEventListener('input', function () { if (msg.classList.contains('err')) { msg.innerHTML = idle; msg.classList.remove('err'); } });
+  // the answers appear as a chat right under the search, newest at the bottom
+  function chatLog() {
+    var box = document.getElementById('sresults');
+    if (!box) {
+      var band = f.closest('section') || f;
+      box = document.createElement('section'); box.id = 'sresults'; box.className = 'sresults chat'; box.setAttribute('aria-live', 'polite');
+      box.innerHTML = '<div class="wrap"><div class="chat-head"><b>התשובות שלכם</b><button type="button" class="chat-clear">ניקוי</button></div><div class="chat-log"></div></div>';
+      band.insertAdjacentElement('afterend', box);
+      box.querySelector('.chat-clear').addEventListener('click', function () { box.remove(); input.focus(); });
+    }
+    return box.querySelector('.chat-log');
+  }
+  function ask(text) {
+    var log = chatLog();
+    var me = document.createElement('div'); me.className = 'cmsg me'; me.innerHTML = '<p>' + esc(text) + '</p>'; log.appendChild(me);
+    var ans = document.createElement('div'); ans.className = 'cmsg bot';
+    ans.innerHTML = '<span class="cavatar" aria-hidden="true">N</span><div class="cbody"><p class="typing"><span></span><span></span><span></span></p></div>';
+    log.appendChild(ans);
+    me.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return ans.querySelector('.cbody');
+  }
+  function botLink(start) { return bot + '?start=' + start + '-' + src; }
+  function tile(p) {
+    var was = p.original && p.original > p.price + 0.5 ? '<span class="was">₪' + p.original.toFixed(2) + '</span>' : '';
+    var burst = p.discount && p.discount >= 5 ? '<span class="burst"><span class="sr-only">הנחה של </span>-' + Math.round(p.discount) + '%</span>' : '';
+    var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
+    var attrs = 'href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"';
+    return '<li><div class="tile"><a class="tlink" ' + attrs + '><span class="pic"><img src="' + esc(p.image) + '_350x350.jpg" onerror="this.onerror=null;this.src=\'' + esc(p.image) + '\'" alt="" width="300" height="300" loading="lazy" referrerpolicy="no-referrer"></span>' + burst +
+      '<span class="tprice">' + priceHtml(p.price) + was + '</span><span class="ttl">' + esc(p.title) + '</span><span class="tfoot"><span class="cat">' + meta + '</span></span></a>' + coupons(p) +
+      '<a class="cta" ' + attrs + ' tabindex="-1">לצפייה במוצר</a></div></li>';
+  }
+  // one product as a wide card in the answer (the pasted link, or an alternative)
+  function wide(p, alt) {
+    var attrs = 'href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"';
+    var was = p.original && p.original > p.price + 0.5 ? '<span class="was">₪' + p.original.toFixed(2) + '</span>' : '';
+    var disc = p.discount && p.discount >= 5 ? '<span class="pill">-' + Math.round(p.discount) + '%</span>' : '';
+    var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
+    var save = alt && p.saving > 0.5 ? '<span class="save">חוסכים ' + ils(p.saving) + '</span>' : '';
+    return '<div class="wcard' + (alt ? ' alt' : '') + '"><a class="wpic" ' + attrs + ' tabindex="-1"><img src="' + esc(p.image) + '_350x350.jpg" onerror="this.onerror=null;this.src=\'' + esc(p.image) + '\'" alt="" width="160" height="160" loading="lazy" referrerpolicy="no-referrer"></a>' +
+      '<div class="wbody"><a class="wttl" ' + attrs + '>' + esc(p.title) + '</a>' +
+      '<div class="wprice">' + priceHtml(p.price) + was + disc + save + '</div>' + (meta ? '<p class="wmeta">' + meta + '</p>' : '') +
+      coupons(p) + '<a class="btn wbtn" ' + attrs + '>' + (alt ? 'לצפייה במוצר' : 'לקנייה באליאקספרס') + '</a></div></div>';
+  }
+  function fail(body, text) { body.innerHTML = '<p class="cerr">' + esc(text) + '</p><p class="cnote"><a href="' + botLink('') + '">אפשר לנסות גם בבוט בטלגרם</a></p>'; }
+  function siteSearch(q) {
+    var body = ask(q);
+    busy(true, 'מחפש…'); say('מחפשים את הדילים הכי שווים…');
+    fetch(f.dataset.search + '?q=' + encodeURIComponent(q) + '&v=2').then(function (r) {
+      if (r.status === 429) throw new Error('slow'); if (!r.ok) throw new Error('bad'); return r.json();
+    }).then(function (d) {
+      busy(false); msg.innerHTML = idle; msg.classList.remove('err');
+      var items = (d.products || []);
+      if (!items.length) { body.innerHTML = '<p>לא מצאתי תוצאות טובות ל"' + esc(q) + '". נסו מילה אחרת, או באנגלית (למשל power bank).</p>'; return; }
+      var coded = items.filter(function (p) { return p.coupon; }), rest = items.filter(function (p) { return !p.coupon; });
+      var group = function (title, list) { return list.length ? '<h3 class="cgroup">' + title + '</h3><ul class="tiles">' + list.map(tile).join('') + '</ul>' : ''; };
+      body.innerHTML = '<p>מצאתי ' + items.length + ' דילים ל"' + esc(q) + '"' + (coded.length ? ', ' + coded.length + ' מהם עם קוד קופון' : '') + ':</p>' +
+        (coded.length ? group('עם קוד קופון', coded) + group('עוד דילים', rest) : '<ul class="tiles">' + rest.map(tile).join('') + '</ul>') +
+        '<p class="cnote">תוצאות חיות מאליאקספרס. רוצים מוכר זול יותר למוצר מסוים? הדביקו את הלינק שלו בחיפוש. * קישורי שותפים של אליאקספרס.</p>';
+      body.closest('.cmsg').classList.add('wide');
+    }).catch(function (e) {
+      busy(false); msg.innerHTML = idle;
+      fail(body, e.message === 'slow' ? 'רגע, יותר מדי חיפושים. נסו שוב בעוד דקה.' : 'החיפוש לא זמין כרגע. נסו שוב בעוד רגע.');
+    });
+  }
+  function linkCheck(v) {
+    var body = ask(v.length > 70 ? v.slice(0, 70) + '…' : v);
+    var m = v.match(/(?:\/item\/|productIds?=|[?&]id=|\/i\/)(\d{10,20})/) || v.match(/(\d{13,20})/);
+    var sh = v.match(/a\.aliexpress\.[a-z.]+\/_([A-Za-z0-9]{3,40})/i);
+    var start = m ? 'p_' + m[1] : (sh ? 's_' + sh[1] : '');
+    body.innerHTML = '<p>בודק את המחיר והקופון, ומחפש אם מוכרים אחרים מוכרים את זה בזול יותר… (עד חצי דקה)</p><p class="typing"><span></span><span></span><span></span></p>';
+    busy(true, 'בודק…'); say('בודק את הלינק שלכם…');
+    fetch(f.dataset.product + '?url=' + encodeURIComponent(v)).then(function (r) {
+      if (r.status === 429) throw new Error('slow'); if (!r.ok && r.status !== 400) throw new Error('bad'); return r.json();
+    }).then(function (d) {
+      busy(false); msg.innerHTML = idle; msg.classList.remove('err');
+      if (!d.ok) { body.innerHTML = '<p class="cerr">' + esc(d.message || 'לא הצלחתי לבדוק את הלינק הזה.') + '</p>'; return; }
+      var p = d.product, alts = d.alternatives || [];
+      var html = '<p>זה המוצר שלכם' + (p.code && p.code.code ? ', ויש לו קוד הנחה של המוכר' : '') + ':</p>' + wide(p, false);
+      if (alts.length) {
+        html += '<p class="cgap">💡 מצאתי ' + (alts.length === 1 ? 'מוכר אחד שמוכר' : alts.length + ' מוכרים שמוכרים') + ' משהו דומה בזול יותר:</p>' + alts.map(function (a) { return wide(a, true); }).join('') +
+          '<p class="cnote">שווה לוודא שזה אותו דגם ואותו מפרט לפני הקנייה.</p>';
+      } else {
+        html += '<p class="cgap">👌 בדקתי מוכרים אחרים ולא מצאתי את זה זול יותר עם דירוג טוב. נראה שזה כבר מחיר טוב.</p>';
+      }
+      html += '<p class="cnote">* קישורי שותפים של אליאקספרס.' + (start ? ' <a href="' + botLink(start) + '">להמשיך בבוט בטלגרם</a>' : '') + '</p>';
+      body.innerHTML = html;
+    }).catch(function (e) {
+      busy(false); msg.innerHTML = idle;
+      body.innerHTML = '<p class="cerr">' + (e.message === 'slow' ? 'רגע, יותר מדי בדיקות. נסו שוב בעוד דקה.' : 'לא הצלחתי לבדוק כרגע.') + '</p>' +
+        (start ? '<p><a class="btn secondary" href="' + botLink(start) + '">לבדוק את המוצר בבוט בטלגרם</a></p>' : '');
+    });
+  }
   f.addEventListener('submit', function (ev) {
     ev.preventDefault();
     var v = input.value.trim();
-    if (!v) { say('הדביקו קודם לינק של מוצר מאליאקספרס.', true); input.focus(); return; }
+    if (!v) { say('הדביקו לינק של מוצר מאליאקספרס, או כתבו מה אתם מחפשים.', true); input.focus(); return; }
+    if (btn.getAttribute('aria-busy')) return;
     var isLink = /aliexpress|aliexpi|s\.click\.ali|\d{13,}/i.test(v);
     if (!isLink) {
       if (/https?:|www\./i.test(v)) { say('זה לא לינק מאליאקספרס. באפליקציה: שיתוף ← העתק קישור.', true); input.focus(); return; }
       if (v.length < 2) { say('כתבו שם של מוצר, למשל: סוללה ניידת', true); input.focus(); return; }
-      siteSearch(v); return;
+      siteSearch(v); input.value = ''; return;
     }
-    var m = v.match(/(?:\/item\/|productIds?=|[?&]id=|\/i\/)(\d{10,20})/) || v.match(/(\d{13,20})/);
-    btn.setAttribute('aria-busy', 'true'); btn.querySelector('span').textContent = 'בודק…';
-    var tag = document.querySelector('.proof .tag'), ts = tag && tag.querySelector('.strip span');
-    if (tag && ts) { tag.classList.remove('checking'); void tag.offsetWidth; tag.classList.add('checking'); ts.textContent = 'בודק את הלינק שלכם…'; }
-    function reset() { btn.removeAttribute('aria-busy'); btn.querySelector('span').textContent = label; if (tag && ts) { tag.classList.remove('checking'); ts.textContent = ts.dataset.idle; } }
-    // On phones open the Telegram app directly (tg://), so the start parameter isn't lost on the way through
-    // the t.me web page; if the app doesn't open within a moment, fall back to t.me.
-    var mobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
-    function go(url) {
-      var start = (url.split('?start=')[1] || '');
-      if (mobile && start) {
-        var user = bot.replace(/^https?:\/\/t\.me\//, '');
-        var t = setTimeout(function () { if (!document.hidden) window.location.href = url; }, 1500);
-        document.addEventListener('visibilitychange', function () { if (document.hidden) clearTimeout(t); }, { once: true });
-        window.location.href = 'tg://resolve?domain=' + user + '&start=' + start;
-      } else { window.location.href = url; }
-      setTimeout(reset, 2500);
-    }
-    function siteSearch(q) {
-      var band = f.closest('section') || f, box = document.getElementById('sresults');
-      if (!box) { box = document.createElement('section'); box.id = 'sresults'; box.className = 'sresults'; box.setAttribute('aria-live', 'polite'); band.insertAdjacentElement('afterend', box); }
-      btn.setAttribute('aria-busy', 'true'); btn.querySelector('span').textContent = 'מחפש…'; say('מחפשים את הדילים הכי שווים…');
-      var done = function () { btn.removeAttribute('aria-busy'); btn.querySelector('span').textContent = label; };
-      fetch(f.dataset.search + '?q=' + encodeURIComponent(q) + '&v=2').then(function (r) {
-        if (r.status === 429) throw new Error('slow'); if (!r.ok) throw new Error('bad'); return r.json();
-      }).then(function (d) {
-        done();
-        var items = (d.products || []);
-        if (!items.length) { say('לא מצאתי תוצאות טובות ל"' + q + '". נסו מילה אחרת, או באנגלית (למשל power bank).', true); box.innerHTML = ''; return; }
-        say('נמצאו ' + items.length + ' דילים ל"' + q + '"' + (items.some(function (p) { return p.coupon; }) ? ', כולל עם קוד קופון' : '') + ' 👇');
-        var codeSrc = 'k' + src.slice(1);
-        var tile = function (p) {
-          var was = p.original && p.original > p.price + 0.5 ? '<span class="was">₪' + p.original.toFixed(2) + '</span>' : '';
-          var burst = p.discount && p.discount >= 5 ? '<span class="burst"><span class="sr-only">הנחה של </span>-' + Math.round(p.discount) + '%</span>' : '';
-          var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
-          var attrs = 'href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"';
-          return '<li><div class="tile"><a class="tlink" ' + attrs + '><span class="pic"><img src="' + esc(p.image) + '_350x350.jpg" onerror="this.onerror=null;this.src=\'' + esc(p.image) + '\'" alt="" width="300" height="300" loading="lazy" referrerpolicy="no-referrer"></span>' + burst +
-            '<span class="tprice">' + priceHtml(p.price) + was + '</span><span class="ttl">' + esc(p.title) + '</span><span class="tfoot"><span class="cat">' + meta + '</span></span></a>' + coupons(p) +
-            '<a class="cta" ' + attrs + ' tabindex="-1">לצפייה במוצר</a></div></li>';
-        };
-        var coded = items.filter(function (p) { return p.coupon; }), rest = items.filter(function (p) { return !p.coupon; });
-        var group = function (title, list) { return list.length ? '<div class="sec-head"><h2>' + title + '</h2></div><ul class="tiles">' + list.map(tile).join('') + '</ul>' : ''; };
-        box.innerHTML = '<div class="wrap">' + (coded.length
-            ? group('🎟️ עם קוד קופון: "' + esc(q) + '"', coded) + group('עוד דילים מומלצים', rest)
-            : group('הכי שווים ל"' + esc(q) + '"', rest)) + '<p class="tiles-note">תוצאות חיות מאליאקספרס, נבחרו לפי קופון, הנחה, דירוג ומכירות. לחיצה על מוצר פותחת אותו באליאקספרס (קישור שותפים: המחיר שלכם לא משתנה). רוצים גם מוכר זול יותר למוצר מסוים? הדביקו את הלינק שלו למעלה.</p></div>';
-        box.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }).catch(function (e) {
-        done(); say(e.message === 'slow' ? 'רגע, יותר מדי חיפושים. נסו שוב בעוד דקה.' : 'החיפוש לא זמין כרגע. נסו שוב בעוד רגע, או חפשו ישר בבוט.', true);
-      });
-    }
-    if (!isLink) return;
-    try { navigator.clipboard.writeText(v); } catch (e) {}   // backup: the link is on the clipboard too
-    if (m) { say('פותח את הבוט על המוצר…'); go(bot + '?start=p_' + m[1] + '-' + src); return; }
-    var sh = v.match(/a\.aliexpress\.[a-z.]+\/_([A-Za-z0-9]{3,40})/i);
-    if (sh) { say('פותח את הבוט על המוצר…'); go(bot + '?start=s_' + sh[1] + '-' + src); return; }
-    var done = function () { say('הלינק הועתק. בטלגרם הדביקו אותו לבוט ושלחו.'); setTimeout(function () { go(bot + '?start=' + src); }, 900); };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(done, done); else done();
+    linkCheck(v); input.value = '';
   });
 });
 </script>"""
