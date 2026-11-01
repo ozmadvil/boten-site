@@ -920,7 +920,7 @@ def build_home():
 {deals}
 
 <section aria-labelledby="guides-title">
-<div class="sec-head"><h2 id="guides-title">לפני שקונים</h2><a href="{BASE}/guides/">כל המדריכים {ICON_ARROW}</a></div>
+<div class="sec-head"><h2 id="guides-title">מדריכים מומלצים</h2><a href="{BASE}/guides/">כל המדריכים {ICON_ARROW}</a></div>
 <ul class="guide-list">
 <li><a class="guide-card" href="{BASE}{ev_url}"><b>{e(ev_title)}</b><span>{e(ev_text)}</span></a></li>
 <li><a class="guide-card" href="{BASE}/guides/customs-tax/"><b>מכס ומע"מ: הפטור הוא 75 דולר</b><span>מה משלמים, מתי, ומה זה כלל 72 השעות.</span></a></li>
