@@ -548,7 +548,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <body>
 <a class="skip" href="#main">דלגו לתוכן</a>
 <header class="site"><div class="wrap">
-<a class="logo" href="{BASE}/" aria-label="NiceBuy, לדף הבית"><img src="{BASE}/assets/logo-192.png" alt="" width="40" height="40"><span>Nice<b>Buy</b></span></a>
+<a class="logo" href="{BASE}/" aria-label="NiceBuy, לדף הבית"><span>Nice<b>Buy</b></span></a>
 <nav class="menu" aria-label="ראשי">{nav}</nav>
 <div class="tgs">
 <a class="tg ch" href="{CHANNEL}" aria-label="ערוץ הדילים בטלגרם">{ICON_TG}<span class="long">ערוץ הדילים</span><span class="short">ערוץ</span></a>

@@ -63,7 +63,7 @@ img, svg { max-width: 100%; height: auto; }
 /* ---------- header: one light bar ---------- */
 header.site { position: sticky; top: 0; z-index: 10; background: rgb(255 255 255 / .92); backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--line); }
 header.site .wrap { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "logo menu tgs"; align-items: center; gap: 0 28px; min-height: 72px; }
-.logo { grid-area: logo; display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 28px; line-height: 1; color: var(--text); text-decoration: none; letter-spacing: -.03em; direction: ltr; }
+.logo { grid-area: logo; display: flex; align-items: center; font-weight: 900; font-size: 34px; line-height: 1; color: var(--text); text-decoration: none; letter-spacing: -.035em; direction: ltr; padding-block: 4px; }
 .logo:hover { color: var(--text); }
 .logo b { color: var(--primary); font-weight: 900; }
 .logo img { width: 42px; height: 42px; border-radius: 12px; box-shadow: 0 0 0 1px var(--line), 0 4px 10px -4px rgb(17 24 39 / .25); }
@@ -89,7 +89,7 @@ header.site .wrap { display: grid; grid-template-columns: auto minmax(0, 1fr) au
 }
 @media (max-width: 600px) { .site .tg.ch .long { display: none; } .site .tg.ch .short { display: inline; } }
 @media (max-width: 480px) {
-  .logo { font-size: 23px; gap: 8px; } .logo img { width: 36px; height: 36px; border-radius: 10px; }
+  .logo { font-size: 27px; }
   .tgs { gap: 6px; }
   .site .tg { padding: 8px 11px; font-size: 14px; gap: 6px; }
   .site .tg.ch .long { display: none; } .site .tg.ch .short { display: inline; }
