@@ -829,7 +829,7 @@ def hero(src: str, main_heading: bool, compact: bool = False) -> str:
     tag = "h1" if main_heading else "p"
     return f"""<section class="hero" aria-labelledby="hero-title"><div class="wrap">
 <div class="hero-copy">
-<{tag} id="hero-title" class="hero-title">הדילים <em>הכי שווים</em> ברשת</{tag}>
+<{tag} id="hero-title" class="hero-title">המוצרים <em>הכי שווים</em> ברשת</{tag}>
 <p class="lead">קופונים, מבצעים והנחות שיחסכו לכם כסף!</p>
 </div>
 {checker(src)}
@@ -838,7 +838,7 @@ def hero(src: str, main_heading: bool, compact: bool = False) -> str:
 
 
 # The date someone last changed each page's own text here in build.py (data-driven parts date themselves).
-EDITED = {"/": "2026-11-01", "/coupons/": "2026-10-21", "/guides/": "2026-10-21", "/guides/coupon-types/": "2026-10-20",
+EDITED = {"/": "2026-11-02", "/coupons/": "2026-10-21", "/guides/": "2026-10-21", "/guides/coupon-types/": "2026-10-20",
           "/guides/code-not-working/": "2026-10-20", "/about/": "2026-10-20"}
 
 
@@ -920,7 +920,7 @@ def build_home():
     page(path, f"{NAME}: קודי קופון לאליאקספרס שנבדקו + בוט שבודק כל מוצר",
          "קודי קופון לאליאקספרס בישראל שנבדקו בקופה, עם תאריך. ובוט טלגרם חינמי שמחזיר לכל מוצר מחיר בשקלים, הנחה וקוד מוכר.",
          body, full=True, js=True, updated=updated,
-         card={"lines": [("הדילים", "ink"), ("הכי שווים", "red"), ("ברשת", "ink")],
+         card={"lines": [("המוצרים", "ink"), ("הכי שווים", "red"), ("ברשת", "ink")],
                "sub": "מחיר בשקלים, הנחה וקוד אם יש. בבוט טלגרם חינמי.", "products": products[:3]})
 
 
