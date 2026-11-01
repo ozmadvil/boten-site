@@ -172,9 +172,12 @@ def platform_for(price: float) -> dict | None:
 
 def platform_what(r: dict) -> str:
     """The tier as published: in ₪ when the set is in ₪, else in $ (no converted amounts on the site)."""
-    if r.get("off_ils"):
-        return f"{ils(float(r['off_ils']))} הנחה מעל {ils(float(r['min_ils']))}"
-    return f"${float(r['off_usd']):g} הנחה מעל ${float(r['min_usd']):g}"
+    return f"{platform_amt(r, 'off')} הנחה מעל {platform_amt(r, 'min')}"
+
+
+def platform_amt(r: dict, k: str) -> str:
+    """'off' or 'min' as published: ₪ for a set in shekels, else $."""
+    return ils(float(r[f"{k}_ils"])) if r.get(f"{k}_ils") else f"${float(r[f'{k}_usd']):g}"
 checks = sorted(read_csv("checks.csv"), key=lambda r: r["date"], reverse=True)
 
 for r in checks:
@@ -956,16 +959,19 @@ def build_coupons_page():
     # --- Israel platform codes (ILAFF): active set, or the last one
     if platform_active:
         end = min(r["_end"] for r in platform_active)
-        prow = "".join(f"<tr><td><code class=\"code\">{e(r['code'])}</code></td><td>${float(r['off_usd']):g}</td>"
-                       f"<td>מעל ${float(r['min_usd']):g}</td></tr>" for r in platform_active)
-        platform_html = (f"<p><b>סט קודי ישראל פעיל עד {fmt_d(end, True)}.</b> מזינים קוד אחד, לפי הסכום בסל אחרי הנחות.</p>"
+        prow = "".join(f"<tr><td><code class=\"code\">{e(r['code'])}</code></td><td>{platform_amt(r, 'off')}</td>"
+                       f"<td>מעל {platform_amt(r, 'min')}</td></tr>" for r in platform_active)
+        open_end = any(r.get("status") == "no-end-date" for r in platform_active)
+        until = "פעיל כרגע (אליאקספרס לא פרסמה תאריך סיום)" if open_end else f"פעיל עד {fmt_d(end, True)}"
+        platform_html = (f"<p><b>סט קודי ישראל {until}.</b> מזינים קוד אחד, לפי הסכום בסל אחרי הנחות.</p>"
                          f'<div class="table-wrap"><table class="codes"><thead><tr><th>קוד</th><th>הנחה</th><th>מינימום לסל</th>'
                          f"</tr></thead><tbody>{prow}</tbody></table></div>")
-        answer_now = f"יש סט פעיל של קודי ישראל (ILAFF) עד {fmt_d(end, True)}, ראו בטבלה."
+        answer_now = ("יש כרגע קודי ישראל פעילים, ראו בטבלה." if open_end
+                      else f"יש סט פעיל של קודי ישראל עד {fmt_d(end, True)}, ראו בטבלה.")
     else:
-        last = sorted([r for r in platform_all if r["_end"] and r["_end"] < NOW], key=lambda r: float(r["min_usd"]))
-        prow = "".join(f"<tr><td><code class=\"code bad\">{e(r['code'])}</code></td><td>${float(r['off_usd']):g}</td>"
-                       f"<td>מעל ${float(r['min_usd']):g}</td><td><span class=\"sticker bad\">{ICON_X}פג תוקף</span></td></tr>" for r in last)
+        last = sorted([r for r in platform_all if r["_end"] and r["_end"] < NOW], key=lambda r: r["_min"])
+        prow = "".join(f"<tr><td><code class=\"code bad\">{e(r['code'])}</code></td><td>{platform_amt(r, 'off')}</td>"
+                       f"<td>מעל {platform_amt(r, 'min')}</td><td><span class=\"sticker bad\">{ICON_X}פג תוקף</span></td></tr>" for r in last)
         when = (f"מ-{fmt_d(last[0]['_start'], True)} עד {fmt_d(last[0]['_end'], True)}" if last else "")
         platform_html = ("<p>אליאקספרס מוציאה סט קודים לישראל (ILAFF…) לקראת אירועי מבצע, לחלון של כשבוע. "
                          "אנחנו מפרסמים סט רק כשיש לו חלון תוקף רשמי, ומעדכנים כאן ביום שהוא יוצא.</p>"
