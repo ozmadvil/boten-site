@@ -250,7 +250,7 @@ p { margin: 0 0 14px; }
 .tile .pic img { width: 100%; height: 100%; object-fit: contain; display: block; transition: transform .4s var(--ease-out); }
 .tile:hover .pic img { transform: scale(1.04); }
 .tile .burst {
-  position: absolute; top: 20px; left: 20px; z-index: 1; background: var(--accent); color: var(--accent-ink);
+  position: absolute; top: 20px; right: 20px; z-index: 1; background: var(--accent); color: var(--accent-ink);
   font-weight: 700; font-size: 15px; line-height: 1; padding: 7px 10px; border-radius: 99px; direction: ltr;
   box-shadow: 0 4px 10px -4px rgb(54 83 20 / .5);
 }
@@ -270,7 +270,7 @@ p { margin: 0 0 14px; }
 .tile .tfoot { margin-bottom: auto; }
 /* a seller code waits in the bot: a sticker on the photo's corner opens the bot on this product */
 .tcode {
-  position: absolute; top: 20px; right: 20px; z-index: 2; display: inline-flex; align-items: center; gap: 5px;
+  position: absolute; top: 20px; left: 20px; z-index: 2; display: inline-flex; align-items: center; gap: 5px;
   background: var(--primary); color: #fff; font-size: 13px; font-weight: 700; line-height: 1.2; padding: 7px 11px;
   border-radius: 99px; text-decoration: none; box-shadow: 0 4px 12px -4px rgb(79 70 229 / .7); white-space: nowrap;
   transition: background-color .15s var(--ease-out), transform .25s var(--ease-out);
@@ -285,10 +285,10 @@ p { margin: 0 0 14px; }
   .tile .pic { margin-bottom: 10px; }
   .tile .tprice .price { font-size: 25px; }
   .tile .tprice .was { font-size: 13px; }
-  .tile .burst { top: 14px; left: 14px; font-size: 13px; padding: 5px 8px; }
+  .tile .burst { top: 14px; right: 14px; font-size: 13px; padding: 5px 8px; }
   .tile .ttl { font-size: 14px; }
   .tile .cta { font-size: 14px; padding: 9px 8px; gap: 6px; }
-  .tcode { top: 14px; right: 14px; max-width: calc(100% - 90px); overflow: hidden; text-overflow: ellipsis; font-size: 12px; padding: 5px 9px; }
+  .tcode { top: 14px; left: 14px; max-width: calc(100% - 90px); overflow: hidden; text-overflow: ellipsis; font-size: 12px; padding: 5px 9px; }
 }
 
 /* ---------- proof: the checks log with the price tag ---------- */
