@@ -1,0 +1,15 @@
+# NiceBuy
+
+> קודי קופון לאליאקספרס בישראל שנבדקו בקופה, ובוט טלגרם חינמי (@Boten_IL_bot) שבודק כל מוצר.
+
+- [סוגי קופונים ושילובים](https://raw.githack.com/ozmadvil/boten-site/redesign-nicebuy/preview/guides/coupon-types/)
+- [קוד קופון לא עובד](https://raw.githack.com/ozmadvil/boten-site/redesign-nicebuy/preview/guides/code-not-working/): הודעות השגיאה האמיתיות ופתרונות
+- [יום הרווקים 11.11 באליאקספרס 2026: תאריכים, קופונים ואיך להתכונן](https://raw.githack.com/ozmadvil/boten-site/redesign-nicebuy/preview/guides/11-11/)
+- [בלאק פריידי באליאקספרס 2026: תאריכים, קודי קופון ואיך לא ליפול על הנחה מזויפת](https://raw.githack.com/ozmadvil/boten-site/redesign-nicebuy/preview/guides/black-friday/)
+- [לוח המבצעים של אליאקספרס: מתי הכי משתלם לקנות](https://raw.githack.com/ozmadvil/boten-site/redesign-nicebuy/preview/guides/sales-calendar/)
+- [מכס ומע"מ על חבילות מאליאקספרס: מה משלמים ומתי](https://raw.githack.com/ozmadvil/boten-site/redesign-nicebuy/preview/guides/customs-tax/)
+- [משלוח מאליאקספרס לישראל: כמה זמן, ממתי חינם ואיפה אוספים](https://raw.githack.com/ozmadvil/boten-site/redesign-nicebuy/preview/guides/shipping-israel/)
+- [האם צריך אישור משרד התקשורת למוצר מאליאקספרס?](https://raw.githack.com/ozmadvil/boten-site/redesign-nicebuy/preview/guides/wireless-approval/)
+- [המוצר לא הגיע או הגיע פגום? איך מקבלים החזר באליאקספרס](https://raw.githack.com/ozmadvil/boten-site/redesign-nicebuy/preview/guides/dispute-refund/)
+- [מה ישראלים קונים באליאקספרס, ומה לבדוק לפני שקונים](https://raw.githack.com/ozmadvil/boten-site/redesign-nicebuy/preview/guides/popular-products/)
+- [בוסטר התנעה מאליאקספרס: איך בוחרים](https://raw.githack.com/ozmadvil/boten-site/redesign-nicebuy/preview/guides/jump-starter/)
