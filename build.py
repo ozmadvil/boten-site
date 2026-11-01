@@ -154,7 +154,27 @@ for r in platform_all:
     r["_start"], r["_end"] = parse_dt(r.get("start", ""), end=False), parse_dt(r.get("end", ""))
 platform_active = [r for r in platform_all
                    if r["_start"] and r["_end"] and r["_start"] <= NOW <= r["_end"] and r.get("status") != "removed"]
-platform_active.sort(key=lambda r: float(r["min_usd"]))
+USD_ILS = float(os.environ.get("USD_ILS") or 3.7)       # only to pick a tier for a ₪ price; the coupons page keeps $
+for r in platform_all:                       # a set published in ₪ (off_ils/min_ils) or in $ (off_usd/min_usd)
+    r["_off"] = float(r.get("off_ils") or 0) or round(float(r.get("off_usd") or 0) * USD_ILS, 2)
+    r["_min"] = float(r.get("min_ils") or 0) or round(float(r.get("min_usd") or 0) * USD_ILS, 2)
+platform_active.sort(key=lambda r: r["_min"])
+
+
+def platform_for(price: float) -> dict | None:
+    """The Israel code that fits one unit of this product: the biggest tier whose minimum the price reaches,
+    else the lowest tier (its minimum is shown, for a bigger cart)."""
+    if not platform_active:
+        return None
+    fit = [r for r in platform_active if r["_min"] <= price + 0.01]
+    return max(fit, key=lambda r: r["_off"]) if fit else platform_active[0]
+
+
+def platform_what(r: dict) -> str:
+    """The tier as published: in ₪ when the set is in ₪, else in $ (no converted amounts on the site)."""
+    if r.get("off_ils"):
+        return f"{ils(float(r['off_ils']))} הנחה מעל {ils(float(r['min_ils']))}"
+    return f"${float(r['off_usd']):g} הנחה מעל ${float(r['min_usd']):g}"
 checks = sorted(read_csv("checks.csv"), key=lambda r: r["date"], reverse=True)
 
 for r in checks:
@@ -349,6 +369,35 @@ def checker(src: str, field_id: str = "link", compact: bool = False) -> str:
 CHECKER_JS = r"""<script>
 function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function priceHtml(v) { var p = Number(v).toFixed(2).split('.'); return '<span class="price"><span class="cur">₪</span><span>' + p[0] + '</span>' + (p[1] !== '00' ? '<span class="sr-only">.</span><span class="ag">' + p[1] + '</span>' : '') + '</span>'; }
+function ils(v) { return '₪' + (Math.abs(v - Math.round(v)) < 0.005 ? Math.round(v) : Number(v).toFixed(2)); }
+function maskCode(c) { var k = c.length > 5 ? 3 : 2; return c.slice(0, k) + '•'.repeat(Math.max(3, Math.min(5, c.length - k))); }
+function couponBtn(code, kind, what, link) {
+  return '<button class="tcoupon" type="button" data-code="' + esc(code) + '" data-href="' + esc(link) + '" aria-label="העתקת ' + kind + ' ופתיחת המוצר">' +
+    '<span class="tc-what"><b>' + kind + '</b> ' + esc(what) + '</span><span class="tc-code"><span class="tc-txt">' + esc(maskCode(code)) + '</span><span class="tc-act">העתקה</span></span></button>';
+}
+function coupons(p) {
+  var out = '', c = p.code;
+  if (c && typeof c === 'object' && c.code && !(c.ends && new Date(c.ends.replace(' ', 'T')) < new Date())) {
+    var what = c.off ? ils(c.off) + ' הנחה' : (c.pct ? Math.round(c.pct) + '% הנחה' : '');
+    if (c.min && c.min > 1) what += ' מעל ' + ils(c.min);
+    out += couponBtn(c.code, 'קוד מוכר', what, p.link);
+  }
+  var pl = window.NB_PLATFORM || [];
+  if (pl.length) {
+    var fit = pl.filter(function (r) { return r.min <= p.price + 0.01; });
+    var r = fit.length ? fit.reduce(function (a, b) { return b.off > a.off ? b : a; }) : pl[0];
+    out += couponBtn(r.code, 'קוד ישראל', r.what, p.link);
+  }
+  return out ? '<span class="tcoupons">' + out + '</span>' : '';
+}
+// a code inside a card: copy it, show it, and open the product in a new tab (the affiliate link)
+document.addEventListener('click', function (ev) {
+  var b = ev.target.closest && ev.target.closest('.tcoupon'); if (!b) return;
+  var code = b.dataset.code, txt = b.querySelector('.tc-txt'), act = b.querySelector('.tc-act');
+  var done = function (ok) { txt.textContent = code; act.textContent = ok ? 'הועתק ✓' : 'העתיקו ידנית'; b.classList.add('shown'); };
+  try { navigator.clipboard.writeText(code).then(function () { done(true); }, function () { done(false); }); } catch (e) { done(false); }
+  if (b.dataset.href) window.open(b.dataset.href, '_blank', 'noopener');
+});
 function codeLabel(p) {
   var c = p.code; if (!c || typeof c !== 'object') return null;
   if (c.ends && new Date(c.ends.replace(' ', 'T')) < new Date()) return null;
@@ -408,9 +457,10 @@ document.querySelectorAll('form.checker').forEach(function (f) {
           var was = p.original && p.original > p.price + 0.5 ? '<span class="was">₪' + p.original.toFixed(2) + '</span>' : '';
           var burst = p.discount && p.discount >= 5 ? '<span class="burst"><span class="sr-only">הנחה של </span>-' + Math.round(p.discount) + '%</span>' : '';
           var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
-          var lab = codeLabel(p), code = lab ? '<a class="tcode" href="' + bot + '?start=p_' + p.id + '-' + codeSrc + '">' + esc(lab) + '</a>' : '';
-          return '<li><a class="tile" href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"><span class="pic"><img src="' + esc(p.image) + '_350x350.jpg" onerror="this.onerror=null;this.src=\'' + esc(p.image) + '\'" alt="" width="300" height="300" loading="lazy" referrerpolicy="no-referrer"></span>' + burst +
-            '<span class="tprice">' + priceHtml(p.price) + was + '</span><span class="ttl">' + esc(p.title) + '</span><span class="tfoot"><span class="cat">' + meta + '</span></span><span class="cta">לצפייה במוצר</span></a>' + code + '</li>';
+          var attrs = 'href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"';
+          return '<li><div class="tile"><a class="tlink" ' + attrs + '><span class="pic"><img src="' + esc(p.image) + '_350x350.jpg" onerror="this.onerror=null;this.src=\'' + esc(p.image) + '\'" alt="" width="300" height="300" loading="lazy" referrerpolicy="no-referrer"></span>' + burst +
+            '<span class="tprice">' + priceHtml(p.price) + was + '</span><span class="ttl">' + esc(p.title) + '</span><span class="tfoot"><span class="cat">' + meta + '</span></span></a>' + coupons(p) +
+            '<a class="cta" ' + attrs + ' tabindex="-1">לצפייה במוצר</a></div></li>';
         };
         var coded = items.filter(function (p) { return p.coupon; }), rest = items.filter(function (p) { return !p.coupon; });
         var group = function (title, list) { return list.length ? '<div class="sec-head"><h2>' + title + '</h2></div><ul class="tiles">' + list.map(tile).join('') + '</ul>' : ''; };
@@ -565,7 +615,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <p>* NiceBuy אינו קשור לאליאקספרס ואינו מייצג אותה. AliExpress הוא סימן מסחר של בעליו. המחירים וההנחות נכונים ליום הבדיקה בלבד.</p>
 {footer_date}
 </div></footer>
-{CHECKER_JS if js else ""}
+{platform_js() if js else ""}{CHECKER_JS if js else ""}
 </body>
 </html>
 """
@@ -691,6 +741,41 @@ def code_label(p: dict) -> str | None:
     return "יש קוד הנחה בבוט"
 
 
+def mask_code(code: str) -> str:
+    keep = 3 if len(code) > 5 else 2
+    return code[:keep] + "•" * max(3, min(5, len(code) - keep))
+
+
+def coupon_btn(code: str, kind: str, what: str, link: str) -> str:
+    """A code inside the card: shown partly; a click copies it and opens the product (affiliate link) in a new tab."""
+    return (f'<button class="tcoupon" type="button" data-code="{e(code)}" data-href="{e(link)}" '
+            f'aria-label="העתקת {kind} ופתיחת המוצר">'
+            f'<span class="tc-what"><b>{kind}</b> {what}</span>'
+            f'<span class="tc-code"><span class="tc-txt">{e(mask_code(code))}</span><span class="tc-act">העתקה</span></span></button>')
+
+
+def tile_coupons(p: dict) -> str:
+    """Seller code (from the product) and the Israel platform code that fits it."""
+    out, price_v, link = [], float(p["price"]), p["link"]
+    c = p.get("code") if isinstance(p.get("code"), dict) else None
+    ends = parse_dt((c or {}).get("ends") or "")
+    if c and c.get("code") and not (ends and ends < NOW):
+        off, pct, minimum = num(c.get("off")), num(c.get("pct")), num(c.get("min"))
+        what = f"{ils(off)} הנחה" if off else (f"{pct:.0f}% הנחה" if pct else "")
+        if minimum and minimum > 1:
+            what += f" מעל {ils(minimum)}"
+        out.append(coupon_btn(c["code"], "קוד מוכר", what.strip(), link))
+    r = platform_for(price_v)
+    if r:
+        out.append(coupon_btn(r["code"], "קוד ישראל", platform_what(r), link))
+    return f'<span class="tcoupons">{"".join(out)}</span>' if out else ""
+
+
+def platform_js() -> str:
+    data = [{"code": r["code"], "off": r["_off"], "min": r["_min"], "what": platform_what(r)} for r in platform_active]
+    return f"<script>window.NB_PLATFORM = {json.dumps(data)};</script>"
+
+
 def product_tiles(rows: list[dict], path: str) -> str:
     """Channel deals as flyer tiles. A tile is one link straight to AliExpress (affiliate), dated like every price
     on the site. When the product has a seller code, a sticker beside the link opens the bot on that product."""
@@ -705,17 +790,19 @@ def product_tiles(rows: list[dict], path: str) -> str:
             cat = '<span class="cat pick">בחירה של NiceBuy</span>'
         when = iso_dt(p.get("checked") or p.get("posted"))
         asof = f'<span class="asof">נכון ל-{when.strftime("%d/%m")}</span>' if when else ""
-        label = code_label(p)
-        code = (f'<a class="tcode" href="{bot_link(p.get("id"), src_for("code", path))}">{ICON_TG}<span>{e(label)}</span></a>'
-                if label and p.get("id") else "")
-        tiles.append(f"""<li><a class="tile" href="{e(p['link'])}" rel="sponsored nofollow noopener" target="_blank">
+        coupons = tile_coupons(p)
+        attrs = f'href="{e(p['link'])}" rel="sponsored nofollow noopener" target="_blank"'
+        tiles.append(f"""<li><div class="tile">
+<a class="tlink" {attrs}>
 <span class="pic"><img src="{e(p['image'])}" alt="" width="300" height="300" loading="lazy" decoding="async" referrerpolicy="no-referrer"></span>
 {burst}
 <span class="tprice">{price(price_v)}{was}</span>
 <span class="ttl">{e(short_title(p['title']))}</span>
 <span class="tfoot">{cat}{asof}</span>
-<span class="cta">{ICON_CART}לצפייה במוצר</span>
-</a>{code}</li>""")
+</a>
+{coupons}
+<a class="cta" {attrs} tabindex="-1">{ICON_CART}לצפייה במוצר</a>
+</div></li>""")
     return f'<ul class="tiles">{"".join(tiles)}</ul>'
 
 

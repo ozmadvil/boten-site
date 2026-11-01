@@ -22,7 +22,7 @@ Codes are checked at a real checkout and dated; failures are logged too, with th
 - Affiliate model: AliExpress affiliate links in the bot; the site carries a disclosure.
 
 ## Capabilities and Constraints
-- Coupon codes are not published openly on the site; codes are delivered through the bot (affiliate link). The site may show discount amounts, minimums and validity, with a button into the bot.
+- Since 02/11/2026 (owner's decision) product cards show the seller code and the fitting Israel platform code, partly hidden: a click copies the code and opens the product through the affiliate link in a new tab. Israel codes still only from official sets with a validity window.
 - Platform codes (ILAFF…) are only shown when they have an official validity window.
 - No tracking cookies. Hebrew, RTL, `lang="he"`.
 - Plain static HTML/CSS from a Python generator; no framework, no build toolchain beyond Python.
