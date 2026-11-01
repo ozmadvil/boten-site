@@ -937,14 +937,6 @@ def build_home():
 </ul>
 </section>
 
-<section aria-labelledby="log-title" class="proof">
-<div class="proof-text">
-<h2 id="log-title">יומן הבדיקות</h2>
-<p class="lead">רוב אתרי הקופונים מעתיקים רשימות בלי לבדוק. אנחנו בודקים בקופה, ומתעדים גם מה שלא עבד.</p>
-</div>
-<div class="tag-slot">{hero_tag()}</div>
-{checks_log()}
-</section>
 </div>
 
 <section class="closer" aria-labelledby="closer-title"><div class="wrap">
