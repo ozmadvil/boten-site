@@ -247,7 +247,7 @@ def render(target: Path, card: dict, root: Path, out: Path) -> bool:
         name_right = lx - 18
     except OSError:
         pass
-    _draw_rtl(d, name_right, 66, "בוטן", _font(root, 900, 50), WHITE)
+    _draw_rtl(d, name_right, 66, "NiceBuy", _font(root, 900, 50), WHITE)
     d.text((MARGIN, 60), "@Boten_IL_bot", font=_font(root, 500, 26)[1], fill=WHITE, anchor="ls")
 
     # the deals (home page, categories): paper tags on the left; the coupons page gets the rubber stamp there

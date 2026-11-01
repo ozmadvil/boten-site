@@ -28,7 +28,7 @@ Codes are checked at a real checkout and dated; failures are logged too, with th
 - Plain static HTML/CSS from a Python generator; no framework, no build toolchain beyond Python.
 
 ## Brand Commitments
-- Name: בוטן (Boten). Telegram handle @Boten_IL_bot.
+- Name: NiceBuy (site, nicebuy.co.il pending). The Telegram bot and channel keep the name בוטן (@Boten_IL_bot, @Boten_deals); the site calls it "הבוט של NiceBuy" / "הבוט".
 - The owner gave full visual freedom, logo included.
 - Voice: short, direct, honest; "sell without selling" (owner preference): minimal text, no hard sell.
 

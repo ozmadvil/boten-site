@@ -1,4 +1,4 @@
-"""Builds the Boten static site into _site/ from the CSV files in data/.
+"""Builds the NiceBuy static site into _site/ from the CSV files in data/.
 
 Run:  python build.py            (SITE_URL env sets the public address, for canonical links and the sitemap)
 GitHub Actions rebuilds it on every push and every hour, so expired codes and past sale events drop off by themselves.
@@ -33,7 +33,7 @@ if os.environ.get("BUILD_NOW"):          # preview the site as it will look on a
 TODAY = NOW.strftime("%d/%m/%Y")
 HEB_MONTHS = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"]
 MONTH_YEAR = f"{HEB_MONTHS[NOW.month - 1]} {NOW.year}"
-NAME = "בוטן"
+NAME = "NiceBuy"
 e = html.escape
 
 
@@ -318,10 +318,10 @@ function priceHtml(v) { var p = Number(v).toFixed(2).split('.'); return '<span c
 function codeLabel(p) {
   var c = p.code; if (!c || typeof c !== 'object') return null;
   if (c.ends && new Date(c.ends.replace(' ', 'T')) < new Date()) return null;
-  if (c.min && c.min > p.price + 0.01) return 'יש קוד הנחה בבוטן';
-  if (c.off) return 'קוד ₪' + (Math.abs(c.off - Math.round(c.off)) < 0.005 ? Math.round(c.off) : c.off.toFixed(2)) + ' בבוטן';
-  if (c.pct) return 'קוד ' + Math.round(c.pct) + '% בבוטן';
-  return 'יש קוד הנחה בבוטן';
+  if (c.min && c.min > p.price + 0.01) return 'יש קוד הנחה בבוט';
+  if (c.off) return 'קוד ₪' + (Math.abs(c.off - Math.round(c.off)) < 0.005 ? Math.round(c.off) : c.off.toFixed(2)) + ' בבוט';
+  if (c.pct) return 'קוד ' + Math.round(c.pct) + '% בבוט';
+  return 'יש קוד הנחה בבוט';
 }
 document.querySelectorAll('form.checker').forEach(function (f) {
   var input = f.querySelector('input.q'), btn = f.querySelector('button'), msg = f.querySelector('.msg');
@@ -360,7 +360,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     function siteSearch(q) {
       var band = f.closest('section') || f, box = document.getElementById('sresults');
       if (!box) { box = document.createElement('section'); box.id = 'sresults'; box.className = 'sresults'; box.setAttribute('aria-live', 'polite'); band.insertAdjacentElement('afterend', box); }
-      btn.setAttribute('aria-busy', 'true'); btn.querySelector('span').textContent = 'מחפש…'; say('בוטן מחפש את הדילים הכי שווים…');
+      btn.setAttribute('aria-busy', 'true'); btn.querySelector('span').textContent = 'מחפש…'; say('מחפשים את הדילים הכי שווים…');
       var done = function () { btn.removeAttribute('aria-busy'); btn.querySelector('span').textContent = label; };
       fetch(f.dataset.search + '?q=' + encodeURIComponent(q) + '&v=2').then(function (r) {
         if (r.status === 429) throw new Error('slow'); if (!r.ok) throw new Error('bad'); return r.json();
@@ -390,10 +390,10 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     }
     if (!isLink) return;
     try { navigator.clipboard.writeText(v); } catch (e) {}   // backup: the link is on the clipboard too
-    if (m) { say('פותח את בוטן על המוצר…'); go(bot + '?start=p_' + m[1] + '-' + src); return; }
+    if (m) { say('פותח את הבוט על המוצר…'); go(bot + '?start=p_' + m[1] + '-' + src); return; }
     var sh = v.match(/a\.aliexpress\.[a-z.]+\/_([A-Za-z0-9]{3,40})/i);
-    if (sh) { say('פותח את בוטן על המוצר…'); go(bot + '?start=s_' + sh[1] + '-' + src); return; }
-    var done = function () { say('הלינק הועתק. בטלגרם הדביקו אותו לבוטן ושלחו.'); setTimeout(function () { go(bot + '?start=' + src); }, 900); };
+    if (sh) { say('פותח את הבוט על המוצר…'); go(bot + '?start=s_' + sh[1] + '-' + src); return; }
+    var done = function () { say('הלינק הועתק. בטלגרם הדביקו אותו לבוט ושלחו.'); setTimeout(function () { go(bot + '?start=' + src); }, 900); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(done, done); else done();
   });
 });
@@ -411,7 +411,7 @@ def _nav() -> list[tuple[str, str]]:
 
 NAV = _nav()
 
-ORG = {"@type": "Organization", "@id": f"{SITE_URL}/#org", "name": NAME, "alternateName": "Boten",
+ORG = {"@type": "Organization", "@id": f"{SITE_URL}/#org", "name": NAME, "alternateName": ["נייס ביי", "בוטן", "Boten"],
        "url": f"{SITE_URL}/", "logo": f"{SITE_URL}/assets/logo-192.png", "sameAs": [BOT, CHANNEL]}
 
 SITEMAP: list[tuple[str, date | None]] = []
@@ -480,8 +480,8 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
         body = f"""<div class="wrap">
 {crumb_html}
 {body}
-<aside class="cta-inline"><p>יש לכם מוצר מאליאקספרס? שלחו את הלינק לבוטן וקבלו מחיר, הנחה וקוד קופון אם יש.</p>
-<a class="btn" href="{bot_link(src=src_for('inline', path))}">{ICON_TG}פתחו את בוטן בטלגרם</a><a class="btn secondary" href="{CHANNEL}">{ICON_MEGAPHONE}לערוץ הדילים בטלגרם</a></aside>
+<aside class="cta-inline"><p>יש לכם מוצר מאליאקספרס? שלחו את הלינק לבוט של NiceBuy וקבלו מחיר, הנחה וקוד קופון אם יש.</p>
+<a class="btn" href="{bot_link(src=src_for('inline', path))}">{ICON_TG}פתחו את הבוט בטלגרם</a><a class="btn secondary" href="{CHANNEL}">{ICON_MEGAPHONE}לערוץ הדילים בטלגרם</a></aside>
 </div>"""
     og_url, og_w, og_h = share_image(path, card)
     footer_date = f"<p>עודכן לאחרונה: {updated.strftime('%d/%m/%Y')}</p>" if updated else ""
@@ -515,7 +515,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <a class="skip" href="#main">דלגו לתוכן</a>
 <header class="site"><div class="wrap">
 <a class="logo" href="{BASE}/"><img src="{BASE}/assets/logo-192.png" alt="" width="40" height="40">{NAME}</a>
-<a class="tg" href="{bot_link(src=src_for('nav', path))}" aria-label="בוטן בטלגרם">{ICON_TG_LOGO}בוטן בטלגרם</a>
+<a class="tg" href="{bot_link(src=src_for('nav', path))}" aria-label="הבוט של NiceBuy בטלגרם">{ICON_TG_LOGO}הבוט בטלגרם</a>
 <a class="tg ch" href="{CHANNEL}" aria-label="ערוץ הדילים בטלגרם">{ICON_TG_LOGO}<span class="long">ערוץ הדילים</span><span class="short">ערוץ</span></a>
 </div></header>
 {menubar_top}
@@ -523,9 +523,9 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 {body}
 </main>
 <footer class="site"><div class="wrap">
-<div class="links">{"".join(f'<a href="{BASE}{p}">{n}</a>' for p, n in NAV)}<a href="{bot_link(src=src_for('footer', path))}">בוטן בטלגרם</a><a href="{CHANNEL}">ערוץ הדילים</a></div>
-<p>* גילוי נאות: חלק מהקישורים באתר ובבוט הם קישורי שותפים של אליאקספרס. על רכישה דרכם בוטן מקבל עמלה קטנה, והמחיר שלכם לא משתנה.</p>
-<p>* בוטן אינו קשור לאליאקספרס ואינו מייצג אותה. AliExpress הוא סימן מסחר של בעליו. המחירים וההנחות נכונים ליום הבדיקה בלבד.</p>
+<div class="links">{"".join(f'<a href="{BASE}{p}">{n}</a>' for p, n in NAV)}<a href="{bot_link(src=src_for('footer', path))}">הבוט בטלגרם</a><a href="{CHANNEL}">ערוץ הדילים</a></div>
+<p>* גילוי נאות: חלק מהקישורים באתר ובבוט הם קישורי שותפים של אליאקספרס. על רכישה דרכם NiceBuy מקבל עמלה קטנה, והמחיר שלכם לא משתנה.</p>
+<p>* NiceBuy אינו קשור לאליאקספרס ואינו מייצג אותה. AliExpress הוא סימן מסחר של בעליו. המחירים וההנחות נכונים ליום הבדיקה בלבד.</p>
 {footer_date}
 </div></footer>
 {CHECKER_JS if js else ""}
@@ -566,20 +566,20 @@ def hero_tag() -> str:
 <ul class="lines">
 <li><span>סל לפני הנחות</span><span class="num was">₪{cart:.2f}</span></li>
 <li><span>הנחות אוטומטיות</span><span class="num minus">‎-₪{auto:.2f}</span></li>
-<li><span>קוד מוכר מבוטן</span><span class="num minus">‎-₪{code:.2f}</span></li>
+<li><span>קוד מוכר מהבוט</span><span class="num minus">‎-₪{code:.2f}</span></li>
 </ul>
 {price(final, "now")}
 <p class="fine">המחיר בקופה אחרי הקוד, בלי משלוח. נבדק {d.strftime('%d/%m/%Y')}.</p>
 </div>
 <div class="stamp" aria-hidden="true">נבדק<small>בקופה</small></div>
 </div>"""
-    return f'<img src="{BASE}/assets/logo.png" alt="הלוגו של בוטן" width="300" height="300">'
+    return f'<img src="{BASE}/assets/logo.png" alt="הלוגו של NiceBuy" width="300" height="300">'
 
 
 def coupons(rows: list[dict], src: str) -> str:
     if not rows:
-        return ('<div class="empty"><p><b>כרגע אין קודי מוכר מאומתים בתוקף.</b> בוטן בודק כל מוצר שתשלחו ומחזיר קוד אם יש.</p>'
-                f'<a class="btn" href="{bot_link(src=src)}">{ICON_TG}בדקו מוצר בבוטן</a> '
+        return ('<div class="empty"><p><b>כרגע אין קודי מוכר מאומתים בתוקף.</b> הבוט של NiceBuy בודק כל מוצר שתשלחו ומחזיר קוד אם יש.</p>'
+                f'<a class="btn" href="{bot_link(src=src)}">{ICON_TG}בדקו מוצר בבוט</a> '
                 f'<a class="btn secondary" href="{CHANNEL}">{ICON_MEGAPHONE}לערוץ הדילים בטלגרם</a></div>')
     out = []
     for r in rows:
@@ -595,7 +595,7 @@ def coupons(rows: list[dict], src: str) -> str:
 <p class="fine">בקנייה מעל <b>₪{float(r['min_ils']):.2f}</b> (אחרי הנחות) · בתוקף עד {fmt_d(r['_end'], True)}</p>
 <p>{badge}</p>
 {note}
-<a class="go" href="{bot_link(r['product_id'], src)}">קבלו את הקוד והמחיר בבוטן {ICON_ARROW}</a>
+<a class="go" href="{bot_link(r['product_id'], src)}">קבלו את הקוד והמחיר בבוט {ICON_ARROW}</a>
 </div>
 <span class="cut" aria-hidden="true">{ICON_SCISSORS}גזור ושמור</span>
 </article>""")
@@ -611,7 +611,7 @@ def checks_log() -> str:
         ok = r["result"] == "עובד"
         c, details = r["code"], r["details"]
         if c in SELLER_CODES:
-            what = "קוד מוכר (נשלח בבוטן)"
+            what = "קוד מוכר (נשלח בבוט)"
         elif "בלוג" in details:
             what = "קוד שפורסם בבלוג קופונים"
         elif c.upper().startswith("IL"):
@@ -646,12 +646,12 @@ def code_label(p: dict) -> str | None:
         return None
     off, pct, minimum = num(c.get("off")), num(c.get("pct")), num(c.get("min"))
     if minimum and minimum > float(p["price"]) + 0.01:     # needs a bigger cart than one unit: the bot explains
-        return "יש קוד הנחה בבוטן"
+        return "יש קוד הנחה בבוט"
     if off:
-        return f"קוד {ils(off)} בבוטן"
+        return f"קוד {ils(off)} בבוט"
     if pct:
-        return f"קוד {pct:.0f}% בבוטן"
-    return "יש קוד הנחה בבוטן"
+        return f"קוד {pct:.0f}% בבוט"
+    return "יש קוד הנחה בבוט"
 
 
 def product_tiles(rows: list[dict], path: str) -> str:
@@ -665,7 +665,7 @@ def product_tiles(rows: list[dict], path: str) -> str:
                  if disc and disc >= 5 else "")
         cat = f'<span class="cat">{e(clean_cat(p["category"]))}</span>' if clean_cat(p.get("category")) else ""
         if p.get("pick"):
-            cat = '<span class="cat pick">בחירה של בוטן</span>'
+            cat = '<span class="cat pick">בחירה של NiceBuy</span>'
         when = iso_dt(p.get("checked") or p.get("posted"))
         asof = f'<span class="asof">נכון ל-{when.strftime("%d/%m")}</span>' if when else ""
         label = code_label(p)
@@ -688,7 +688,7 @@ def hero(src: str, main_heading: bool, compact: bool = False) -> str:
     a line and the checker, so the page's own answer is on the first phone screen."""
     if compact:
         return f"""<section class="hero compact" aria-labelledby="hero-title"><div class="wrap">
-<p id="hero-title" class="hero-title">יש לכם לינק? <em>בוטן בודק.</em></p>
+<p id="hero-title" class="hero-title">יש לכם לינק? <em>NiceBuy בודק.</em></p>
 {checker(src, compact=True)}
 </div></section>"""
     tag = "h1" if main_heading else "p"
@@ -732,7 +732,7 @@ def build_home():
     if seller:                 # no verified seller code in force = no section: an empty box here says nothing useful
         deals = f"""<section aria-labelledby="deals-title">
 <h2 id="deals-title">קודי מוכר שנבדקו</h2>
-<p class="lead">קודי מוכר שנבדקו, עם תאריך. את הקוד עצמו מקבלים בבוטן, יחד עם המחיר המעודכן.</p>
+<p class="lead">קודי מוכר שנבדקו, עם תאריך. את הקוד עצמו מקבלים בבוט, יחד עם המחיר המעודכן.</p>
 {coupons(seller[:4], src_for("deal", path))}
 </section>"""
     body = f"""{hero(src_for('hero', path), True)}
@@ -744,11 +744,11 @@ def build_home():
 {deals}
 
 <section aria-labelledby="how-title">
-<h2 id="how-title">איך בוטן עובד</h2>
+<h2 id="how-title">איך NiceBuy עובד</h2>
 <ol class="how">
 <li><span class="n" aria-hidden="true">1</span><b>מעתיקים לינק</b><p>באפליקציה של אליאקספרס: שיתוף ← העתק קישור.</p></li>
-<li><span class="n" aria-hidden="true">2</span><b>שולחים לבוטן</b><p>מדביקים בצ'אט עם בוטן בטלגרם, או בבודק המחירים למעלה.</p></li>
-<li><span class="n" aria-hidden="true">3</span><b>מקבלים מחיר וקוד</b><p>ואם אין קופון, בוטן מציע לחפש חלופה זולה יותר.</p></li>
+<li><span class="n" aria-hidden="true">2</span><b>שולחים לבוט</b><p>מדביקים בצ'אט עם הבוט בטלגרם, או בבודק המחירים למעלה.</p></li>
+<li><span class="n" aria-hidden="true">3</span><b>מקבלים מחיר וקוד</b><p>ואם אין קופון, הבוט מציע לחפש חלופה זולה יותר.</p></li>
 </ol>
 </section>
 
@@ -772,9 +772,9 @@ def build_home():
 </div>
 
 <section class="closer" aria-labelledby="closer-title"><div class="wrap">
-<div><h2 id="closer-title">יש לכם לינק? בוטן בודק.</h2>
+<div><h2 id="closer-title">יש לכם לינק? NiceBuy בודק.</h2>
 <p>חינם, בטלגרם, בלי הרשמה. והדילים הכי טובים של השבוע מחכים בערוץ.</p></div>
-<div class="actions"><a class="btn" href="{bot_link(src=src_for('closer', path))}">{ICON_TG}פתחו את בוטן בטלגרם</a>
+<div class="actions"><a class="btn" href="{bot_link(src=src_for('closer', path))}">{ICON_TG}פתחו את הבוט בטלגרם</a>
 <a class="btn secondary" href="{CHANNEL}">{ICON_MEGAPHONE}לערוץ הדילים בטלגרם</a></div>
 </div></section>"""
     updated = latest(EDITED[path], *[p.get("checked") or p.get("posted") for p in products],
@@ -816,7 +816,7 @@ def build_coupons_page():
     home_link = links.get("home")
     buy = (f'<a class="btn" href="{e(home_link)}" rel="sponsored nofollow noopener" target="_blank">{ICON_CART}לקנייה באליאקספרס</a>'
            if home_link else "")
-    bot_btn = f'<a class="btn secondary" href="{bot_link(src=src_for("actions", path))}">{ICON_TG}בדקו מוצר בבוטן</a>'
+    bot_btn = f'<a class="btn secondary" href="{bot_link(src=src_for("actions", path))}">{ICON_TG}בדקו מוצר בבוט</a>'
     nxt = events_live[0] if events_live else None
 
     # --- Israel platform codes (ILAFF): active set, or the last one
@@ -897,7 +897,7 @@ def build_coupons_page():
     faq_html, faq_schema = faq_block([
         ("יש עכשיו קוד קופון לאליאקספרס שעובד בישראל?",
          f"{answer_now} "
-         + f"לכל מוצר אחר אפשר לשלוח את הלינק <a href=\"{bot_link(src=src_for('faq', path))}\">לבוטן</a>, והוא מחזיר קוד מוכר אם יש."),
+         + f"לכל מוצר אחר אפשר לשלוח את הלינק <a href=\"{bot_link(src=src_for('faq', path))}\">לבוט</a>, והוא מחזיר קוד מוכר אם יש."),
         *set_faq,
         ("יש הטבה למשתמש חדש באליאקספרס?",
          "בדרך כלל כן: לחשבון חדש אליאקספרס מציעה הטבות פתיחה באפליקציה, שמופיעות אוטומטית בחשבון אחרי ההרשמה. "
@@ -922,7 +922,7 @@ def build_coupons_page():
          "(ראו את הטבלה \"קודים שלא עובדים\"). אנחנו מפרסמים רק מה שנבדק או שמופיע בפורטל הרשמי של אליאקספרס."),
         ("מתי יוצאים קודים חדשים?", when_new),
         ("איך מקבלים קוד למוצר מסוים?",
-         f'שולחים את הלינק של המוצר <a href="{bot_link(src=src_for("faq", path))}">לבוטן בטלגרם</a>. הוא בודק את המוצר ומחזיר מחיר בשקלים, '
+         f'שולחים את הלינק של המוצר <a href="{bot_link(src=src_for("faq", path))}">לבוט בטלגרם</a>. הוא בודק את המוצר ומחזיר מחיר בשקלים, '
          "הנחה וקוד מוכר אם יש, ואם אין, מחפש מוכר זול יותר."),
     ])
     updated = latest(EDITED[path], *[r["_start"] for r in platform_all], *[r["_end"] for r in platform_all],
@@ -963,7 +963,7 @@ def build_coupon_types():
 <h2>1. קוד קופון (Promo code)</h2>
 <p>קוד שמקלידים בקופה, בשדה Promo code. יש שני סוגים:</p>
 <ul>
-<li><b>קוד מוכר</b>: עובד רק על המוצרים של מוכר מסוים. לדוגמה: ₪12.65 הנחה בקנייה מעל ₪126.55 על סוללה של Essager. את הקוד למוצר מסוים מקבלים בבוטן.</li>
+<li><b>קוד מוכר</b>: עובד רק על המוצרים של מוכר מסוים. לדוגמה: ₪12.65 הנחה בקנייה מעל ₪126.55 על סוללה של Essager. את הקוד למוצר מסוים מקבלים בבוט.</li>
 <li><b>קוד פלטפורמה לישראל</b> (ILAFF…): עובד על כל הסל, במדרגות לפי סכום, ורק במשלוח לישראל. יוצא לחלון של כשבוע סביב אירועי מבצעים, ולכל קוד יש מכסה.</li>
 </ul>
 <h2>2. קופון חנות</h2>
@@ -1122,13 +1122,13 @@ def build_categories():
         url = f"/c/{c['slug']}/"
         if c["products"]:
             grid = (product_tiles(c["products"][:24], url) +
-                    '<p class="tiles-note">בוטן בוחר לכל קטגוריה את הדילים הכי שווים לפי מחיר, הנחה, דירוג ומכירות, '
+                    '<p class="tiles-note">NiceBuy בוחר לכל קטגוריה את הדילים הכי שווים לפי מחיר, הנחה, דירוג ומכירות, '
                     'ומעדכן אותם כמה פעמים ביום. המחירים עשויים להשתנות. לחיצה פותחת את המוצר באליאקספרס '
                     '(קישור שותפים: המחיר שלכם לא משתנה).</p>')
         else:
-            grid = ('<div class="empty"><p><b>בוטן עוד מחפש את הדילים לקטגוריה הזו.</b> בינתיים אפשר לשלוח לו לינק '
+            grid = ('<div class="empty"><p><b>NiceBuy עוד מחפש את הדילים לקטגוריה הזו.</b> בינתיים אפשר לשלוח לו לינק '
                     'של כל מוצר ולקבל מחיר, הנחה וקוד אם יש.</p>'
-                    f'<a class="btn" href="{bot_link(src=src_for("empty", url))}">{ICON_TG}בדקו מוצר בבוטן</a> '
+                    f'<a class="btn" href="{bot_link(src=src_for("empty", url))}">{ICON_TG}בדקו מוצר בבוט</a> '
                     f'<a class="btn secondary" href="{CHANNEL}">{ICON_MEGAPHONE}לערוץ הדילים בטלגרם</a></div>')
         stamp = iso_dt(c.get("updated"))                 # when the bot last refreshed this category
         updated = latest(stamp, *[p.get("checked") or p.get("posted") for p in c["products"]]) if c["products"] else None
@@ -1142,7 +1142,7 @@ def build_categories():
         schema = [{"@type": "CollectionPage", "name": f"{c['name']} מאליאקספרס", "inLanguage": "he-IL",
                    "mainEntity": {"@type": "ItemList", "itemListElement": items}}] if items else []
         page(url, f"{c['name']} מאליאקספרס: דילים והנחות בשקלים | {NAME}",
-             f"הדילים הכי שווים ב{c['name']} מאליאקספרס, שבוטן בחר לפי מחיר, הנחה, דירוג ומכירות. מחיר בשקלים, מתעדכן כמה פעמים ביום.",
+             f"הדילים הכי שווים ב{c['name']} מאליאקספרס, ש-NiceBuy בחר לפי מחיר, הנחה, דירוג ומכירות. מחיר בשקלים, מתעדכן כמה פעמים ביום.",
              body, crumbs=[(url, c["name"])], schema=schema, updated=updated,
              card={"lines": [(c["name"], "ink")], "sub": "הדילים של השבוע מאליאקספרס, מחיר בשקלים",
                    "products": c["products"][:3]})
@@ -1164,7 +1164,7 @@ def build_stores():
         until = f" · בתוקף עד {s_['_end'].strftime('%d/%m')}" if s_.get("_end") else ""
         shop_btn = (f'<a class="btn secondary" href="{e(s_["link"])}" rel="sponsored nofollow noopener" target="_blank">'
                     f'{ICON_CART}לחנות באליאקספרס</a>' if s_.get("link") else "")
-        code_btn = (f'<a class="btn" href="{bot_link(c.get("product"), src_for("deal", url))}">{ICON_TG}קבלו את הקוד בבוטן</a>'
+        code_btn = (f'<a class="btn" href="{bot_link(c.get("product"), src_for("deal", url))}">{ICON_TG}קבלו את הקוד בבוט</a>'
                     if c.get("product") else "")
         blocks.append(f"""<section class="store" aria-label="{e(s_['name'])}">
 <div class="sec-head"><h2>{e(s_['name'])}</h2></div>
@@ -1175,9 +1175,9 @@ def build_stores():
     stamp = iso_dt((FEEDS.get("stores.json") or {}).get("updated"))
     body = f"""<header class="page-head"><h1>חנויות במבצע באליאקספרס</h1>
 <span class="updated">{"עודכן: " + fmt_d(stamp, True) + " · " if stamp else ""}מתעדכן פעם בשבוע</span></header>
-<p class="lead">חנויות שיש להן השבוע קוד הנחה של המוכר ששווה לפחות ₪20, עם המוצרים הנמכרים שלהן. בדרך כלל הקוד חל על כל החנות: אפשר לשלב כמה מוצרים מאותה חנות כדי להגיע למינימום. את הקוד עצמו מקבלים בבוטן. קודים רשמיים של המוכרים, לא נבדקו בקופה.</p>
+<p class="lead">חנויות שיש להן השבוע קוד הנחה של המוכר ששווה לפחות ₪20, עם המוצרים הנמכרים שלהן. בדרך כלל הקוד חל על כל החנות: אפשר לשלב כמה מוצרים מאותה חנות כדי להגיע למינימום. את הקוד עצמו מקבלים בבוט. קודים רשמיים של המוכרים, לא נבדקו בקופה.</p>
 {"".join(blocks)}
-<p class="tiles-note">המוצרים הם הנמכרים ביותר של כל חנות מתוך מה שבוטן סרק השבוע. המחירים נכונים לתאריך על כל מוצר. קישורי שותפים: המחיר שלכם לא משתנה.</p>"""
+<p class="tiles-note">המוצרים הם הנמכרים ביותר של כל חנות מתוך מה ש-NiceBuy סרק השבוע. המחירים נכונים לתאריך על כל מוצר. קישורי שותפים: המחיר שלכם לא משתנה.</p>"""
     page(url, f"חנויות במבצע באליאקספרס: קודי מוכר מעל ₪20 | {NAME}",
          "חנויות באליאקספרס עם קוד הנחה של המוכר ששווה לפחות ₪20 השבוע, והמוצרים הנמכרים שלהן. מתעדכן פעם בשבוע.",
          body, crumbs=[(url, "חנויות במבצע")], updated=stamp.date() if stamp else None,
@@ -1188,27 +1188,27 @@ def build_stores():
 def build_about():
     path = "/about/"
     updated = latest(EDITED[path]) or NOW.date()
-    body = f"""<header class="page-head"><h1>אודות בוטן</h1></header>
+    body = f"""<header class="page-head"><h1>אודות NiceBuy</h1></header>
 <div class="prose">
-<p class="lead">בוטן הוא בוט טלגרם חינמי ואתר שעוזרים לקנות באליאקספרס בפחות.</p>
-<p>הבוט בודק כל מוצר שמדביקים לו ומחזיר מחיר בשקלים, הנחה וקוד מוכר אם יש, ומציע חלופות זולות יותר. באתר אנחנו מפרסמים רק מה שנבדק, עם תאריך, ומתעדים גם קודים שלא עבדו.</p>
+<p class="lead">NiceBuy הוא אתר ובוט טלגרם חינמי שעוזרים לקנות באליאקספרס בפחות.</p>
+<p>הבוט בודק כל מוצר שמדביקים לו ומחזיר מחיר בשקלים, הנחה וקוד מוכר אם יש, ומציע חלופות זולות יותר. בטלגרם הבוט נקרא בוטן (@Boten_IL_bot). באתר אנחנו מפרסמים רק מה שנבדק, עם תאריך, ומתעדים גם קודים שלא עבדו.</p>
 <h2>גילוי נאות</h2>
-<p>הקישורים לאליאקספרס בבוט ובאתר הם קישורי שותפים. על רכישה דרכם בוטן מקבל עמלה קטנה מאליאקספרס, והמחיר שלכם לא משתנה. בוטן אינו קשור לאליאקספרס ואינו מייצג אותה.</p>
+<p>הקישורים לאליאקספרס בבוט ובאתר הם קישורי שותפים. על רכישה דרכם NiceBuy מקבל עמלה קטנה מאליאקספרס, והמחיר שלכם לא משתנה. NiceBuy אינו קשור לאליאקספרס ואינו מייצג אותה.</p>
 <h2>פרטיות</h2>
 <p>הבוט לא שומר מידע אישי ולא שולח הודעות שלא ביקשתם. האתר לא משתמש בעוגיות מעקב.</p>
 <h2>יצירת קשר</h2>
 <p>דרך <a href="{bot_link(src=src_for('inline', path))}">הבוט בטלגרם</a>. דילים חדשים מתפרסמים ב<a href="{CHANNEL}">ערוץ הדילים</a>.</p>
 </div>"""
-    page(path, f"אודות {NAME} וגילוי נאות", "מי אנחנו, איך בוטן עובד, גילוי נאות על קישורי שותפים ופרטיות.",
+    page(path, f"אודות {NAME} וגילוי נאות", "מי אנחנו, איך NiceBuy עובד, גילוי נאות על קישורי שותפים ופרטיות.",
          body, crumbs=[(path, "אודות")], updated=updated,
-         card={"lines": [("אודות בוטן", "ink")], "sub": "בוט טלגרם חינמי שבודק מחירים וקודים באליאקספרס"})
+         card={"lines": [("אודות NiceBuy", "ink")], "sub": "בוט טלגרם חינמי שבודק מחירים וקודים באליאקספרס"})
 
 
 def build_404():
     body = f"""<div class="notfound">
 <span class="price now" aria-hidden="true">404</span>
 <h1>המבצע הזה כבר נגמר</h1>
-<p class="lead">הדף שחיפשתם לא קיים, או שהוסר. אבל בוטן עדיין בודק כל מוצר.</p>
+<p class="lead">הדף שחיפשתם לא קיים, או שהוסר. אבל הבוט עדיין בודק כל מוצר.</p>
 <p><a class="btn" href="{BASE}/">לדף הראשי</a></p>
 </div>"""
     page("/404.html", f"הדף לא נמצא | {NAME}", "הדף לא נמצא", body)
@@ -1227,7 +1227,7 @@ def build_meta_files():
         f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>',
         encoding="utf-8")
     (OUT / "llms.txt").write_text(
-        f"# {NAME} (Boten)\n\n> קודי קופון לאליאקספרס בישראל שנבדקו בקופה, ובוט טלגרם חינמי (@Boten_IL_bot) שבודק כל מוצר.\n\n"
+        f"# {NAME}\n\n> קודי קופון לאליאקספרס בישראל שנבדקו בקופה, ובוט טלגרם חינמי (@Boten_IL_bot) שבודק כל מוצר.\n\n"
         f"- [סוגי קופונים ושילובים]({SITE_URL}/guides/coupon-types/)\n"
         f"- [קוד קופון לא עובד]({SITE_URL}/guides/code-not-working/): הודעות השגיאה האמיתיות ופתרונות\n"
         + "".join(f"- [{g['h1']}]({SITE_URL}/guides/{g['slug']}/)\n" for g in __import__("guides_content").GUIDES),
