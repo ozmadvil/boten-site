@@ -281,16 +281,23 @@ p { margin: 0 0 14px; }
 .tcode .icon { width: 1em; height: 1em; }
 .tiles-note { font-size: 13px; color: var(--text-3); margin: 16px 0 0; max-width: 80ch; }
 @media (max-width: 520px) {
-  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  /* phones: two even columns; every card has the same rows: photo, price, old price, title, date, button */
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .tile { padding: 8px 8px 10px; }
-  .tile .pic { margin-bottom: 10px; }
-  .tile .tprice .price { font-size: 25px; }
-  .tile .tprice .was { font-size: 13px; }
-  .tile .burst { top: 14px; right: 14px; font-size: 13px; padding: 5px 8px; }
-  .tile .ttl { font-size: 14px; }
-  .tile .cta { font-size: 14px; padding: 9px 8px; gap: 6px; }
-  .tcode { top: 14px; left: 14px; max-width: calc(100% - 90px); overflow: hidden; text-overflow: ellipsis; font-size: 12px; padding: 5px 9px; }
+  .tile .pic { margin-bottom: 8px; }
+  .tile .tprice { flex-direction: column; align-items: flex-start; gap: 2px; padding: 0 2px; }
+  .tile .tprice .price { font-size: 24px; align-self: auto; }
+  .tile .tprice .was { font-size: 12px; line-height: 1.2; min-height: 1.2em; }
+  .tile .ttl { font-size: 14px; line-height: 1.35; min-height: 2.7em; margin: 6px 2px 0; }
+  .tile .tfoot { margin: 4px 2px auto; font-size: 12px; }
+  .tile .tfoot .cat { display: none; }
+  .tile .asof { margin-inline-start: 0; }
+  .tile .tfoot + .cta, .tile .cta { margin-top: 8px; font-size: 14px; padding: 9px 6px; gap: 6px; border-radius: 10px; }
+  .tile .cta .icon { width: 1em; height: 1em; }
+  .tile .burst { top: 14px; right: 14px; font-size: 12px; padding: 5px 8px; }
+  .tcode { top: 14px; left: 14px; max-width: calc(100% - 84px); overflow: hidden; text-overflow: ellipsis; font-size: 11px; padding: 4px 8px; }
 }
+
 
 /* ---------- proof: the checks log with the price tag ---------- */
 .proof { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); gap: 0 40px; align-items: center; }
