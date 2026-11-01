@@ -80,13 +80,14 @@ header.site .wrap { display: grid; grid-template-columns: auto minmax(0, 1fr) au
 .site .tg.ch:hover { background: var(--primary-soft); color: var(--primary-ink); }
 .site .tg.ch .short { display: none; }
 @media (max-width: 1020px) {
-  header.site .wrap { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "logo tgs" "menu menu"; min-height: 0; padding-top: 10px; }
+  header.site .wrap { grid-template-columns: auto auto; justify-content: space-between; grid-template-areas: "logo tgs" "menu menu"; gap: 0 12px; min-height: 0; padding-top: 10px; }
   .tgs { justify-self: end; }
   .menu { justify-content: flex-start; gap: 0 20px; overflow-x: auto; scrollbar-width: none; margin-inline: -20px; padding-inline: 20px; }
   .menu::-webkit-scrollbar { display: none; }
   .menu a { padding: 12px 0 12px; font-size: 15px; flex: none; }
   .menu a::after { bottom: 4px; }
 }
+@media (max-width: 600px) { .site .tg.ch .long { display: none; } .site .tg.ch .short { display: inline; } }
 @media (max-width: 480px) {
   .logo { font-size: 23px; gap: 8px; } .logo img { width: 36px; height: 36px; border-radius: 10px; }
   .tgs { gap: 6px; }
