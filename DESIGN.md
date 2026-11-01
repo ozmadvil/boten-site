@@ -63,6 +63,9 @@ White, 12px radius, hairline ring, a 20px indigo line icon (authored SVG, 1.8 st
 ## Product cards
 White card, 14px radius, hairline + soft shadow, 12px inner padding. Square white photo well (10px radius, contain). Lime discount pill at the photo's top right. Under the date, coupon boxes when there are codes: indigo-soft, dashed indigo outline, "קוד מוכר" / "קוד ישראל" with the amount and minimum, then the code partly hidden (ABC•••) and an indigo "העתקה" chip; a click copies the code, shows it in full, turns the box green ("הועתק ✓") and opens the product in a new tab. Price in indigo at 32px (25px on phones) with the struck original in grey beside it; two-line title; a quiet foot line (category, date); then a full-width indigo button "לצפייה במוצר" with a cart icon. The whole card is one link to AliExpress; hover lifts it 4px with the indigo shadow and darkens the button. Grid: auto-fill from 232px, two columns on phones.
 
+## Answers as a chat
+Under the hero search, answers appear as a chat (`.sresults.chat`): the visitor's text in an indigo bubble on the right, the answer in a white bubble from the left with a small "N" avatar, three bouncing dots while it works. A pasted link answers with the product as a wide card (photo beside title, indigo price, struck original, lime discount pill, rating and sales, coupon boxes, "לקנייה באליאקספרס"), then cheaper sellers as smaller wide cards with a green "חוסכים ₪X" pill, or a line saying the price is already good. A product name answers with the product cards grid inside the bubble. Each answer ends with fine print and a small link to continue in the Telegram bot. "ניקוי" clears the chat.
+
 ## Other components
 - **How it works**: one white card, three steps divided by hairlines, step numbers in indigo-soft 44px squares.
 - **Coupons**: white tickets, an indigo-soft strip with a dashed perforation under it, the amount in indigo.
