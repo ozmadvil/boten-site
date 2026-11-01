@@ -289,6 +289,40 @@ ICON_CART = ('<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="non
              '<circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg>')
 
 
+ICON_SEARCH = ('<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" '
+               'stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>')
+_CAT_PATHS = {
+    "phones": '<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M11 18h2"/>',
+    "audio": '<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><path d="M4 15h3v5H5.5A1.5 1.5 0 0 1 4 18.5Zm16 0h-3v5h1.5a1.5 1.5 0 0 0 1.5-1.5Z"/>',
+    "computers": '<rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19.5h20"/>',
+    "gaming": '<rect x="2.5" y="7" width="19" height="11" rx="5"/><path d="M7.5 11v3M6 12.5h3"/><path d="M15.5 12h.01M18 14h.01"/>',
+    "smart-home": '<path d="M3.5 11 12 4l8.5 7v8.5a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1Z"/><path d="M9.5 15.2a3.5 3.5 0 0 1 5 0M12 18h.01"/>',
+    "cleaning": '<path d="M18.5 3 13 10.5"/><path d="M8 11h8l1.5 10h-11Z"/><path d="M10 21v-4M14 21v-4"/>',
+    "kitchen-appliances": '<path d="M13 2.5 5 13.5h6l-1 8 8-11h-6Z"/>',
+    "kitchen": '<path d="M3 11h18"/><path d="M5 11v6.5A3.5 3.5 0 0 0 8.5 21h7a3.5 3.5 0 0 0 3.5-3.5V11"/><path d="M9 7.5c0-2.2 6-2.2 6 0"/>',
+    "tools": '<path d="m14.5 4 5.5 5.5-3 3L11.5 7Z"/><path d="M12.8 10.2 4.5 18.5l1.9 1.9 8.3-8.3"/>',
+    "car": '<path d="M5 16.5h14v-4.5l-2-5H7l-2 5Z"/><path d="M5 12h14"/><circle cx="8" cy="16.5" r="1.6"/><circle cx="16" cy="16.5" r="1.6"/>',
+    "lighting": '<path d="M9 18h6M10 21.5h4"/><path d="M12 2.5a6.5 6.5 0 0 0-4 11.6V16h8v-1.9a6.5 6.5 0 0 0-4-11.6Z"/>',
+    "camping": '<path d="M2.5 20.5 12 4l9.5 16.5Z"/><path d="m9 20.5 3-5.5 3 5.5"/>',
+    "fitness": '<path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>',
+    "men": '<path d="M8.5 3.5 3.5 6.5l2 4 2-1V20.5h9V9.5l2 1 2-4-5-3a3.5 3.5 0 0 1-7 0Z"/>',
+    "women": '<path d="M9.5 3h5l-1 5.5 5 12h-13l5-12Z"/><path d="M10 8.5h4"/>',
+    "bags": '<rect x="5.5" y="7" width="13" height="13.5" rx="2"/><path d="M9 7V4h6v3M10 11v6M14 11v6"/>',
+    "watches": '<circle cx="12" cy="12" r="5.5"/><path d="M12 9.5V12l1.8 1"/><path d="M9 6.8 9.6 3h4.8l.6 3.8M9 17.2l.6 3.8h4.8l.6-3.8"/>',
+    "beauty": '<path d="M9 21h6v-8.5H9Z"/><path d="M10 12.5V7.5L14 4v8.5"/>',
+    "kids": '<circle cx="12" cy="13.5" r="6.5"/><circle cx="6.5" cy="6.8" r="2"/><circle cx="17.5" cy="6.8" r="2"/><path d="M10 12.5h.01M14 12.5h.01M10.2 16s.7.8 1.8.8 1.8-.8 1.8-.8"/>',
+    "pets": '<circle cx="8.5" cy="6.5" r="1.7"/><circle cx="15.5" cy="6.5" r="1.7"/><circle cx="5" cy="11.5" r="1.7"/><circle cx="19" cy="11.5" r="1.7"/><path d="M12 11.5c-3 0-5 3.2-5 5.3A2 2 0 0 0 9 19c1.1 0 1.9-.6 3-.6s1.9.6 3 .6a2 2 0 0 0 2-2.2c0-2.1-2-5.3-5-5.3Z"/>',
+    "garden": '<path d="M12 21V11"/><path d="M12 11C12 6.5 8.5 4 4 4c0 4.8 3 7 8 7Zm0 2.5c0-4 3-6.5 8-6.5 0 4.3-3 6.5-8 6.5Z"/>',
+    "under-50": '<path d="M3 11.5V4a1 1 0 0 1 1-1h7.5l9.5 9.5-8.5 8.5Z"/><circle cx="7.5" cy="7.5" r="1.4"/>',
+}
+
+
+def cat_icon(slug: str) -> str:
+    """A small line icon for a category chip; a price tag for any slug the menu doesn't know yet."""
+    return ('<svg class="icon cicon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" '
+            f'stroke-linecap="round" stroke-linejoin="round">{_CAT_PATHS.get(slug, _CAT_PATHS["under-50"])}</svg>')
+
+
 def price(v: float, cls: str = "") -> str:
     """₪145⁸⁸ — the flyer's price: big shekels, raised agorot. The decimal point is there but hidden, so search
     engines, AI answers and screen readers read ₪145.88 and not ₪14588."""
@@ -306,7 +340,7 @@ def checker(src: str, field_id: str = "link", compact: bool = False) -> str:
 <input type="hidden" name="start" value="{src}">
 <div class="row">
 <input id="{field_id}" class="q" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false" placeholder="לינק או שם מוצר, למשל: סוללה ניידת" aria-describedby="{field_id}-msg">
-<button class="btn" type="submit">{ICON_TG}<span>חפש</span></button>
+<button class="btn" type="submit">{ICON_SEARCH}<span>חפש</span></button>
 </div>
 <p class="msg" id="{field_id}-msg" role="status" aria-live="polite">חפשו מוצרים או <span class="ring">הדביקו לינק מאליאקספרס להשוואה</span></p>
 </form>"""
@@ -376,7 +410,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
           var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
           var lab = codeLabel(p), code = lab ? '<a class="tcode" href="' + bot + '?start=p_' + p.id + '-' + codeSrc + '">' + esc(lab) + '</a>' : '';
           return '<li><a class="tile" href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"><span class="pic"><img src="' + esc(p.image) + '_350x350.jpg" onerror="this.onerror=null;this.src=\'' + esc(p.image) + '\'" alt="" width="300" height="300" loading="lazy" referrerpolicy="no-referrer"></span>' + burst +
-            '<span class="tprice">' + priceHtml(p.price) + was + '</span><span class="ttl">' + esc(p.title) + '</span><span class="tfoot"><span class="cat">' + meta + '</span></span></a>' + code + '</li>';
+            '<span class="tprice">' + priceHtml(p.price) + was + '</span><span class="ttl">' + esc(p.title) + '</span><span class="tfoot"><span class="cat">' + meta + '</span></span><span class="cta">לצפייה במוצר</span></a>' + code + '</li>';
         };
         var coded = items.filter(function (p) { return p.coupon; }), rest = items.filter(function (p) { return !p.coupon; });
         var group = function (title, list) { return list.length ? '<div class="sec-head"><h2>' + title + '</h2></div><ul class="tiles">' + list.map(tile).join('') + '</ul>' : ''; };
@@ -458,13 +492,13 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
     if categories:                             # the category chips under the menu, on every page
         chips = "".join(
             f'<a class="chip" href="{BASE}/c/{c["slug"]}/"'
-            f'{" aria-current=\"page\"" if path == "/c/" + c["slug"] + "/" else ""}>{e(c["name"])}</a>'
+            f'{" aria-current=\"page\"" if path == "/c/" + c["slug"] + "/" else ""}>{cat_icon(c["slug"])}<span>{e(c["name"])}</span></a>'
             for c in categories)
         if stores:                             # stores on sale lead the strip while there are any
             chips = (f'<a class="chip hot" href="{BASE}/stores/"{" aria-current=\"page\"" if path == "/stores/" else ""}>'
                      f'🏷️ חנויות במבצע</a>') + chips
         strip = f'<nav class="cats-strip" aria-label="קטגוריות"><div class="wrap">{chips}</div></nav>'
-    menubar = f'<nav class="menubar" aria-label="ראשי"><div class="wrap">{nav}</div></nav>' + strip
+    menubar = strip                            # the menu itself lives in the header now
     if full and "<!--MENUBAR-->" in body:          # home: the menu sits right under the yellow band
         body, menubar_top = body.replace("<!--MENUBAR-->", menubar), ""
     else:                                      # every other page: the slim yellow band, so the page's answer stays in view
@@ -504,7 +538,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <meta property="og:image:height" content="{og_h}">
 <meta property="og:image:alt" content="{e(title)}">
 <meta name="twitter:card" content="{'summary_large_image' if og_w > og_h else 'summary'}">
-<meta name="theme-color" content="#d03b37">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" href="{BASE}/assets/favicon.png">
 <link rel="preload" href="{BASE}/assets/fonts/rubik-hebrew-900-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{BASE}/assets/fonts/rubik-hebrew-400-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -514,9 +548,12 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <body>
 <a class="skip" href="#main">דלגו לתוכן</a>
 <header class="site"><div class="wrap">
-<a class="logo" href="{BASE}/"><img src="{BASE}/assets/logo-192.png" alt="" width="40" height="40">{NAME}</a>
-<a class="tg" href="{bot_link(src=src_for('nav', path))}" aria-label="הבוט של NiceBuy בטלגרם">{ICON_TG_LOGO}הבוט בטלגרם</a>
-<a class="tg ch" href="{CHANNEL}" aria-label="ערוץ הדילים בטלגרם">{ICON_TG_LOGO}<span class="long">ערוץ הדילים</span><span class="short">ערוץ</span></a>
+<a class="logo" href="{BASE}/" aria-label="NiceBuy, לדף הבית"><img src="{BASE}/assets/logo-192.png" alt="" width="40" height="40"><span>Nice<b>Buy</b></span></a>
+<nav class="menu" aria-label="ראשי">{nav}</nav>
+<div class="tgs">
+<a class="tg ch" href="{CHANNEL}" aria-label="ערוץ הדילים בטלגרם">{ICON_TG}<span class="long">ערוץ הדילים</span><span class="short">ערוץ</span></a>
+<a class="tg" href="{bot_link(src=src_for('nav', path))}" aria-label="הבוט של NiceBuy בטלגרם">{ICON_TG}הבוט בטלגרם</a>
+</div>
 </div></header>
 {menubar_top}
 <main id="main">
@@ -677,11 +714,23 @@ def product_tiles(rows: list[dict], path: str) -> str:
 <span class="tprice">{price(price_v)}{was}</span>
 <span class="ttl">{e(short_title(p['title']))}</span>
 <span class="tfoot">{cat}{asof}</span>
+<span class="cta">{ICON_CART}לצפייה במוצר</span>
 </a>{code}</li>""")
     return f'<ul class="tiles">{"".join(tiles)}</ul>'
 
 
 # ------------------------------------------------------------------ pages
+HERO_ART = ('<svg class="art art-tag" viewBox="0 0 120 120" aria-hidden="true"><g transform="rotate(-24 60 60)">'
+            '<path d="M30 22h46l22 22v58a6 6 0 0 1-6 6H30a6 6 0 0 1-6-6V28a6 6 0 0 1 6-6Z" fill="#A3E635"/>'
+            '<circle cx="80" cy="40" r="6" fill="#F8FAFC"/><path d="M80 40c10-8 20-14 30-12" stroke="#4F46E5" stroke-width="3" fill="none" stroke-linecap="round"/>'
+            '<path d="M44 86l28-34" stroke="#fff" stroke-width="7" stroke-linecap="round"/><circle cx="47" cy="58" r="7" fill="none" stroke="#fff" stroke-width="6"/>'
+            '<circle cx="69" cy="82" r="7" fill="none" stroke="#fff" stroke-width="6"/></g></svg>'
+            '<svg class="art art-badge" viewBox="0 0 80 80" aria-hidden="true">'
+            '<path d="M40 4l8 7 10-2 4 10 10 4-2 10 7 8-7 8 2 10-10 4-4 10-10-2-8 7-8-7-10 2-4-10-10-4 2-10-7-8 7-8-2-10 10-4 4-10 10 2Z" fill="#4F46E5"/>'
+            '<path d="M30 52l20-24" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="31" cy="31" r="5" fill="none" stroke="#fff" stroke-width="4"/>'
+            '<circle cx="49" cy="49" r="5" fill="none" stroke="#fff" stroke-width="4"/></svg>')
+
+
 def hero(src: str, main_heading: bool, compact: bool = False) -> str:
     """The yellow band with the price checker. On the home page its title is the page's h1; elsewhere the page
     keeps its own h1, so the band's title is a styled paragraph (one h1 per page). Inner pages get the slim band:
@@ -693,10 +742,12 @@ def hero(src: str, main_heading: bool, compact: bool = False) -> str:
 </div></section>"""
     tag = "h1" if main_heading else "p"
     return f"""<section class="hero" aria-labelledby="hero-title"><div class="wrap">
-<div>
-<{tag} id="hero-title" class="hero-title">קנייה חכמה,<br><span class="sub">בדקו אם קיבלתם את <em class="nowrap">הדיל המשתלם ביותר</em> עבורכם</span></{tag}>
+<div class="hero-copy">
+<{tag} id="hero-title" class="hero-title">הדילים <em>הכי שווים</em> ברשת</{tag}>
+<p class="lead">קופונים, מבצעים והנחות שיחסכו לכם כסף!</p>
 </div>
 {checker(src)}
+{HERO_ART}
 </div></section>"""
 
 
@@ -747,7 +798,7 @@ def build_home():
 <h2 id="how-title">איך מקבלים קוד קופון עדכני?</h2>
 <ol class="how">
 <li><span class="n" aria-hidden="true">1</span><b>מעתיקים את הלינק למוצר</b><p>באפליקציה של אליאקספרס לוחצים "שיתוף" ואז "העתק קישור".</p></li>
-<li><span class="n" aria-hidden="true">2</span><b>שולחים את הלינק ומחכים לקופון</b><p>מדביקים את הלינק בבוט בטלגרם, או בשדה הצהוב למעלה.</p></li>
+<li><span class="n" aria-hidden="true">2</span><b>שולחים את הלינק ומחכים לקופון</b><p>מדביקים את הלינק בבוט בטלגרם, או בשדה החיפוש למעלה.</p></li>
 <li><span class="n" aria-hidden="true">3</span><b>מקבלים קוד קופון</b><p>הבוט מחזיר את קוד הקופון העדכני למוצר ואת המחיר אחרי הקופון. אין קופון? הבוט מראה מוכר זול יותר.</p></li>
 </ol>
 </section>
