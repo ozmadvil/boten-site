@@ -974,8 +974,8 @@ def build_home():
     updated = latest(EDITED[path], *[p.get("checked") or p.get("posted") for p in products],
                      *[r["_date"] for r in checks], *[r.get("checked") for r in seller],
                      *[r["_end"] for r in read_csv_ends("seller_codes.csv")], *event_marks())
-    page(path, f"{NAME}: קודי קופון לאליאקספרס שנבדקו + בוט שבודק כל מוצר",
-         "קודי קופון לאליאקספרס בישראל שנבדקו בקופה, עם תאריך. ובוט טלגרם חינמי שמחזיר לכל מוצר מחיר בשקלים, הנחה וקוד מוכר.",
+    page(path, f"{NAME}: מדביקים לינק מאליאקספרס ומוצאים את אותו מוצר בזול יותר",
+         "השוואת מחירים לאליאקספרס: מדביקים לינק של מוצר, ו-NiceBuy מוצא מוכרים אחרים שמוכרים אותו בפחות, עם קודי קופון שמורידים עוד מהמחיר.",
          body, full=True, js=True, updated=updated,
          card={"lines": [("המוצרים", "ink"), ("הכי שווים", "red"), ("ברשת", "ink")],
                "sub": "מחיר בשקלים, הנחה וקוד אם יש. בבוט טלגרם חינמי.", "products": products[:3]})
