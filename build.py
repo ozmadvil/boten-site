@@ -19,7 +19,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent
 OUT = ROOT / "_site"
-SITE_URL = os.environ.get("SITE_URL", "https://ozmadvil.github.io/boten-site").rstrip("/")
+SITE_URL = os.environ.get("SITE_URL", "https://nicebuy.co.il").rstrip("/")
 BASE = "/" + SITE_URL.split("://", 1)[1].split("/", 1)[1] if SITE_URL.count("/") > 2 else ""   # path prefix
 BOT = "https://t.me/Boten_IL_bot"
 CHANNEL = "https://t.me/Boten_deals"

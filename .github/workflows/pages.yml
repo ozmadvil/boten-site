@@ -28,7 +28,7 @@ jobs:
         run: pip install "pillow==12.3.0" "python-bidi==0.6.12" "fonttools==4.67.0" "brotli==1.2.1"
       - name: Build
         env:
-          SITE_URL: ${{ vars.SITE_URL || format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) }}
+          SITE_URL: ${{ vars.SITE_URL || 'https://nicebuy.co.il' }}
           CNAME: ${{ vars.CNAME }}
           BOT_FEED_URL: ${{ vars.BOT_FEED_URL || 'https://worker-production-b0bb.up.railway.app/products.json' }}
         run: python build.py
