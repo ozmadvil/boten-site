@@ -1,7 +1,7 @@
 """Share cards: the 1200x630 picture that WhatsApp, Telegram, Facebook and X show when a page is shared.
 
 Drawn at build time by build.py (one per page, into _site/og/<page>.png), in the flyer's own world: a red masthead
-strip with the mascot, a fluorescent yellow field, the page's headline in Rubik Black, and on the home page and the
+strip with the NiceBuy icon, a fluorescent yellow field, the page's headline in Rubik Black, and on the home page and the
 category pages up to three of the page's own deals as paper tags with their real price.
 
 Provenance: everything on a card comes from the page itself; product photos are the AliExpress product images the
@@ -240,7 +240,7 @@ def render(target: Path, card: dict, root: Path, out: Path) -> bool:
     d = ImageDraw.Draw(canvas)
     top, bottom = 96, H - 10                         # the yellow field between the masthead and the ink rule
 
-    # masthead: the red flyer strip with the mascot and the name
+    # masthead: the strip with the NiceBuy icon and the name
     d.rectangle((0, 0, W, top), fill=RED)
     logo_size = 64
     name_right = W - MARGIN

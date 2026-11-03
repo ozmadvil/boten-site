@@ -604,7 +604,7 @@ def share_image(path: str, card: dict | None) -> tuple[str, int, int]:
 
 def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[str, str]] | None = None,
          schema: list[dict] | None = None, full: bool = False, js: bool = False,
-         updated: date | None = None, card: dict | None = None) -> None:
+         updated: date | None = None, card: dict | None = None, tab: str | None = None) -> None:
     """full=True: body brings its own full-bleed sections. Otherwise it is a reading page, wrapped and closed with the bot invite.
     updated: the date this page's content last changed (footer, sitemap). card: what goes on the share image."""
     url = SITE_URL + path
@@ -653,7 +653,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="{CSP}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{e(title)}</title>
+<title>{e(tab or title)}</title>
 <meta name="description" content="{e(description)}">
 <link rel="canonical" href="{url}">
 <meta property="og:type" content="website">
@@ -980,7 +980,7 @@ def build_home():
                      *[r["_end"] for r in read_csv_ends("seller_codes.csv")], *event_marks())
     page(path, f"אל תשלמו יקר באליאקספרס | {NAME}",
          "השוואת מחירים: מדביקים לינק של מוצר, ו-NiceBuy מוצא מוכרים אחרים שמוכרים אותו בפחות, עם קודי קופון שמורידים עוד מהמחיר.",
-         body, full=True, js=True, updated=updated,
+         body, full=True, js=True, updated=updated, tab=NAME,     # the browser tab shows the name only (owner)
          card={"lines": [("המוצרים", "ink"), ("הכי שווים", "red"), ("ברשת", "ink")],
                "sub": "מחיר בשקלים, הנחה וקוד אם יש. בבוט טלגרם חינמי.", "products": products[:3]})
 
