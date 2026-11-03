@@ -163,7 +163,9 @@ def main():
                 if expect == "product":
                     if err or not wide:
                         problems.append("no product answer: " + text[:100].replace("\n", " "))
-                    problems += check_items(wide)
+                    # the pasted product and a cheaper seller of the same product rightly share a name
+                    problems += [x for x in check_items(wide) if not x.startswith("duplicate")] + \
+                        [x for x in check_items([w for w in wide if w["alt"]]) if x.startswith("duplicate")]
                     base = price_of(wide[0]["price"]) if wide else None
                     for a in wide[1:]:
                         p = price_of(a["price"])
