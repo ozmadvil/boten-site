@@ -225,8 +225,8 @@ def main():
                                              ([] if friendly else ["no friendly message: " + txt[:80]]),
                                  "statuses": burst})
 
-        report["checks"].append({"case": "JavaScript errors", "ok": not console_errors,
-                                 "problems": console_errors[:10]})
+        real_errors = [e for e in console_errors if "status of 429" not in e]   # the 429s are the rate-limit test's own
+        report["checks"].append({"case": "JavaScript errors", "ok": not real_errors, "problems": real_errors[:10]})
         browser.close()
 
     allc = report["searches"] + report["links"] + report["checks"]
