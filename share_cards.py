@@ -1,7 +1,7 @@
 """Share cards: the 1200x630 picture that WhatsApp, Telegram, Facebook and X show when a page is shared.
 
 Drawn at build time by build.py (one per page, into _site/og/<page>.png), in the flyer's own world: a red masthead
-strip with the NiceBuy icon, a fluorescent yellow field, the page's headline in Rubik Black, and on the home page and the
+strip with the name, a fluorescent yellow field, the page's headline in Rubik Black, and on the home page and the
 category pages up to three of the page's own deals as paper tags with their real price.
 
 Provenance: everything on a card comes from the page itself; product photos are the AliExpress product images the
@@ -240,20 +240,9 @@ def render(target: Path, card: dict, root: Path, out: Path) -> bool:
     d = ImageDraw.Draw(canvas)
     top, bottom = 96, H - 10                         # the yellow field between the masthead and the ink rule
 
-    # masthead: the strip with the NiceBuy icon and the name
+    # masthead: the strip with the name
     d.rectangle((0, 0, W, top), fill=RED)
-    logo_size = 64
-    name_right = W - MARGIN
-    try:
-        logo = Image.open(root / "assets" / "logo-192.png").convert("RGBA").resize((logo_size, logo_size), Image.LANCZOS)
-        mask = Image.new("L", (logo_size, logo_size), 0)
-        ImageDraw.Draw(mask).rounded_rectangle((0, 0, logo_size - 1, logo_size - 1), 14, fill=255)
-        lx, ly = W - MARGIN - logo_size, 16
-        d.rounded_rectangle((lx - 3, ly - 3, lx + logo_size + 2, ly + logo_size + 2), 16, fill=WHITE)
-        canvas.paste(logo, (lx, ly), mask)
-        name_right = lx - 18
-    except OSError:
-        pass
+    name_right = W - MARGIN                     # the name alone: no icon or mascot (owner, 2026-11-03)
     _draw_rtl(d, name_right, 66, "NiceBuy", _font(root, 900, 50), WHITE)
     d.text((MARGIN, 60), "@Boten_IL_bot", font=_font(root, 500, 26)[1], fill=WHITE, anchor="ls")
 

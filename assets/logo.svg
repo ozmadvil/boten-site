@@ -1,5 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="NiceBuy">
-<rect width="512" height="512" rx="112" fill="#4F46E5"/>
-<polygon points="150,382 150,130 212,130 300,282 300,130 362,130 362,382 300,382 212,230 212,382" fill="#FFFFFF"/>
-<rect x="150" y="404" width="212" height="24" rx="12" fill="#A3E635"/>
+<rect width="512" height="512" fill="#FFFFFF"/>
+<text x="256" y="297" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="900" font-size="102" direction="ltr"><tspan fill="#111827">Nice</tspan><tspan fill="#4F46E5">Buy</tspan></text>
 </svg>

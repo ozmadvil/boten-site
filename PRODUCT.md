@@ -36,7 +36,7 @@ Codes are checked at a real checkout and dated; failures are logged too, with th
 - `data/checks.csv`: real checkout checks with dates and outcomes, including failures.
 - `data/seller_codes.csv`: verified seller codes (checkout / portal).
 - Real AliExpress error messages captured on 18/10/2026.
-- `assets/logo.png`: the NiceBuy icon (indigo square, white "N", lime bar). The old peanut mascot is retired everywhere (owner, 2026-11-03).
+- `assets/logo.png`: the "NiceBuy" wordmark on white. No mascot and no icon (owner, 2026-11-03); the site has no favicon.
 - No testimonials, user counts, or savings totals exist. Do not invent them.
 
 ## Product Principles

@@ -72,10 +72,10 @@ Under the hero search, answers appear as a chat (`.sresults.chat`): the visitor'
 - **Checks log**: white cards with a soft green ("עובד") or soft red ("לא עובד") strip and the date.
 - **Closing band**: a rounded (22px) solid indigo panel with a lighter indigo glow, white headline, white primary button and an outlined secondary.
 - **Tables**: indigo-soft head, hairline rows. **FAQ**: white details with an indigo marker.
-- **Share cards** (`share_cards.py`): indigo strip with the NiceBuy "N" icon and name, indigo-soft field, Rubik 900 headline, prices in indigo.
+- **Share cards** (`share_cards.py`): indigo strip with the name only, indigo-soft field, Rubik 900 headline, prices in indigo.
 
 ## Rules
-- No mascot anywhere (owner, 2026-11-03). The icon is an indigo rounded square with a white "N" and a lime bar (`assets/logo.svg`, favicon, logo PNGs).
+- No mascot and no icon anywhere (owner, 2026-11-03): no favicon; `assets/logo*.png` / `logo.svg` are the "Nice**Buy**" wordmark on white (Google logo, share fallback).
 - One accent action colour (indigo). Lime is for savings only. Semantic green/red only for check results.
 - No emoji as icons, no gradient text, no hard offset shadows, no coloured side borders.
 - Keep the dated price line on every product card.
