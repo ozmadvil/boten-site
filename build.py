@@ -273,8 +273,12 @@ def load_feed(name: str, bot_url: str, key: str) -> dict | None:
     return None
 
 
+AFFILIATE = re.compile(r"^https://s\.click\.aliexpress\.com/")    # the owner's affiliate links, nothing else
+
+
 def _usable(p: dict) -> bool:
-    return bool(p.get("title") and p.get("image") and str(p.get("link", "")).startswith("https://") and p.get("price"))
+    """A product is shown only with an affiliate link (never a plain AliExpress link that earns nothing)."""
+    return bool(p.get("title") and p.get("image") and AFFILIATE.match(str(p.get("link", ""))) and p.get("price"))
 
 
 products = [p for p in (load_feed("products.json", BOT_FEED_URL, "products") or {}).get("products", []) if _usable(p)][:12]
@@ -398,7 +402,7 @@ def checker(src: str, field_id: str = "link", compact: bool = False) -> str:
 CHECKER_JS = r"""
 var NB_PLATFORM = (function () { try { return JSON.parse(document.getElementById('nb-platform').textContent) || []; } catch (e) { return []; } })();
 // only the owner's AliExpress links and AliExpress photos, whatever a response holds
-function safeLink(u) { try { var x = new URL(u); return x.protocol === 'https:' && /(^|\.)aliexpress\.(com|ru|us)$/i.test(x.hostname) ? x.href : ''; } catch (e) { return ''; } }
+function safeLink(u) { try { var x = new URL(u); return x.protocol === 'https:' && x.hostname === 's.click.aliexpress.com' ? x.href : ''; } catch (e) { return ''; } }  // affiliate links only
 function safeImg(u) { try { var x = new URL(u); return x.protocol === 'https:' && /(^|\.)(aliexpress-media\.com|alicdn\.com|aliexpress\.com)$/i.test(x.hostname) ? x.href : ''; } catch (e) { return ''; } }
 function imgTag(src, w) { var s = safeImg(src); return s ? '<img src="' + esc(s) + '_350x350.jpg" data-fallback="' + esc(s) + '" alt="" width="' + w + '" height="' + w + '" loading="lazy" referrerpolicy="no-referrer">' : ''; }
 // a photo that fails in the small size falls back to the original (no inline handlers: the CSP forbids them)
