@@ -436,6 +436,8 @@ footer.site a { color: var(--text); text-decoration: none; }
 footer.site a:hover { color: var(--primary); }
 footer.site .links { display: flex; gap: 6px 22px; flex-wrap: wrap; margin-bottom: 16px; font-weight: 500; font-size: 15px; }
 footer.site p { margin: 0 0 8px; max-width: 90ch; }
+footer.site .legal { display: flex; gap: 6px 18px; flex-wrap: wrap; margin-top: 12px; }
+footer.site .legal a { color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; }
 main > .wrap:last-child { padding-bottom: 80px; }
 
 /* coupon codes page */
