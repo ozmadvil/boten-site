@@ -61,10 +61,17 @@ def check_items(items, cap=None) -> list[str]:
             problems.append(f"#{n}: photo did not load")
         if any(not c or len(c) < 3 for c in it["coupons"]):
             problems.append(f"#{n}: coupon button without a code")
-    dups = {t for t in titles if t and titles.count(t) > 1}
+    pairs = [(i["title"].strip(), price_of(i["price"])) for i in items]
+    dups = {t for t, p in pairs if t and pairs.count((t, p)) > 1}          # same name AND same price: shown twice
     if dups:
         problems.append(f"duplicate titles: {list(dups)[:3]}")
     return problems
+
+
+def same_names(items) -> list[str]:
+    """Different products (other price) under one name: not wrong, but a shopper can't tell them apart."""
+    titles = [i["title"].strip() for i in items]
+    return sorted({t for t in titles if t and titles.count(t) > 1})
 
 
 def load_photos(ans):
@@ -128,6 +135,7 @@ def main():
                 if secs > 30:
                     problems.append(f"slow: {secs:.0f}s")
                 case.update(ok=not problems, n=len(items), problems=problems, answer=text[:160],
+                            warnings=[f"same name for different products: {n}" for n in same_names(items)],
                             titles=[i["title"][:60] for i in items[:10]],
                             prices=[price_of(i["price"]) for i in items[:10]])
             report["searches"].append(case)
@@ -235,6 +243,7 @@ def main():
     report["passed"] = sum(1 for c in allc if c.get("ok"))
     report["total"] = len(allc)
     report["score"] = round(report["passed"] / max(1, report["total"]), 3)
+    report["warnings"] = sum(len(c.get("warnings", [])) for c in allc)
     (OUT / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"SITE QA: {report['passed']}/{report['total']} passed")
     for c in allc:
