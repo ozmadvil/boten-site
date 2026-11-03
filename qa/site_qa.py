@@ -67,6 +67,16 @@ def check_items(items, cap=None) -> list[str]:
     return problems
 
 
+def load_photos(ans):
+    """Photos are lazy (they load when scrolled to): load them now, then the check is about the photo itself."""
+    try:
+        ans.evaluate("""async a => { const imgs = [...a.querySelectorAll('img')]; imgs.forEach(i => { i.loading = 'eager'; });
+            await Promise.race([Promise.all(imgs.map(i => i.complete ? 1 : new Promise(r => { i.onload = i.onerror = r; }))),
+                                new Promise(r => setTimeout(r, 12000))]); }""")
+    except Exception:
+        pass
+
+
 def ask(page, text, timeout=75):
     """Type into the hero field, submit, wait for the newest answer to finish. Returns (seconds, answer element)."""
     before = page.locator(".cmsg.bot").count()
@@ -103,6 +113,7 @@ def main():
                 case.update(ok=False, problems=["no answer in time"])
             else:
                 text = ans.inner_text()[:300]
+                load_photos(ans)
                 items = ans.evaluate("""a => [...a.querySelectorAll('.tile')].map(e => ({
                         title: (e.querySelector('.ttl')||{}).textContent||'', price: (e.querySelector('.tprice .price')||{}).textContent||'',
                         link: (e.querySelector('a.tlink')||{}).href||'',
@@ -140,6 +151,7 @@ def main():
                 case.update(ok=False, problems=["no answer in time"])
             else:
                 text = ans.inner_text()
+                load_photos(ans)
                 err = ans.locator(".cerr").count() > 0
                 wide = ans.evaluate("""a => [...a.querySelectorAll('.wcard')].map(e => ({
                     title: (e.querySelector('.wttl')||{}).textContent||'', price: (e.querySelector('.wprice .price')||{}).textContent||'',
@@ -202,14 +214,14 @@ def main():
         page.wait_for_timeout(60000)
 
         # too many searches: the shopper must see a friendly message, not a broken page
-        burst = page.evaluate("""async () => { const r = []; for (let i = 0; i < 10; i++) {
-            const x = await fetch(document.querySelector('form.checker').dataset.search + '?q=' + encodeURIComponent('כבל ' + i) + '&qa=1');
-            r.push(x.status); } return r; }""")
+        burst = page.evaluate("""async () => { const url = document.querySelector('form.checker').dataset.search;
+            return Promise.all([...Array(12).keys()].map(i => fetch(url + '?q=' + encodeURIComponent('כבל ' + i) + '&qa=1')
+                .then(x => x.status).catch(() => 0))); }""")      # 12 at once from one visitor: over the 8/minute limit
         secs, ans = ask(page, "מטען לרכב", timeout=40)
         txt = ans.inner_text() if ans else ""
         friendly = ("יותר מדי" in txt) or (ans is not None and ans.locator(".tile").count() > 0)
         report["checks"].append({"case": "too many searches", "ok": friendly and 429 in burst,
-                                 "problems": ([] if 429 in burst else ["no rate limit (429) after 10 fast searches"]) +
+                                 "problems": ([] if 429 in burst else ["no rate limit (429) after 12 searches at once"]) +
                                              ([] if friendly else ["no friendly message: " + txt[:80]]),
                                  "statuses": burst})
 
