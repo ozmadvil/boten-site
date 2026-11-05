@@ -281,7 +281,7 @@ def _usable(p: dict) -> bool:
     return bool(p.get("title") and p.get("image") and AFFILIATE.match(str(p.get("link", ""))) and p.get("price"))
 
 
-products = [p for p in (load_feed("products.json", BOT_FEED_URL, "products") or {}).get("products", []) if _usable(p)][:36]   # home page "הדילים של השבוע": 36 tiles, pinned first (the feed orders them)
+products = [p for p in (load_feed("products.json", BOT_FEED_URL, "products") or {}).get("products", []) if _usable(p)][:36]   # home page "מוצרים נבחרים": 36 tiles, pinned first (the feed orders them)
 
 
 def load_categories() -> list[dict]:
@@ -942,7 +942,7 @@ def build_home():
     tiles = ""
     if products:
         tiles = f"""<section aria-labelledby="hot-title">
-<div class="sec-head"><h2 id="hot-title">הדילים של השבוע</h2><a href="{CHANNEL}">כל הדילים בערוץ {ICON_ARROW}</a></div>
+<div class="sec-head"><h2 id="hot-title">מוצרים נבחרים</h2><a href="{CHANNEL}">כל הדילים בערוץ {ICON_ARROW}</a></div>
 {product_tiles(products, path)}
 <p class="tiles-note">המחירים נכונים לתאריך שמופיע על כל מוצר, ועשויים להשתנות. לחיצה על מוצר פותחת אותו באליאקספרס (קישור שותפים: המחיר שלכם לא משתנה).</p>
 </section>"""
