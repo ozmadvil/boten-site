@@ -281,7 +281,7 @@ def _usable(p: dict) -> bool:
     return bool(p.get("title") and p.get("image") and AFFILIATE.match(str(p.get("link", ""))) and p.get("price"))
 
 
-products = [p for p in (load_feed("products.json", BOT_FEED_URL, "products") or {}).get("products", []) if _usable(p)][:12]
+products = [p for p in (load_feed("products.json", BOT_FEED_URL, "products") or {}).get("products", []) if _usable(p)][:24]   # home page "הדילים של השבוע": 24 tiles, pinned first (the feed orders them)
 
 
 def load_categories() -> list[dict]:
