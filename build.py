@@ -235,11 +235,17 @@ def _origin(u: str) -> str:
 
 # Content Security Policy (as a <meta>: GitHub Pages can't send headers). Scripts and styles only from the site;
 # photos from AliExpress; live search and link checks from the bot; the search form may only go to Telegram.
+# Cloudflare Web Analytics (no cookies, no personal data); the token is public. CF_BEACON=off removes it.
+CF_BEACON = os.environ.get("CF_BEACON", "bc36a20e0c3348f189f2652e81091876")
+CF_BEACON = "" if CF_BEACON == "off" else CF_BEACON
+BEACON_HTML = ('<script defer src="https://static.cloudflareinsights.com/beacon.min.js" '
+               "data-cf-beacon='{\"token\": \"" + CF_BEACON + "\"}'></script>") if CF_BEACON else ""
 CSP = "; ".join([
-    "default-src 'self'", "script-src 'self'", "style-src 'self'", "font-src 'self'", "object-src 'none'",
+    "default-src 'self'", "script-src 'self'" + (" https://static.cloudflareinsights.com" if CF_BEACON else ""), "style-src 'self'", "font-src 'self'", "object-src 'none'",
     "base-uri 'self'", "form-action https://t.me",
     "img-src 'self' data: https://*.aliexpress-media.com https://*.alicdn.com https://*.aliexpress.com",
-    "connect-src 'self' " + " ".join(sorted({o for o in map(_origin, (SEARCH_URL, PRODUCT_URL)) if o})),
+    "connect-src 'self' " + " ".join(sorted({o for o in map(_origin, (SEARCH_URL, PRODUCT_URL)) if o}))
+    + (" https://cloudflareinsights.com" if CF_BEACON else ""),
 ])
 FEED_MAX_AGE = timedelta(hours=72)
 FEEDS: dict[str, dict] = {}                 # what this build used, republished under /feed/
@@ -698,7 +704,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <p class="legal">{"".join(f'<a href="{BASE}{p}">{n}</a>' for p, n in LEGAL)}<a href="mailto:{EMAIL}">{EMAIL}</a></p>
 {footer_date}
 </div></footer>
-{platform_js() if js else ""}{'<script src="' + BASE + '/assets/app.js?v=' + hashlib.sha256(CHECKER_JS.encode('utf-8')).hexdigest()[:10] + '" defer></script>' if js else ""}
+{platform_js() if js else ""}{'<script src="' + BASE + '/assets/app.js?v=' + hashlib.sha256(CHECKER_JS.encode('utf-8')).hexdigest()[:10] + '" defer></script>' if js else ""}{BEACON_HTML}
 </body>
 </html>
 """
@@ -920,7 +926,7 @@ def hero(src: str, main_heading: bool, compact: bool = False) -> str:
 # The date someone last changed each page's own text here in build.py (data-driven parts date themselves).
 EDITED = {"/": "2026-11-02", "/coupons/": "2026-10-21", "/guides/": "2026-10-21", "/guides/coupon-types/": "2026-10-20",
           "/guides/code-not-working/": "2026-10-20", "/about/": "2026-11-03",
-          "/accessibility/": "2026-11-03", "/privacy/": "2026-11-03", "/terms/": "2026-11-03"}
+          "/accessibility/": "2026-11-03", "/privacy/": "2026-11-06", "/terms/": "2026-11-03"}
 
 
 def event_card() -> tuple[str, str, str]:
@@ -1447,10 +1453,11 @@ def build_privacy():
 <li><b>מה שאתם מקלידים בחיפוש:</b> שם מוצר או לינק מאליאקספרס נשלחים לשרת שלנו כדי למצוא תוצאות. כדי להבין את החיפוש ולבחור מוצרים מתאימים, טקסט החיפוש ושמות המוצרים נשלחים גם לשירות בינה מלאכותית (Anthropic). אנחנו שומרים סטטיסטיקה מצטברת של מילות חיפוש, למשל כמה פעמים חיפשו "מטען נייד", כדי לשפר את התוצאות. הסטטיסטיקה לא מקושרת לאדם מסוים.</li>
 <li><b>מידע טכני:</b> כמו בכל אתר, ספקי התשתית שלנו רושמים ביומני השרת את כתובת ה-IP, סוג הדפדפן ושעת הגישה. בכתובת ה-IP אנחנו משתמשים גם כדי להגביל עומס, למשל מספר חיפושים בדקה, והיא נשמרת לשם כך בזיכרון זמני בלבד.</li>
 <li><b>הבוט בטלגרם:</b> הבוט מקבל מטלגרם את מזהה המשתמש ואת ההודעות שאתם שולחים לו, ומשתמש בהם כדי לענות לכם ולהגביל עומס. אנחנו לא שומרים מאגר של משתמשים, והבוט שולח הודעות רק בתגובה לפנייה שלכם.</li>
+<li><b>סטטיסטיקת ביקורים:</b> אנחנו משתמשים ב-Cloudflare Web Analytics כדי לדעת כמה ביקורים יש באתר, באילו דפים ומאיזה סוג מקור (למשל גוגל או טלגרם). הכלי לא משתמש בעוגיות, לא שומר מזהה של מבקר ולא עוקב אחריכם בין אתרים.</li>
 <li><b>פנייה במייל:</b> אם תכתבו לנו, נשתמש בכתובת ובתוכן הפנייה רק כדי לענות לכם.</li>
 </ul>
 <h2>מי מעבד את המידע בשבילנו</h2>
-<p>אנחנו נעזרים בספקים שמעבדים את המידע רק לצורך הפעלת השירות: GitHub (אחסון האתר), Cloudflare (שרתי שמות ואבטחה), Railway (השרת של הבוט והחיפוש), Anthropic (בינה מלאכותית לחיפוש) וטלגרם (הבוט והערוץ). חלק מהספקים פועלים מחוץ לישראל. יומני השרת נשמרים לתקופה מוגבלת, לפי מדיניות כל ספק.</p>
+<p>אנחנו נעזרים בספקים שמעבדים את המידע רק לצורך הפעלת השירות: GitHub (אחסון האתר), Cloudflare (שרתי שמות, אבטחה וסטטיסטיקת ביקורים), Railway (השרת של הבוט והחיפוש), Anthropic (בינה מלאכותית לחיפוש) וטלגרם (הבוט והערוץ). חלק מהספקים פועלים מחוץ לישראל. יומני השרת נשמרים לתקופה מוגבלת, לפי מדיניות כל ספק.</p>
 <h2>מעבר לאליאקספרס</h2>
 <p>לחיצה על מוצר מעבירה אתכם לאליאקספרס דרך קישור שותפים. מרגע המעבר חלה עליכם מדיניות הפרטיות של אליאקספרס, שעשויה להשתמש בעוגיות, למשל כדי לשייך את הרכישה לקישור. לרכישות ולפרטים שאתם מוסרים באליאקספרס אין לנו גישה.</p>
 <h2>הזכויות שלכם</h2>
