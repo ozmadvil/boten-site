@@ -1567,7 +1567,7 @@ def main():
     OUT.mkdir()
     shutil.copytree(ROOT / "assets", OUT / "assets")
     (OUT / "assets" / "app.js").write_text(CHECKER_JS, encoding="utf-8")
-    for f in ROOT.glob("google*.html"):           # Google Search Console verification file
+    for f in [*ROOT.glob("google*.html"), *ROOT.glob("BingSiteAuth.xml")]:   # Google / Bing site verification files
         shutil.copy(f, OUT / f.name)
     try:                                          # product photos for the share cards, fetched in parallel
         import share_cards
