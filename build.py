@@ -514,7 +514,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
       var group = function (title, list) { return list.length ? '<h3 class="cgroup">' + title + '</h3><ul class="tiles">' + list.map(tile).join('') + '</ul>' : ''; };
       body.innerHTML = '<p>מצאתי ' + items.length + ' דילים ל"' + esc(q) + '"' + (coded.length ? ', ' + coded.length + ' מהם עם קוד קופון' : '') + ':</p>' +
         (coded.length ? group('עם קוד קופון', coded) + group('עוד דילים', rest) : '<ul class="tiles">' + rest.map(tile).join('') + '</ul>') +
-        '<p class="cnote">תוצאות חיות מאליאקספרס. רוצים מוכר זול יותר למוצר מסוים? הדביקו את הלינק שלו בחיפוש. * קישורי שותפים של אליאקספרס.</p>';
+        '<p class="cnote">תוצאות חיות מאליאקספרס. ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. רוצים מוכר זול יותר למוצר מסוים? הדביקו את הלינק שלו בחיפוש. * קישורי שותפים של אליאקספרס.</p>';
       body.closest('.cmsg').classList.add('wide');
     }).catch(function (e) {
       busy(false); msg.innerHTML = idle;
@@ -534,7 +534,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
       busy(false); msg.innerHTML = idle; msg.classList.remove('err');
       if (!d.ok) { body.innerHTML = '<p class="cerr">' + esc(d.message || 'לא הצלחתי לבדוק את הלינק הזה.') + '</p>'; return; }
       var p = d.product, alts = d.alternatives || [];
-      var html = '<p>זה המוצר שלכם' + (p.code && p.code.code ? ', ויש לו קוד הנחה של המוכר' : '') + ':</p>' + wide(p, false);
+      var html = '<p>זה המוצר שלכם' + (p.code && p.code.code ? ', ויש לו קוד הנחה של המוכר' : '') + ':</p>' + wide(p, false) + '<p class="cnote">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס.</p>';
       if (alts.length) {
         html += '<p class="cgap">💡 מצאתי ' + (alts.length === 1 ? 'מוכר אחד שמוכר' : alts.length + ' מוכרים שמוכרים') + ' משהו דומה בזול יותר:</p>' + alts.map(function (a) { return wide(a, true); }).join('') +
           '<p class="cnote">שווה לוודא שזה אותו דגם ואותו מפרט לפני הקנייה.</p>';
@@ -944,7 +944,7 @@ def build_home():
         tiles = f"""<section aria-labelledby="hot-title">
 <div class="sec-head"><h2 id="hot-title">מוצרים נבחרים</h2><a href="{CHANNEL}">כל הדילים בערוץ {ICON_ARROW}</a></div>
 {product_tiles(products, path)}
-<p class="tiles-note">המחירים נכונים לתאריך שמופיע על כל מוצר, ועשויים להשתנות. לחיצה על מוצר פותחת אותו באליאקספרס (קישור שותפים: המחיר שלכם לא משתנה).</p>
+<p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המחירים נכונים לתאריך שמופיע על כל מוצר, ועשויים להשתנות. לחיצה על מוצר פותחת אותו באליאקספרס (קישור שותפים: המחיר שלכם לא משתנה).</p>
 </section>"""
     deals = ""
     if seller:                 # no verified seller code in force = no section: an empty box here says nothing useful
@@ -1255,7 +1255,7 @@ def build_guides():
             rows = products if keys == ["*"] else [p for p in products if any(k in p["title"] for k in keys)]
             if rows:
                 tiles = (f'<h2>דילים מהערוץ</h2>{product_tiles(rows[:8], url)}'
-                         '<p class="tiles-note">המחירים נכונים לתאריך שמופיע על כל מוצר. קישורי שותפים: המחיר שלכם לא משתנה.</p>')
+                         '<p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המחירים נכונים לתאריך שמופיע על כל מוצר. קישורי שותפים: המחיר שלכם לא משתנה.</p>')
         srcs = ""
         if g.get("sources"):
             srcs = ('<h2>מקורות</h2><ul class="sources">' + "".join(
@@ -1326,7 +1326,7 @@ def build_categories():
         url = f"/c/{c['slug']}/"
         if c["products"]:
             grid = (product_tiles(c["products"][:24], url) +
-                    '<p class="tiles-note">NiceBuy בוחר לכל קטגוריה את הדילים הכי שווים לפי מחיר, הנחה, דירוג ומכירות, '
+                    '<p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. NiceBuy בוחר לכל קטגוריה את הדילים הכי שווים לפי מחיר, הנחה, דירוג ומכירות, '
                     'ומעדכן אותם כמה פעמים ביום. המחירים עשויים להשתנות. לחיצה פותחת את המוצר באליאקספרס '
                     '(קישור שותפים: המחיר שלכם לא משתנה).</p>')
         else:
@@ -1381,7 +1381,7 @@ def build_stores():
 <span class="updated">{"עודכן: " + fmt_d(stamp, True) + " · " if stamp else ""}מתעדכן פעם בשבוע</span></header>
 <p class="lead">חנויות שיש להן השבוע קוד הנחה של המוכר ששווה לפחות ₪20, עם המוצרים הנמכרים שלהן. בדרך כלל הקוד חל על כל החנות: אפשר לשלב כמה מוצרים מאותה חנות כדי להגיע למינימום. את הקוד עצמו מקבלים בבוט. קודים רשמיים של המוכרים, לא נבדקו בקופה.</p>
 {"".join(blocks)}
-<p class="tiles-note">המוצרים הם הנמכרים ביותר של כל חנות מתוך מה ש-NiceBuy סרק השבוע. המחירים נכונים לתאריך על כל מוצר. קישורי שותפים: המחיר שלכם לא משתנה.</p>"""
+<p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המוצרים הם הנמכרים ביותר של כל חנות מתוך מה ש-NiceBuy סרק השבוע. המחירים נכונים לתאריך על כל מוצר. קישורי שותפים: המחיר שלכם לא משתנה.</p>"""
     page(url, f"חנויות במבצע באליאקספרס: קודי מוכר מעל ₪20 | {NAME}",
          "חנויות באליאקספרס עם קוד הנחה של המוכר ששווה לפחות ₪20 השבוע, והמוצרים הנמכרים שלהן. מתעדכן פעם בשבוע.",
          body, crumbs=[(url, "חנויות במבצע")], updated=stamp.date() if stamp else None,
