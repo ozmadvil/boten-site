@@ -854,7 +854,11 @@ def tile_coupons(p: dict) -> str:
         if minimum and minimum > 1:
             what += f" מעל {ils(minimum)}"
         out.append(coupon_btn(c["code"], "קוד מוכר", what.strip(), link))
-    r = platform_for(price_v)
+    # The owner can fix the Israel code for a product he added (feed field "il_code"); while that code is active it
+    # replaces the automatic tier, otherwise the card falls back to the tier that fits the price.
+    fixed = str(p.get("il_code") or "").strip().upper()
+    r = next((x for x in platform_active if x["code"].upper() == fixed), None) if fixed else None
+    r = r or platform_for(price_v)
     if r:
         out.append(coupon_btn(r["code"], "קוד ישראל", platform_what(r), link))
     return f'<span class="tcoupons">{"".join(out)}</span>' if out else ""
@@ -880,13 +884,14 @@ def product_tiles(rows: list[dict], path: str) -> str:
         when = iso_dt(p.get("checked") or p.get("posted"))
         asof = f'<span class="asof">נכון ל-{when.strftime("%d/%m")}</span>' if when else ""
         coupons = tile_coupons(p)
+        note = f'<span class="tnote">{e(str(p["owner_note"])[:60])}</span>' if p.get("owner_note") else ""
         attrs = f'href="{e(p['link'])}" rel="sponsored nofollow noopener" target="_blank"'
         tiles.append(f"""<li><div class="tile">
 <a class="tlink" {attrs}>
 <span class="pic"><img src="{e(p['image'])}" alt="" width="300" height="300" loading="lazy" decoding="async" referrerpolicy="no-referrer"></span>
 {burst}
 <span class="tprice">{price(price_v)}{was}</span>
-<span class="ttl">{e(short_title(p['title']))}</span>
+{note}<span class="ttl">{e(short_title(p['title']))}</span>
 <span class="tfoot">{cat}{asof}</span>
 </a>
 {coupons}
