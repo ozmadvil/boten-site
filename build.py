@@ -23,6 +23,7 @@ SITE_URL = os.environ.get("SITE_URL", "https://nicebuy.co.il").rstrip("/")
 BASE = "/" + SITE_URL.split("://", 1)[1].split("/", 1)[1] if SITE_URL.count("/") > 2 else ""   # path prefix
 BOT = "https://t.me/Boten_IL_bot"
 CHANNEL = "https://t.me/Boten_deals"
+YOUTUBE = "https://www.youtube.com/@nicebuycoil"
 try:                                      # Israel time with daylight saving (winter time from the last Sunday of October)
     from zoneinfo import ZoneInfo
     IL = ZoneInfo("Asia/Jerusalem")
@@ -584,7 +585,7 @@ def _nav() -> list[tuple[str, str]]:
 NAV = _nav()
 
 ORG = {"@type": "Organization", "@id": f"{SITE_URL}/#org", "name": NAME, "alternateName": ["נייס ביי", "בוטן", "Boten"],
-       "url": f"{SITE_URL}/", "logo": f"{SITE_URL}/assets/logo-192.png", "sameAs": [BOT, CHANNEL]}
+       "url": f"{SITE_URL}/", "logo": f"{SITE_URL}/assets/logo-192.png", "sameAs": [BOT, CHANNEL, YOUTUBE]}
 
 SITEMAP: list[tuple[str, date | None]] = []
 LOGO_OG = (f"{SITE_URL}/assets/logo.png", 512, 512)
@@ -698,7 +699,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 {body}
 </main>
 <footer class="site"><div class="wrap">
-<div class="links">{"".join(f'<a href="{BASE}{p}">{n}</a>' for p, n in NAV)}<a href="{bot_link(src=src_for('footer', path))}">הבוט בטלגרם</a><a href="{CHANNEL}">ערוץ הדילים</a></div>
+<div class="links">{"".join(f'<a href="{BASE}{p}">{n}</a>' for p, n in NAV)}<a href="{bot_link(src=src_for('footer', path))}">הבוט בטלגרם</a><a href="{CHANNEL}">ערוץ הדילים</a><a href="{YOUTUBE}">יוטיוב</a></div>
 <p>* גילוי נאות: חלק מהקישורים באתר ובבוט הם קישורי שותפים של אליאקספרס. על רכישה דרכם NiceBuy מקבל עמלה קטנה, והמחיר שלכם לא משתנה.</p>
 <p>* NiceBuy אינו קשור לאליאקספרס ואינו מייצג אותה. AliExpress הוא סימן מסחר של בעליו. המחירים וההנחות נכונים ליום הבדיקה בלבד, אינם כוללים משלוח, ואחוזי ההנחה מחושבים לפי המחיר המקורי שמוצג באליאקספרס.</p>
 <p class="legal">{"".join(f'<a href="{BASE}{p}">{n}</a>' for p, n in LEGAL)}<a href="mailto:{EMAIL}">{EMAIL}</a></p>
