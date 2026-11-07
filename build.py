@@ -308,6 +308,9 @@ def load_categories() -> list[dict]:
 
 
 categories = load_categories()
+# The owner's own videos (YouTube channel): data/videos.json. Shorts carry the product and its affiliate link.
+VIDEOS = json.loads((ROOT / "data" / "videos.json").read_text(encoding="utf-8")) if (ROOT / "data" / "videos.json").exists() else []
+VIDEO_BY_PID = {v["product_id"]: v for v in VIDEOS if v.get("product_id")}
 BOT_STORES_URL = os.environ.get("BOT_STORES_URL") or BOT_FEED_URL.replace("/products.json", "/stores.json")
 STORES_ENABLED = False                  # "חנויות במבצע" switched off 2026-10-24 (no real value to shoppers for now)
 stores = []
@@ -578,7 +581,7 @@ def _nav() -> list[tuple[str, str]]:
     """The menu. The sale events slot comes from data/events.csv: up to two running or upcoming events with a guide
     of their own; with none, the sales calendar."""
     sale = [(f"/guides/{r['guide']}/", r["nav"]) for r in events_menu] or [("/guides/sales-calendar/", "לוח המבצעים")]
-    return ([("/", "ראשי"), ("/coupons/", "קודי קופון"), ("/guides/", "מדריכים")] + sale +
+    return ([("/", "ראשי"), ("/coupons/", "קודי קופון")] + ([("/videos/", "סרטונים")] if VIDEOS else []) + [("/guides/", "מדריכים")] + sale +
             [("/guides/code-not-working/", "קוד לא עובד?"), ("/about/", "אודות")])
 
 
@@ -887,7 +890,10 @@ def product_tiles(rows: list[dict], path: str) -> str:
         coupons = tile_coupons(p)
         note = f'<span class="tnote">{e(str(p["owner_note"])[:60])}</span>' if p.get("owner_note") else ""
         attrs = f'href="{e(p['link'])}" rel="sponsored nofollow noopener" target="_blank"'
-        tiles.append(f"""<li><div class="tile">
+        vid = VIDEO_BY_PID.get(str(p.get("id")))
+        vtag = (f'<a class="vtag" href="{yt_url(vid)}" target="_blank" rel="noopener">▶ סרטון שלנו<span class="sr-only">: '
+                f'{e(vid["title"])} (נפתח ביוטיוב)</span></a>') if vid else ""
+        tiles.append(f"""<li><div class="tile">{vtag}
 <a class="tlink" {attrs}>
 <span class="pic"><img src="{e(p['image'])}" alt="" width="300" height="300" loading="lazy" decoding="async" referrerpolicy="no-referrer"></span>
 {burst}
@@ -930,7 +936,7 @@ def hero(src: str, main_heading: bool, compact: bool = False) -> str:
 
 
 # The date someone last changed each page's own text here in build.py (data-driven parts date themselves).
-EDITED = {"/": "2026-11-02", "/coupons/": "2026-10-21", "/guides/": "2026-10-21", "/guides/coupon-types/": "2026-10-20",
+EDITED = {"/": "2026-11-08", "/videos/": "2026-11-08", "/coupons/": "2026-10-21", "/guides/": "2026-10-21", "/guides/coupon-types/": "2026-10-20",
           "/guides/code-not-working/": "2026-10-20", "/about/": "2026-11-03",
           "/accessibility/": "2026-11-03", "/privacy/": "2026-11-06", "/terms/": "2026-11-03"}
 
@@ -948,6 +954,56 @@ def event_marks() -> list[datetime]:
     return [d for r in events for d in (r["_from"], r["_end"]) if d and d <= NOW]
 
 
+def yt_url(v: dict) -> str:
+    return f"https://www.youtube.com/{'shorts/' + v['yt'] if v['kind'] == 'short' else 'watch?v=' + v['yt']}"
+
+
+def _dur(iso: str) -> str:
+    m = re.fullmatch(r"PT(?:(\d+)M)?(?:(\d+)S)?", iso or "")
+    return f"{int(m.group(1) or 0)}:{int(m.group(2) or 0):02d}" if m else ""
+
+
+VIDEO_NOTE = "המחיר נקבע באליאקספרס ומשתנה. המחיר בסרטון הוא מה ששילמתי בזמן הקנייה."
+
+
+def video_cards(rows: list[dict], wide: bool = False) -> str:
+    """The owner's videos as cards: the picture opens the video on YouTube, the button opens the product (affiliate)."""
+    out = []
+    for v in rows:
+        w, h = (640, 360) if v["kind"] != "short" else (360, 640)
+        btn = (f'<a class="btn" href="{e(v["link"])}" rel="sponsored nofollow noopener" target="_blank">{ICON_CART}לצפייה במוצר</a>'
+               f'<p class="vnote">{VIDEO_NOTE}</p>') if v.get("link") else \
+              f'<a class="btn secondary" href="{yt_url(v)}" target="_blank" rel="noopener">לצפייה ביוטיוב</a>'
+        out.append(f"""<li class="vcard{' wide' if v['kind'] != 'short' else ''}">
+<a class="vthumb" href="{yt_url(v)}" target="_blank" rel="noopener"><img src="{BASE}/assets/videos/{e(v['yt'])}.jpg" alt="" width="{w}" height="{h}" loading="lazy" decoding="async"><span class="play" aria-hidden="true">▶</span><span class="dur">{_dur(v.get('duration', ''))}</span><span class="sr-only">צפייה ביוטיוב: {e(v['title'])}</span></a>
+<div class="vbody"><h3>{e(v['title'])}</h3><p class="vtext">{e(v.get('text', ''))}</p>{btn}</div>
+</li>""")
+    return f'<ul class="{"vgrid" if wide else "vrow"}">{"".join(out)}</ul>'
+
+
+def build_videos():
+    path = "/videos/"
+    if not VIDEOS:
+        return
+    shorts = [v for v in VIDEOS if v["kind"] == "short"]
+    longs = [v for v in VIDEOS if v["kind"] != "short"]
+    schema = [{"@type": "VideoObject", "name": v["title"], "description": v.get("text") or v["title"],
+               "thumbnailUrl": f"{SITE_URL}/assets/videos/{v['yt']}.jpg", "uploadDate": v["date"],
+               "duration": v.get("duration"), "contentUrl": yt_url(v),
+               "embedUrl": f"https://www.youtube.com/embed/{v['yt']}"} for v in VIDEOS]
+    body = f"""<header class="page-head"><h1>סרטונים: מוצרים שבדקנו בעצמנו</h1>
+<p class="lead">קונים, מצלמים ומראים איך המוצר נראה באמת, לפני שאתם קונים. כל הסרטונים גם ב<a href="{YOUTUBE}">ערוץ היוטיוב שלנו</a>.</p></header>
+{('<section aria-labelledby="ep-title"><h2 id="ep-title">פרקים</h2>' + video_cards(longs, wide=True) + '</section>') if longs else ''}
+<section aria-labelledby="sh-title"><h2 id="sh-title">סרטונים קצרים</h2>
+{video_cards(shorts, wide=True)}
+</section>
+<p class="tiles-note">{VIDEO_NOTE} הכפתור "לצפייה במוצר" הוא קישור שותפים: המחיר שלכם לא משתנה.</p>"""
+    page(path, f"סרטונים: מוצרים מאליאקספרס שבדקנו בעצמנו | {NAME}",
+         "סרטונים קצרים של מוצרים מאליאקספרס שקנינו ובדקנו בעצמנו, עם קישור ישיר למוצר.",
+         body, crumbs=[(path, "סרטונים")], schema=schema, updated=latest(EDITED[path], *[v["date"] for v in VIDEOS]),
+         card={"lines": [("סרטונים", "ink"), ("בדקנו בעצמנו", "red")], "sub": "מוצרים מאליאקספרס בשימוש אמיתי"})
+
+
 def build_home():
     path = "/"
     ev_url, ev_title, ev_text = event_card()
@@ -957,6 +1013,13 @@ def build_home():
 <div class="sec-head"><h2 id="hot-title">מוצרים נבחרים</h2><a href="{CHANNEL}">כל הדילים בערוץ {ICON_ARROW}</a></div>
 {product_tiles(products, path)}
 <p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המחירים נכונים לתאריך שמופיע על כל מוצר, ועשויים להשתנות. לחיצה על מוצר פותחת אותו באליאקספרס (קישור שותפים: המחיר שלכם לא משתנה).</p>
+</section>"""
+    vids = ""
+    if VIDEOS:
+        recent = [v for v in VIDEOS if v["kind"] == "short"][:6]
+        vids = f"""<section class="vids" aria-labelledby="vids-title">
+<div class="sec-head"><h2 id="vids-title"><span class="pl" aria-hidden="true">▶</span>בדקנו בעצמנו</h2><a href="{BASE}/videos/">כל הסרטונים {ICON_ARROW}</a></div>
+{video_cards(recent)}
 </section>"""
     deals = ""
     if seller:                 # no verified seller code in force = no section: an empty box here says nothing useful
@@ -969,6 +1032,8 @@ def build_home():
 <!--MENUBAR-->
 
 <div class="wrap">
+{vids}
+
 {tiles}
 
 {deals}
@@ -1581,7 +1646,7 @@ def main():
                              [p["image"] for c in categories for p in c["products"][:3]], OUT)
     except Exception as ex:
         print(f"share cards: no prefetch ({ex})")
-    build_home(); build_coupons_page(); build_coupon_types(); build_not_working(); build_guides(); build_categories(); build_stores(); build_about(); build_accessibility(); build_privacy(); build_terms(); build_404()
+    build_home(); build_coupons_page(); build_coupon_types(); build_not_working(); build_guides(); build_categories(); build_stores(); build_about(); build_videos(); build_accessibility(); build_privacy(); build_terms(); build_404()
     build_meta_files()
     print(f"built {len(SITEMAP)} pages into {OUT} (base={BASE or '/'}), {len(seller)} seller codes, "
           f"{len(platform_active)} platform codes active, {len(events_live)} sale events ahead")
