@@ -623,6 +623,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
     updated: the date this page's content last changed (footer, sitemap). card: what goes on the share image."""
     url = SITE_URL + path
     graph = [ORG, {"@type": "WebSite", "@id": f"{SITE_URL}/#site", "url": f"{SITE_URL}/", "name": NAME,
+                   "alternateName": ["נייס ביי", "nicebuy.co.il"],
                    "inLanguage": "he-IL", "publisher": {"@id": f"{SITE_URL}/#org"}}]
     if crumbs:
         items = [("/", "ראשי")] + crumbs
@@ -937,7 +938,7 @@ def hero(src: str, main_heading: bool, compact: bool = False) -> str:
 
 # The date someone last changed each page's own text here in build.py (data-driven parts date themselves).
 EDITED = {"/": "2026-11-08", "/videos/": "2026-11-08", "/coupons/": "2026-10-21", "/guides/": "2026-10-21", "/guides/coupon-types/": "2026-10-20",
-          "/guides/code-not-working/": "2026-10-20", "/about/": "2026-11-03",
+          "/guides/code-not-working/": "2026-10-20", "/about/": "2026-11-08",
           "/accessibility/": "2026-11-03", "/privacy/": "2026-11-06", "/terms/": "2026-11-03"}
 
 
@@ -1589,7 +1590,7 @@ def build_about():
 <h2>יצירת קשר</h2>
 <p>במייל <a href="mailto:{EMAIL}">{EMAIL}</a> או דרך <a href="{bot_link(src=src_for('inline', path))}">הבוט בטלגרם</a>. דילים חדשים מתפרסמים ב<a href="{CHANNEL}">ערוץ הדילים</a>.</p>
 </div>"""
-    page(path, f"אודות {NAME} וגילוי נאות", "מי אנחנו, איך NiceBuy עובד, גילוי נאות על קישורי שותפים ופרטיות.",
+    page(path, f"אודות וגילוי נאות | {NAME}", "מי אנחנו, איך NiceBuy עובד, גילוי נאות על קישורי שותפים ופרטיות.",
          body, crumbs=[(path, "אודות")], updated=updated,
          card={"lines": [("אודות NiceBuy", "ink")], "sub": "בוט טלגרם חינמי שבודק מחירים וקודים באליאקספרס"})
 
