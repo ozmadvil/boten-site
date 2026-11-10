@@ -252,6 +252,11 @@ FEED_MAX_AGE = timedelta(hours=72)
 FEEDS: dict[str, dict] = {}                 # what this build used, republished under /feed/
 
 
+# a new style.css reaches visitors at once (browsers keep the old one otherwise)
+import hashlib as _hashlib
+CSS_VERSION = _hashlib.md5((ROOT / "assets" / "style.css").read_bytes()).hexdigest()[:8]
+
+
 def load_feed(name: str, bot_url: str, key: str) -> dict | None:
     import urllib.request
     cache = ROOT / "data" / name
@@ -685,7 +690,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <meta name="theme-color" content="#ffffff">
 <link rel="preload" href="{BASE}/assets/fonts/rubik-hebrew-900-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{BASE}/assets/fonts/rubik-hebrew-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="{BASE}/assets/style.css">
+<link rel="stylesheet" href="{BASE}/assets/style.css?v={CSS_VERSION}">
 <script type="application/ld+json">{json_script({"@context": "https://schema.org", "@graph": graph})}</script>
 </head>
 <body>
