@@ -260,7 +260,7 @@ p { margin: 0 0 14px; }
 .tile .tprice .was { font-size: 15px; }
 .tile .ttemp { display: block; width: fit-content; margin: 6px 4px 0; padding: 3px 9px; border-radius: 99px; font-size: 14px; font-weight: 700; background: #FEE2E2; color: #991B1B; font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: no-preference) {
-  .tile .ttemp { animation: ttemp-blink 1.2s ease-in-out infinite; }
+  .tile .ttemp { animation: ttemp-blink 2.4s ease-in-out infinite; }
 }
 @keyframes ttemp-blink { 0%, 100% { background: #FEE2E2; } 50% { background: #FCA5A5; } }
 .tile .tnote { display: block; width: fit-content; margin: 6px 4px 0; padding: 3px 9px; border-radius: 99px; font-size: 13px; font-weight: 700; background: var(--accent); color: var(--accent-ink); }
