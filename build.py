@@ -890,6 +890,12 @@ def product_tiles(rows: list[dict], path: str) -> str:
         asof = f'<span class="asof">נכון ל-{when.strftime("%d/%m")}</span>' if when else ""
         coupons = tile_coupons(p)
         note = f'<span class="tnote">{e(str(p["owner_note"])[:60])}</span>' if p.get("owner_note") else ""
+        temp = p.get("temp_price")            # the owner's temporary price, set in the bot (⏳ on the channel post)
+        if temp:
+            try:
+                note += f'<span class="ttemp">⏳ מחיר זמני ₪{float(temp):.2f}</span>'
+            except (TypeError, ValueError):
+                pass
         attrs = f'href="{e(p['link'])}" rel="sponsored nofollow noopener" target="_blank"'
         vid = VIDEO_BY_PID.get(str(p.get("id")))
         vtag = (f'<a class="vtag" href="{yt_url(vid)}" target="_blank" rel="noopener">▶ סרטון שלנו<span class="sr-only">: '
