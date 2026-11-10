@@ -927,7 +927,8 @@ def product_tiles(rows: list[dict], path: str) -> str:
         when = iso_dt(p.get("checked") or p.get("posted"))
         asof = f'<span class="asof">נכון ל-{when.strftime("%d/%m")}</span>' if when else ""
         coupons = tile_coupons(p)
-        note = f'<span class="tnote">{e(str(p["owner_note"])[:60])}</span>' if p.get("owner_note") else ""
+        on = str(p.get("owner_note") or "")[:60]   # a "first item at" note looks like the bot's 🎁 tag (red, blinking)
+        note = f'<span class="{"ttemp" if on.startswith("מוצר ראשון") else "tnote"}">{e(on)}</span>' if on else ""
         temp = p.get("temp_price")            # the owner's temporary price, set in the bot (⏳ on the channel post)
         if temp:
             try:
