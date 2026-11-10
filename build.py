@@ -578,6 +578,22 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     linkCheck(v); input.value = '';
   });
 });
+// count clicks out to AliExpress: only a number per day (no ids, no cookies), so the owner's dashboard can be
+// compared with the clicks AliExpress reports. The bot counts them (POST /click, same origin as /product).
+(function () {
+  var f = document.querySelector('form.checker'), api = f && f.dataset.product;
+  if (!api || !navigator.sendBeacon || /[?&]qa=1/.test(location.search)) return;
+  var url = api.replace(/\/product$/, '/click');
+  var OUT = 'a[href^="https://s.click.aliexpress.com/"], .tcoupon';
+  function out(ev) {
+    if (ev.type === 'auxclick' && ev.button !== 1) return;          // the middle button opens a tab; the right one doesn't
+    var el = ev.target.closest && ev.target.closest(OUT); if (!el) return;
+    var w = el.closest('.chat-log') ? 'chat' : el.classList.contains('tcoupon') ? 'code' : 'tile';
+    try { navigator.sendBeacon(url + '?w=' + w); } catch (e) {}
+  }
+  document.addEventListener('click', out, true);
+  document.addEventListener('auxclick', out, true);
+})();
 """
 
 
