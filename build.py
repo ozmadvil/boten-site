@@ -577,6 +577,16 @@ document.querySelectorAll('form.checker').forEach(function (f) {
       fail(body, e.message === 'slow' ? 'רגע, יותר מדי חיפושים. נסו שוב בעוד דקה.' : 'החיפוש לא זמין כרגע. נסו שוב בעוד רגע.');
     });
   }
+  // the part of a link answer about other sellers: the cheaper ones, or a line saying there are none
+  function altsHtml(alts) {
+    if (alts.length) {
+      return '<p class="cgap">💡 מצאתי ' + (alts.length === 1 ? 'מוכר אחד שמוכר' : alts.length + ' מוכרים שמוכרים') + ' משהו דומה בזול יותר:</p>' + alts.map(function (a) { return wide(a, true); }).join('') +
+        '<p class="cnote">שווה לוודא שזה אותו דגם ואותו מפרט לפני הקנייה.</p>';
+    }
+    return '<p class="cgap">👌 בדקתי מוכרים אחרים ולא מצאתי את זה זול יותר עם דירוג טוב. נראה שזה כבר מחיר טוב.</p>';
+  }
+  // A pasted link is answered in two steps: the product at once (alts=0), then the other sellers (alts=1), which
+  // takes longer. When the first answer is already complete (cached, or an older bot), there is no second step.
   function linkCheck(v) {
     var body = ask(v.length > 70 ? v.slice(0, 70) + '…' : v);
     var m = v.match(/(?:\/item\/|productIds?=|[?&]id=|\/i\/)(\d{10,20})/) || v.match(/(\d{13,20})/);
@@ -584,21 +594,34 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     var start = m ? 'p_' + m[1] : (sh ? 's_' + sh[1] : '');
     body.innerHTML = '<p>בודק את המחיר והקופון, ומחפש אם מוכרים אחרים מוכרים את זה בזול יותר… (עד חצי דקה)</p><p class="typing"><span></span><span></span><span></span></p>';
     busy(true, 'בודק…'); say('בודק את הלינק שלכם…');
-    fetch(f.dataset.product + '?url=' + encodeURIComponent(v)).then(function (r) {
+    // the second step writes only into its own bubble (the visitor may be busy with another search by then)
+    function later(html) {
+      var w = body.querySelectorAll('.cwait'); if (!w.length) return;
+      w[0].insertAdjacentHTML('beforebegin', html);
+      for (var i = 0; i < w.length; i++) w[i].remove();
+    }
+    function others(id) {
+      fetch(f.dataset.product + '?url=' + encodeURIComponent(id) + '&alts=1').then(function (r) {
+        if (!r.ok) throw new Error('bad'); return r.json();
+      }).then(function (d) {
+        if (!d.ok) throw new Error('bad');
+        later(altsHtml(d.alternatives || []));
+      }).catch(function () {
+        later('<p class="cgap">לא הצלחתי לבדוק מוכרים אחרים כרגע.' + (start ? ' <a href="' + botLink(start) + '">לבדוק את המוצר בבוט בטלגרם</a>' : '') + '</p>');
+      });
+    }
+    fetch(f.dataset.product + '?url=' + encodeURIComponent(v) + '&alts=0').then(function (r) {
       if (r.status === 429) throw new Error('slow'); if (!r.ok && r.status !== 400) throw new Error('bad'); return r.json();
     }).then(function (d) {
       busy(false); msg.innerHTML = idle; msg.classList.remove('err');
       if (!d.ok) { body.innerHTML = '<p class="cerr">' + esc(d.message || 'לא הצלחתי לבדוק את הלינק הזה.') + '</p>'; return; }
-      var p = d.product, alts = d.alternatives || [];
+      var p = d.product, wait = !!d.pending && !d.alternatives;
       var html = '<p>זה המוצר שלכם' + (p.code && p.code.code ? ', ויש לו קוד הנחה של המוכר' : '') + ':</p>' + wide(p, false) + '<p class="cnote">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס.</p>';
-      if (alts.length) {
-        html += '<p class="cgap">💡 מצאתי ' + (alts.length === 1 ? 'מוכר אחד שמוכר' : alts.length + ' מוכרים שמוכרים') + ' משהו דומה בזול יותר:</p>' + alts.map(function (a) { return wide(a, true); }).join('') +
-          '<p class="cnote">שווה לוודא שזה אותו דגם ואותו מפרט לפני הקנייה.</p>';
-      } else {
-        html += '<p class="cgap">👌 בדקתי מוכרים אחרים ולא מצאתי את זה זול יותר עם דירוג טוב. נראה שזה כבר מחיר טוב.</p>';
-      }
+      html += wait ? '<p class="cgap cwait">🔎 בודק אם מוכרים אחרים מוכרים את זה בזול יותר…</p><p class="typing cwait"><span></span><span></span><span></span></p>'
+        : altsHtml(d.alternatives || []);
       html += '<p class="cnote">* קישורי שותפים של אליאקספרס.' + (start ? ' <a href="' + botLink(start) + '">להמשיך בבוט בטלגרם</a>' : '') + '</p>';
       body.innerHTML = html;
+      if (wait) others(p.id || v);
     }).catch(function (e) {
       busy(false); msg.innerHTML = idle;
       body.innerHTML = '<p class="cerr">' + (e.message === 'slow' ? 'רגע, יותר מדי בדיקות. נסו שוב בעוד דקה.' : 'לא הצלחתי לבדוק כרגע.') + '</p>' +
