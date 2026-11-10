@@ -447,13 +447,28 @@ function coupons(p) {
   }
   return out ? '<span class="tcoupons">' + out + '</span>' : '';
 }
-// a code inside a card: copy it, show it, and open the product in a new tab (the affiliate link)
+// a code inside a card: copy it and say so clearly, then (after a moment, so the shopper sees it) open the product
+// in a new tab through the affiliate link. If the browser blocks the late open, the button becomes a plain link.
 document.addEventListener('click', function (ev) {
   var b = ev.target.closest && ev.target.closest('.tcoupon'); if (!b) return;
-  var code = b.dataset.code, txt = b.querySelector('.tc-txt'), act = b.querySelector('.tc-act');
-  var done = function (ok) { txt.textContent = code; act.textContent = ok ? 'הועתק ✓' : 'העתיקו ידנית'; b.classList.add('shown'); };
+  var href = safeLink(b.dataset.href);
+  if (b.classList.contains('ready')) { if (href) window.open(href, '_blank', 'noopener'); return; }
+  if (b.classList.contains('shown')) return;
+  var code = b.dataset.code, txt = b.querySelector('.tc-txt'), act = b.querySelector('.tc-act'), what = b.querySelector('.tc-what');
+  var done = function (ok) {
+    txt.textContent = code; b.classList.add('shown');
+    act.textContent = ok ? '✓ הועתק!' : 'העתיקו ידנית';
+    what.innerHTML = ok ? '<b>הקוד הועתק</b> הדביקו אותו בקופה באליאקספרס' : '<b>העתיקו את הקוד</b> והדביקו אותו בקופה';
+  };
   try { navigator.clipboard.writeText(code).then(function () { done(true); }, function () { done(false); }); } catch (e) { done(false); }
-  var href = safeLink(b.dataset.href); if (href) window.open(href, '_blank', 'noopener');
+  if (!href) return;
+  setTimeout(function () {
+    var w = null;
+    try { w = window.open(href, '_blank'); if (w) w.opener = null; } catch (e) {}   // (with 'noopener' it always returns null)
+    if (!w) {                               // blocked: let the shopper open it with one more tap
+      b.classList.add('ready'); act.textContent = 'לאליאקספרס ←';
+    }
+  }, 1500);
 });
 function codeLabel(p) {
   var c = p.code; if (!c || typeof c !== 'object') return null;
