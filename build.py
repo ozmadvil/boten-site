@@ -316,6 +316,32 @@ categories = load_categories()
 # The owner's own videos (YouTube channel): data/videos.json. Shorts carry the product and its affiliate link.
 VIDEOS = json.loads((ROOT / "data" / "videos.json").read_text(encoding="utf-8")) if (ROOT / "data" / "videos.json").exists() else []
 VIDEO_BY_PID = {v["product_id"]: v for v in VIDEOS if v.get("product_id")}
+
+
+def _video_thumbs():
+    """A video without its picture in assets/videos/ gets YouTube's thumbnail at build time (a Short's 16:9 picture
+    has the frame in the middle; the 9:16 card shows that middle with object-fit: cover)."""
+    import urllib.request
+    for v in VIDEOS:
+        f = ROOT / "assets" / "videos" / f"{v['yt']}.jpg"
+        if f.exists() or os.environ.get("BOT_FEED_URL") == "off":
+            continue
+        for name in ("oardefault", "hq720", "hqdefault"):
+            try:
+                req = urllib.request.Request(f"https://i.ytimg.com/vi/{v['yt']}/{name}.jpg",
+                                             headers={"User-Agent": "boten-site-build"})
+                with urllib.request.urlopen(req, timeout=20) as r:
+                    data = r.read()
+                if len(data) > 2000:
+                    f.parent.mkdir(parents=True, exist_ok=True)
+                    f.write_bytes(data)
+                    print(f"video thumb {v['yt']}: {name}")
+                    break
+            except Exception as ex:
+                print(f"video thumb {v['yt']} {name}: {ex}")
+
+
+_video_thumbs()
 BOT_STORES_URL = os.environ.get("BOT_STORES_URL") or BOT_FEED_URL.replace("/products.json", "/stores.json")
 STORES_ENABLED = False                  # "חנויות במבצע" switched off 2026-10-24 (no real value to shoppers for now)
 stores = []
