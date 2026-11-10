@@ -879,7 +879,9 @@ def tile_coupons(p: dict) -> str:
         what = f"{ils(off)} הנחה" if off else (f"{pct:.0f}% הנחה" if pct else "")
         if minimum and minimum > 1:
             what += f" מעל {ils(minimum)}"
-        out.append(coupon_btn(c["code"], "קוד מוכר", what.strip(), link))
+        out.append(coupon_btn(c["code"], "קוד קופון" if p.get("owner_code") else "קוד מוכר", what.strip(), link))
+    if p.get("owner_code"):                    # a code the owner added in the bot (🎟️): show only that code
+        return f'<span class="tcoupons">{"".join(out)}</span>' if out else ""
     # The owner can fix the Israel code for a product he added (feed field "il_code"); while that code is active it
     # replaces the automatic tier, otherwise the card falls back to the tier that fits the price.
     fixed = str(p.get("il_code") or "").strip().upper()
