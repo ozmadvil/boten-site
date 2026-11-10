@@ -931,7 +931,7 @@ def product_tiles(rows: list[dict], path: str) -> str:
         temp = p.get("temp_price")            # the owner's temporary price, set in the bot (⏳ on the channel post)
         if temp:
             try:
-                note += f'<span class="ttemp">מחיר זמני ₪{float(temp):.2f}</span>'
+                note += f'<span class="tnote">מוצר ראשון ב-₪{float(temp):.2f}</span>'
             except (TypeError, ValueError):
                 pass
         attrs = f'href="{e(p['link'])}" rel="sponsored nofollow noopener" target="_blank"'
