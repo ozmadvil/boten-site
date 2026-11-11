@@ -9,12 +9,18 @@ Also: answers on a phone screen without sideways scrolling, several shoppers at 
 message, and JavaScript errors on the page.
 """
 import json
+import os
 import re
 import sys
 import time
 from pathlib import Path
+from urllib.parse import quote
 
 from playwright.sync_api import sync_playwright
+
+# the bot treats a request as this test only with qa=<QA_TOKEN> (GitHub secret, same value as the Railway variable);
+# without it the test still runs, but its searches are counted as visitors' and may come from the bot's cache
+QA_MARK = "&qa=" + quote(os.environ.get("QA_TOKEN") or "1", safe="")
 
 SITE = sys.argv[1] if len(sys.argv) > 1 else "https://nicebuy.co.il/"
 OUT = Path(__file__).parent / "out"
@@ -105,8 +111,8 @@ def main():
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
         ctx = browser.new_context(locale="he-IL", viewport={"width": 1280, "height": 900})
-        # mark the test's requests (qa=1) so the bot doesn't count them as visitors' searches
-        ctx.route(re.compile(r".*/(search|product)\?.*"), lambda route: route.continue_(url=route.request.url + "&qa=1"))
+        # mark the test's requests (qa=<QA_TOKEN>) so the bot doesn't count them as visitors' searches
+        ctx.route(re.compile(r".*/(search|product)\?.*"), lambda route: route.continue_(url=route.request.url + QA_MARK))
         page = ctx.new_page()
         console_errors = []
         page.on("console", lambda m: console_errors.append(m.text[:200]) if m.type == "error" else None)
@@ -197,7 +203,7 @@ def main():
         # phone screen: an answer must fit without sideways scrolling
         phone = browser.new_context(locale="he-IL", viewport={"width": 390, "height": 844}, is_mobile=True,
                                     has_touch=True, device_scale_factor=2)
-        phone.route(re.compile(r".*/(search|product)\?.*"), lambda route: route.continue_(url=route.request.url + "&qa=1"))
+        phone.route(re.compile(r".*/(search|product)\?.*"), lambda route: route.continue_(url=route.request.url + QA_MARK))
         pp = phone.new_page()
         pp.goto(SITE, wait_until="networkidle")
         secs, ans = ask(pp, "שעון חכם")
@@ -212,7 +218,7 @@ def main():
         together = page.evaluate("""async () => { const url = document.querySelector('form.checker').dataset.search;
             const qs = ['מנורת לילה', 'בקבוק תרמי', 'פנס ראש', 'מחזיק טלפון לרכב'];
             return Promise.all(qs.map(async q => { const t = performance.now();
-                try { const r = await fetch(url + '?q=' + encodeURIComponent(q) + '&qa=1');
+                try { const r = await fetch(url + '?q=' + encodeURIComponent(q));
                       const d = r.ok ? await r.json() : {};
                       return {query: q, status: r.status, n: (d.products || []).length, seconds: Math.round((performance.now() - t) / 100) / 10}; }
                 catch (e) { return {query: q, status: 0, n: 0, seconds: 0}; } })); }""")
@@ -225,7 +231,7 @@ def main():
 
         # too many searches: the shopper must see a friendly message, not a broken page
         burst = page.evaluate("""async () => { const url = document.querySelector('form.checker').dataset.search;
-            return Promise.all([...Array(12).keys()].map(i => fetch(url + '?q=' + encodeURIComponent('כבל ' + i) + '&qa=1')
+            return Promise.all([...Array(12).keys()].map(i => fetch(url + '?q=' + encodeURIComponent('כבל ' + i))
                 .then(x => x.status).catch(() => 0))); }""")      # 12 at once from one visitor: over the 8/minute limit
         secs, ans = ask(page, "מטען לרכב", timeout=40)
         txt = ans.inner_text() if ans else ""

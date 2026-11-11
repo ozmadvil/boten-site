@@ -1,5 +1,7 @@
 """Marketing screenshots of the live site on a phone (1080x1920), for video tools' reference images."""
+import os
 import re
+from urllib.parse import quote
 import time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -19,7 +21,7 @@ def wait_answer(page, before, timeout=75):
 with sync_playwright() as pw:
     b = pw.chromium.launch()
     ctx = b.new_context(locale="he-IL", viewport={"width": 360, "height": 640}, device_scale_factor=3, is_mobile=True, has_touch=True)
-    ctx.route(re.compile(r".*/(search|product)\?.*"), lambda r: r.continue_(url=r.request.url + "&qa=1"))
+    ctx.route(re.compile(r".*/(search|product)\?.*"), lambda r: r.continue_(url=r.request.url + "&qa=" + quote(os.environ.get("QA_TOKEN") or "1", safe="")))
     p = ctx.new_page()
     p.goto(SITE, wait_until="networkidle")
     p.wait_for_timeout(1500)

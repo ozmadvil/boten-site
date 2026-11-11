@@ -17,6 +17,8 @@ jobs:
           python-version: "3.12"
       - run: pip install "playwright==1.55.0" && python -m playwright install --with-deps chromium
       - run: python qa/shots.py
+        env:
+          QA_TOKEN: ${{ secrets.QA_TOKEN }}
       - name: Keep the screenshots on the qa-reports branch
         run: |
           set -e

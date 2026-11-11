@@ -24,6 +24,8 @@ jobs:
           python-version: "3.12"
       - run: pip install "playwright==1.55.0" && python -m playwright install --with-deps chromium
       - run: python qa/site_qa.py "https://nicebuy.co.il/"
+        env:
+          QA_TOKEN: ${{ secrets.QA_TOKEN }}
       - name: Keep the report on the qa-reports branch
         if: always()
         run: |
