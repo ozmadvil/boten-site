@@ -1399,11 +1399,34 @@ def build_guides():
         faq_html, faq_schema = faq_block(g.get("faq") or [])
         upd = datetime.strptime(g["updated"], "%Y-%m-%d")
         tiles = ""
+        if g.get("items"):                       # the products the guide recommends, by AliExpress id (in its order)
+            pool = {p["id"]: p for c in categories for p in c["products"]}
+            pool.update({p["id"]: p for p in products})
+            picked = [pool[i] for i in g["items"] if i in pool]
+            # a recommended product that left the feed is replaced automatically by another one of the same type
+            # (title contains one of the guide's "fill" words), best known first: the owner's/channel picks, then autos
+            words = g.get("fill") or []
+            if words and len(picked) < len(g["items"]):
+                have = {p["id"] for p in picked}
+                extra = []
+                for c in categories:
+                    for p in c["products"]:
+                        if p["id"] not in have and any(w in p["title"] for w in words):
+                            extra.append(p); have.add(p["id"])
+                extra.sort(key=lambda p: (not p.get("pick"), not re.search(r"[A-Za-z]{3,}", p["title"])))   # picks, then branded
+                picked += extra[:len(g["items"]) - len(picked)]
+            if picked:
+                tiles += (f'<h2>המוצרים מהמדריך</h2>{product_tiles(picked, url)}'
+                          '<p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המחירים נכונים לתאריך שמופיע על כל מוצר. קישורי שותפים: המחיר שלכם לא משתנה.</p>')
+            missing = [i for i in g["items"] if i not in pool]
+            if missing:
+                print(f"guide {g['slug']}: {len(missing)} recommended products not in the feed (replaced from 'fill' if possible): {', '.join(missing)}")
         if g.get("products") and products:
             keys = g["products"]
             rows = products if keys == ["*"] else [p for p in products if any(k in p["title"] for k in keys)]
+            rows = [p for p in rows if p["id"] not in (g.get("items") or [])]   # not twice on the page
             if rows:
-                tiles = (f'<h2>דילים מהערוץ</h2>{product_tiles(rows[:8], url)}'
+                tiles += (f'<h2>דילים מהערוץ</h2>{product_tiles(rows[:8], url)}'
                          '<p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המחירים נכונים לתאריך שמופיע על כל מוצר. קישורי שותפים: המחיר שלכם לא משתנה.</p>')
         srcs = ""
         if g.get("sources"):
@@ -1433,7 +1456,7 @@ def build_guides():
         ("מבצעים", ["11-11", "black-friday", "sales-calendar"]),
         ("מיסים, משלוח ואישורים", ["customs-tax", "shipping-israel", "wireless-approval", "dispute-refund"]),
         ("קופונים", ["coupon-types", "code-not-working"]),
-        ("מוצרים", ["popular-products", "power-bank", "jump-starter"]),
+        ("מוצרים", ["popular-products", "power-bank", "dash-cam", "jump-starter"]),
     ]
     by_slug = {g["slug"]: (g["h1"], g["desc"]) for g in GUIDES}
     by_slug["coupon-types"] = ("סוגי הקופונים באליאקספרס ואיך משלבים אותם",
