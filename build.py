@@ -455,8 +455,8 @@ function priceHtml(v) { var p = Number(v).toFixed(2).split('.'); return '<span c
 function ils(v) { return '₪' + (Math.abs(v - Math.round(v)) < 0.005 ? Math.round(v) : Number(v).toFixed(2)); }
 function maskCode(c) { var k = c.length > 5 ? 3 : 2; return c.slice(0, k) + '•'.repeat(Math.max(3, Math.min(5, c.length - k))); }
 function couponBtn(code, kind, what, link) {
-  return '<button class="tcoupon" type="button" data-code="' + esc(code) + '" data-href="' + esc(link) + '" aria-label="העתקת ' + kind + ' ופתיחת המוצר">' +
-    '<span class="tc-what"><b>' + kind + '</b> ' + esc(what) + '</span><span class="tc-code"><span class="tc-txt">' + esc(maskCode(code)) + '</span><span class="tc-act">העתקה</span></span></button>';
+  return '<button class="tcoupon" type="button" data-code="' + esc(code) + '" data-href="' + esc(link) + '">' +
+    '<span class="tc-what"><b>' + kind + '</b> ' + esc(what) + '</span><span class="tc-code"><span class="tc-txt">' + esc(maskCode(code)) + '</span><span class="tc-act">העתקה</span></span><span class="sr-only"> ופתיחת המוצר באליאקספרס</span></button>';
 }
 function coupons(p) {
   var out = '', c = p.code;
@@ -757,7 +757,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <nav class="menu" aria-label="ראשי">{nav}</nav>
 <div class="tgs">
 <a class="tg ch" href="{CHANNEL}" aria-label="ערוץ הדילים בטלגרם">{ICON_TG}<span class="long">ערוץ הדילים</span><span class="short">ערוץ</span></a>
-<a class="tg" href="{bot_link(src=src_for('nav', path))}" aria-label="הבוט של NiceBuy בטלגרם">{ICON_TG}הבוט בטלגרם</a>
+<a class="tg" href="{bot_link(src=src_for('nav', path))}" aria-label="הבוט בטלגרם של NiceBuy">{ICON_TG}הבוט בטלגרם</a>
 </div>
 </div></header>
 {menubar_top}
@@ -766,7 +766,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 </main>
 <footer class="site"><div class="wrap">
 <div class="links">{"".join(f'<a href="{BASE}{p}">{n}</a>' for p, n in NAV)}<a href="{bot_link(src=src_for('footer', path))}">הבוט בטלגרם</a><a href="{CHANNEL}">ערוץ הדילים</a><a href="{YOUTUBE}">יוטיוב</a></div>
-<p>* גילוי נאות: חלק מהקישורים באתר ובבוט הם קישורי שותפים של אליאקספרס. על רכישה דרכם NiceBuy מקבל עמלה קטנה, והמחיר שלכם לא משתנה.</p>
+<p>* גילוי נאות: הקישורים לאליאקספרס באתר ובבוט הם קישורי שותפים. על קנייה דרכם NiceBuy מקבל עמלה, והמחיר שלכם לא משתנה.</p>
 <p>* NiceBuy אינו קשור לאליאקספרס ואינו מייצג אותה. AliExpress הוא סימן מסחר של בעליו. המחירים וההנחות נכונים ליום הבדיקה בלבד, אינם כוללים משלוח, ואחוזי ההנחה מחושבים לפי המחיר המקורי שמוצג באליאקספרס.</p>
 <p class="legal">{"".join(f'<a href="{BASE}{p}">{n}</a>' for p, n in LEGAL)}<a href="mailto:{EMAIL}">{EMAIL}</a></p>
 {footer_date}
@@ -905,9 +905,10 @@ def mask_code(code: str) -> str:
 def coupon_btn(code: str, kind: str, what: str, link: str) -> str:
     """A code inside the card: shown partly; a click copies it and opens the product (affiliate link) in a new tab."""
     return (f'<button class="tcoupon" type="button" data-code="{e(code)}" data-href="{e(link)}" '
-            f'aria-label="העתקת {kind} ופתיחת המוצר">'
+            f'>'
             f'<span class="tc-what"><b>{kind}</b> {what}</span>'
-            f'<span class="tc-code"><span class="tc-txt">{e(mask_code(code))}</span><span class="tc-act">העתקה</span></span></button>')
+            f'<span class="tc-code"><span class="tc-txt">{e(mask_code(code))}</span><span class="tc-act">העתקה</span></span>'
+            f'<span class="sr-only"> ופתיחת המוצר באליאקספרס</span></button>')
 
 
 def tile_coupons(p: dict) -> str:
@@ -1009,8 +1010,8 @@ def hero(src: str, main_heading: bool, compact: bool = False) -> str:
 
 # The date someone last changed each page's own text here in build.py (data-driven parts date themselves).
 EDITED = {"/": "2026-11-10", "/videos/": "2026-11-10", "/coupons/": "2026-10-21", "/guides/": "2026-11-12", "/guides/coupon-types/": "2026-10-20",
-          "/guides/code-not-working/": "2026-10-20", "/about/": "2026-11-08",
-          "/accessibility/": "2026-11-03", "/privacy/": "2026-11-06", "/terms/": "2026-11-03"}
+          "/guides/code-not-working/": "2026-10-20", "/about/": "2026-11-12",
+          "/accessibility/": "2026-11-12", "/privacy/": "2026-11-12", "/terms/": "2026-11-03"}
 
 
 def event_card() -> tuple[str, str, str]:
@@ -1434,7 +1435,7 @@ def build_guides():
                 f'<li><a href="{e(u)}" rel="noopener">{e(t)}</a></li>' for t, u in g["sources"]) + "</ul>")
         faq_section = f"<h2>שאלות נפוצות</h2>{faq_html}" if faq_html else ""
         body = f"""<header class="page-head"><h1>{e(g['h1'])}</h1>
-<span class="updated">עודכן: {upd.strftime('%d/%m/%Y')}</span></header>
+<span class="updated">עודכן: {upd.strftime('%d/%m/%Y')} · המדריך כולל קישורי שותפים לאליאקספרס: על קנייה דרכם NiceBuy מקבל עמלה, והמחיר שלכם לא משתנה</span></header>
 <div class="answer"><p>{g['answer']}</p></div>
 <div class="prose">
 {body_html}
@@ -1582,6 +1583,8 @@ def build_accessibility():
 </ul>
 <p>האתר לא משתמש ב"תוסף נגישות". ההתאמות בנויות בקוד האתר עצמו.</p>
 <p>האתר נבדק בדפדפן Chrome במחשב ובתצוגת טלפון.</p>
+<h2>מגבלה ידועה</h2>
+<p>התגית "מוצר ראשון" על חלק מהמוצרים מהבהבת בלי אפשרות לעצור אותה, ובשיא ההבהוב הניגודיות שלה יורדת מתחת לסף של התקן. מי שהגדיר במכשיר "הפחתת תנועה" לא יראה את ההבהוב. חוץ מזה, בדיקה אוטומטית של 9 עמודים, במחשב ובטלפון (12/11/2026), לא מצאה ליקויים. בדיקה אוטומטית לא מגלה הכול, אז אם נתקלתם בבעיה, כתבו לנו.</p>
 <h2>חלקים שאינם בשליטתנו</h2>
 <ul>
 <li><b>אליאקספרס:</b> לחיצה על מוצר מעבירה לאתר אליאקספרס. הקנייה, התשלום והמשלוח נעשים שם, והנגישות של אתר אליאקספרס באחריותה.</li>
@@ -1608,6 +1611,9 @@ def build_privacy():
     body = f"""<header class="page-head"><h1>מדיניות פרטיות</h1></header>
 <div class="prose">
 <p class="lead">NiceBuy לא צריך לדעת מי אתם כדי לעזור לכם לקנות בזול. כאן מוסבר בדיוק איזה מידע עובר דרכנו, למה, ומה אנחנו עושים איתו.</p>
+<h2>מי אחראי למידע</h2>
+<p>האתר והבוט מופעלים על ידי עוז מדויל (NiceBuy). לכל שאלה או בקשה בנושא פרטיות: <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>
+<p>אין שום חובה למסור לנו מידע. השימוש בחיפוש ובבוט הוא מרצונכם, ובלי להקליד חיפוש אפשר לגלוש באתר כרגיל. בטקסט החיפוש אנחנו משתמשים רק כדי להחזיר לכם תוצאות, לשפר אותן ולתקן תקלות.</p>
 <h2>מה אנחנו לא עושים</h2>
 <ul>
 <li>לא מבקשים שם, טלפון, מייל או פרטי תשלום, ואין באתר הרשמה.</li>
@@ -1616,7 +1622,7 @@ def build_privacy():
 </ul>
 <h2>איזה מידע עובר דרכנו</h2>
 <ul>
-<li><b>מה שאתם מקלידים בחיפוש:</b> שם מוצר או לינק מאליאקספרס נשלחים לשרת שלנו כדי למצוא תוצאות. כדי להבין את החיפוש ולבחור מוצרים מתאימים, טקסט החיפוש ושמות המוצרים נשלחים גם לשירות בינה מלאכותית (Anthropic). אנחנו שומרים סטטיסטיקה מצטברת של מילות חיפוש, למשל כמה פעמים חיפשו "מטען נייד", כדי לשפר את התוצאות. הסטטיסטיקה לא מקושרת לאדם מסוים.</li>
+<li><b>מה שאתם מקלידים בחיפוש:</b> שם מוצר או לינק מאליאקספרס נשלחים לשרת שלנו כדי למצוא תוצאות. כדי להבין את החיפוש ולבחור מוצרים מתאימים, טקסט החיפוש ושמות המוצרים נשלחים גם לשירות בינה מלאכותית (Anthropic). אנחנו שומרים סטטיסטיקה מצטברת של מילות חיפוש, למשל כמה פעמים חיפשו "מטען נייד", כדי לשפר את התוצאות. הסטטיסטיקה לא מקושרת לאדם מסוים. טקסט החיפוש נשמר גם ביומן השרת, בלי שם או מזהה משתמש. ובכל זאת, עדיף לא להקליד בחיפוש פרטים אישיים.</li>
 <li><b>מידע טכני:</b> כמו בכל אתר, ספקי התשתית שלנו רושמים ביומני השרת את כתובת ה-IP, סוג הדפדפן ושעת הגישה. בכתובת ה-IP אנחנו משתמשים גם כדי להגביל עומס, למשל מספר חיפושים בדקה, והיא נשמרת לשם כך בזיכרון זמני בלבד.</li>
 <li><b>הבוט בטלגרם:</b> הבוט מקבל מטלגרם את מזהה המשתמש ואת ההודעות שאתם שולחים לו, ומשתמש בהם כדי לענות לכם ולהגביל עומס. אנחנו לא שומרים מאגר של משתמשים, והבוט שולח הודעות רק בתגובה לפנייה שלכם.</li>
 <li><b>סטטיסטיקת ביקורים:</b> אנחנו משתמשים ב-Cloudflare Web Analytics כדי לדעת כמה ביקורים יש באתר, באילו דפים ומאיזה סוג מקור (למשל גוגל או טלגרם). הכלי לא משתמש בעוגיות, לא שומר מזהה של מבקר ולא עוקב אחריכם בין אתרים.</li>
@@ -1676,7 +1682,9 @@ def build_about():
     body = f"""<header class="page-head"><h1>אודות NiceBuy</h1></header>
 <div class="prose">
 <p class="lead">NiceBuy הוא אתר ובוט טלגרם חינמי שעוזרים לקנות באליאקספרס בפחות.</p>
-<p>הבוט בודק כל מוצר שמדביקים לו ומחזיר מחיר בשקלים, הנחה וקוד מוכר אם יש, ומציע חלופות זולות יותר. בטלגרם הבוט נקרא בוטן (@Boten_IL_bot). באתר אנחנו מפרסמים רק מה שנבדק, עם תאריך, ומתעדים גם קודים שלא עבדו.</p>
+<p>הבוט בודק כל מוצר שמדביקים לו ומחזיר מחיר בשקלים, הנחה וקוד מוכר אם יש, ומציע חלופות זולות יותר. בטלגרם הבוט נקרא בוטן (@Boten_IL_bot). קודי הקופון באתר מתפרסמים עם תאריך הבדיקה, ואנחנו מתעדים גם קודים שלא עבדו.</p>
+<h2>איך נבחרים המוצרים</h2>
+<p>רוב המוצרים באתר נבחרים אוטומטית מתוך אליאקספרס, לפי מחיר, דירוג, מספר מכירות ומותג, ומתעדכנים כמה פעמים ביום. חלק מהמוצרים נבחרו ידנית, וחלקם קנינו וצילמנו בעצמנו (אלה מסומנים "סרטון שלנו"). המחירים ושמות המוצרים מגיעים מאליאקספרס, ושמות בעברית נוצרים בחלקם אוטומטית. לפני שקונים, כדאי לוודא בעמוד המוצר באליאקספרס את הדגם, המפרט והמחיר.</p>
 <h2>גילוי נאות</h2>
 <p>הקישורים לאליאקספרס בבוט ובאתר הם קישורי שותפים. על רכישה דרכם NiceBuy מקבל עמלה קטנה מאליאקספרס, והמחיר שלכם לא משתנה. NiceBuy אינו קשור לאליאקספרס ואינו מייצג אותה.</p>
 <h2>פרטיות</h2>
