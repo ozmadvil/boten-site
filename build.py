@@ -1433,7 +1433,7 @@ def build_guides():
         ("מבצעים", ["11-11", "black-friday", "sales-calendar"]),
         ("מיסים, משלוח ואישורים", ["customs-tax", "shipping-israel", "wireless-approval", "dispute-refund"]),
         ("קופונים", ["coupon-types", "code-not-working"]),
-        ("מוצרים", ["popular-products", "power-bank", "jump-starter"]),
+        ("מוצרים", ["popular-products", "power-bank", "dash-cam", "jump-starter"]),
     ]
     by_slug = {g["slug"]: (g["h1"], g["desc"]) for g in GUIDES}
     by_slug["coupon-types"] = ("סוגי הקופונים באליאקספרס ואיך משלבים אותם",
