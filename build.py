@@ -456,7 +456,7 @@ function ils(v) { return '₪' + (Math.abs(v - Math.round(v)) < 0.005 ? Math.rou
 function maskCode(c) { var k = c.length > 5 ? 3 : 2; return c.slice(0, k) + '•'.repeat(Math.max(3, Math.min(5, c.length - k))); }
 function couponBtn(code, kind, what, link) {
   return '<button class="tcoupon" type="button" data-code="' + esc(code) + '" data-href="' + esc(link) + '">' +
-    '<span class="tc-what"><b>' + kind + '</b> ' + esc(what) + '</span><span class="tc-code"><span class="tc-txt">' + esc(maskCode(code)) + '</span><span class="tc-act">העתקה</span></span><span class="sr-only"> ופתיחת המוצר באליאקספרס</span></button>';
+    '<span class="tc-what"><b>' + kind + '</b> ' + esc(what) + '</span><span class="tc-code"><span class="tc-txt">' + esc(maskCode(code)) + '</span><span class="tc-act">העתקה ומעבר</span></span><span class="sr-only"> לאליאקספרס</span></button>';
 }
 function coupons(p) {
   var out = '', c = p.code;
@@ -907,8 +907,7 @@ def coupon_btn(code: str, kind: str, what: str, link: str) -> str:
     return (f'<button class="tcoupon" type="button" data-code="{e(code)}" data-href="{e(link)}" '
             f'>'
             f'<span class="tc-what"><b>{kind}</b> {what}</span>'
-            f'<span class="tc-code"><span class="tc-txt">{e(mask_code(code))}</span><span class="tc-act">העתקה</span></span>'
-            f'<span class="sr-only"> ופתיחת המוצר באליאקספרס</span></button>')
+            f'<span class="tc-code"><span class="tc-txt">{e(mask_code(code))}</span><span class="tc-act">העתקה ומעבר</span></span><span class="sr-only"> לאליאקספרס</span></button>')
 
 
 def tile_coupons(p: dict) -> str:
@@ -1579,12 +1578,11 @@ def build_accessibility():
 <li>ניגודיות צבעים מספקת בין הטקסט לרקע.</li>
 <li>האתר מותאם לטלפון ולהגדלת תצוגה עד 400% בלי גלילה לרוחב.</li>
 <li>תמונות שמשמשות לקישוט מוסתרות מקוראי מסך, ולכפתורים ולקישורים יש שם ברור.</li>
-<li>האתר עובר בדיקה אוטומטית לפי WCAG 2.1 ברמה AA, ונבדק ידנית בניווט במקלדת.</li>
+<li>בדיקה אוטומטית לפי WCAG 2.1 ברמה AA של 9 עמודים, במחשב ובטלפון (12/11/2026), לא מצאה ליקויים. האתר נבדק גם ידנית בניווט במקלדת. בדיקה אוטומטית לא מגלה הכול, אז אם נתקלתם בבעיה, כתבו לנו.</li>
+<li>תגית שמהבהבת על חלק מהמוצרים מהבהבת שלוש פעמים ונעצרת, ולא מהבהבת בכלל למי שהגדיר במכשיר "הפחתת תנועה".</li>
 </ul>
 <p>האתר לא משתמש ב"תוסף נגישות". ההתאמות בנויות בקוד האתר עצמו.</p>
 <p>האתר נבדק בדפדפן Chrome במחשב ובתצוגת טלפון.</p>
-<h2>מגבלה ידועה</h2>
-<p>התגית "מוצר ראשון" על חלק מהמוצרים מהבהבת בלי אפשרות לעצור אותה, ובשיא ההבהוב הניגודיות שלה יורדת מתחת לסף של התקן. מי שהגדיר במכשיר "הפחתת תנועה" לא יראה את ההבהוב. חוץ מזה, בדיקה אוטומטית של 9 עמודים, במחשב ובטלפון (12/11/2026), לא מצאה ליקויים. בדיקה אוטומטית לא מגלה הכול, אז אם נתקלתם בבעיה, כתבו לנו.</p>
 <h2>חלקים שאינם בשליטתנו</h2>
 <ul>
 <li><b>אליאקספרס:</b> לחיצה על מוצר מעבירה לאתר אליאקספרס. הקנייה, התשלום והמשלוח נעשים שם, והנגישות של אתר אליאקספרס באחריותה.</li>
