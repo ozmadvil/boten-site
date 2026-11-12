@@ -1399,11 +1399,22 @@ def build_guides():
         faq_html, faq_schema = faq_block(g.get("faq") or [])
         upd = datetime.strptime(g["updated"], "%Y-%m-%d")
         tiles = ""
+        if g.get("items"):                       # the products the guide recommends, by AliExpress id (in its order)
+            pool = {p["id"]: p for c in categories for p in c["products"]}
+            pool.update({p["id"]: p for p in products})
+            picked = [pool[i] for i in g["items"] if i in pool]
+            if picked:
+                tiles += (f'<h2>המוצרים מהמדריך</h2>{product_tiles(picked, url)}'
+                          '<p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המחירים נכונים לתאריך שמופיע על כל מוצר. קישורי שותפים: המחיר שלכם לא משתנה.</p>')
+            missing = [i for i in g["items"] if i not in pool]
+            if missing:
+                print(f"guide {g['slug']}: {len(missing)} recommended products not in the feed yet: {', '.join(missing)}")
         if g.get("products") and products:
             keys = g["products"]
             rows = products if keys == ["*"] else [p for p in products if any(k in p["title"] for k in keys)]
+            rows = [p for p in rows if p["id"] not in (g.get("items") or [])]   # not twice on the page
             if rows:
-                tiles = (f'<h2>דילים מהערוץ</h2>{product_tiles(rows[:8], url)}'
+                tiles += (f'<h2>דילים מהערוץ</h2>{product_tiles(rows[:8], url)}'
                          '<p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המחירים נכונים לתאריך שמופיע על כל מוצר. קישורי שותפים: המחיר שלכם לא משתנה.</p>')
         srcs = ""
         if g.get("sources"):
