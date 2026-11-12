@@ -1403,12 +1403,24 @@ def build_guides():
             pool = {p["id"]: p for c in categories for p in c["products"]}
             pool.update({p["id"]: p for p in products})
             picked = [pool[i] for i in g["items"] if i in pool]
+            # a recommended product that left the feed is replaced automatically by another one of the same type
+            # (title contains one of the guide's "fill" words), best known first: the owner's/channel picks, then autos
+            words = g.get("fill") or []
+            if words and len(picked) < len(g["items"]):
+                have = {p["id"] for p in picked}
+                extra = []
+                for c in categories:
+                    for p in c["products"]:
+                        if p["id"] not in have and any(w in p["title"] for w in words):
+                            extra.append(p); have.add(p["id"])
+                extra.sort(key=lambda p: (not p.get("pick"), not re.search(r"[A-Za-z]{3,}", p["title"])))   # picks, then branded
+                picked += extra[:len(g["items"]) - len(picked)]
             if picked:
                 tiles += (f'<h2>המוצרים מהמדריך</h2>{product_tiles(picked, url)}'
                           '<p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המחירים נכונים לתאריך שמופיע על כל מוצר. קישורי שותפים: המחיר שלכם לא משתנה.</p>')
             missing = [i for i in g["items"] if i not in pool]
             if missing:
-                print(f"guide {g['slug']}: {len(missing)} recommended products not in the feed yet: {', '.join(missing)}")
+                print(f"guide {g['slug']}: {len(missing)} recommended products not in the feed (replaced from 'fill' if possible): {', '.join(missing)}")
         if g.get("products") and products:
             keys = g["products"]
             rows = products if keys == ["*"] else [p for p in products if any(k in p["title"] for k in keys)]
