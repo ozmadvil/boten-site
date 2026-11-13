@@ -1458,6 +1458,8 @@ def build_guides():
         ("קופונים", ["coupon-types", "code-not-working"]),
         ("מוצרים", ["popular-products", "power-bank", "dash-cam", "jump-starter"]),
     ]
+    listed = {s for _, slugs in groups for s in slugs}
+    groups[-1][1].extend(g["slug"] for g in GUIDES if g["slug"] not in listed)   # a new guide needs only guides_content.py
     by_slug = {g["slug"]: (g["h1"], g["desc"]) for g in GUIDES}
     by_slug["coupon-types"] = ("סוגי הקופונים באליאקספרס ואיך משלבים אותם",
                                "קוד קופון, קופון חנות, Select ומטבעות: מה ההבדל ומה מצטרף למה.")

@@ -1,0 +1,82 @@
+name: Publish content pull requests
+
+# The owner's decision (13/11/2026): content for the site goes live without his click, everything else waits for him.
+# A pull request is merged by this workflow only if ALL of these hold:
+#   - it comes from a branch of this repository (never a fork) whose name starts with "content/"
+#   - it changes guides_content.py and nothing else (no build code, no CSS, no workflows, no data)
+#   - its description says the independent editor passed it ("בדיקת עורך: עבר")
+#   - the site builds with it
+# Anything else is left for the owner to merge by hand. To switch this off: disable the workflow in the Actions tab,
+# or delete this file. To undo one publication: revert its commit.
+#
+# pull_request_target runs THIS file from main, so a pull request cannot rewrite the rules that judge it. The build job
+# runs the pull request's code with a read-only token; only the publish job, which runs no code from it, can write.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited]
+
+permissions: {}
+
+concurrency:
+  group: content-automerge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'content/') &&
+      github.event.pull_request.base.ref == 'main' &&
+      contains(github.event.pull_request.body, 'בדיקת עורך: עבר')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      ok: ${{ steps.files.outputs.ok }}
+    steps:
+      - name: Only guides_content.py may change
+        id: files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          files=$(gh api "repos/${{ github.repository }}/pulls/$PR/files" --paginate --jq '.[].filename')
+          echo "$files"
+          if [ "$files" = "guides_content.py" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "ok=false" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        if: steps.files.outputs.ok == 'true'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        if: steps.files.outputs.ok == 'true'
+        with:
+          python-version: "3.12"
+      - name: The site builds with the change
+        if: steps.files.outputs.ok == 'true'
+        env:
+          SITE_URL: ${{ vars.SITE_URL || 'https://nicebuy.co.il' }}
+          BOT_FEED_URL: ${{ vars.BOT_FEED_URL || 'https://worker-production-b0bb.up.railway.app/products.json' }}
+        run: python build.py
+
+  publish:
+    needs: check
+    if: needs.check.outputs.ok == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    steps:
+      - name: Merge and build the site
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          gh api -X PUT "repos/${{ github.repository }}/pulls/$PR/merge" -f merge_method=squash -f sha="$SHA"
+          gh api -X POST "repos/${{ github.repository }}/issues/$PR/comments" -f body="פורסם אוטומטית: שינוי תוכן בלבד, עבר בדיקת עורך ובנייה. לביטול: revert של הקומיט."
+          # a merge made with the workflow token does not start other workflows, so start the site build here
+          gh api -X POST "repos/${{ github.repository }}/actions/workflows/pages.yml/dispatches" -f ref=main
