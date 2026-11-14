@@ -48,6 +48,9 @@ body {
   caret-color: var(--primary);
   -webkit-font-smoothing: antialiased;
 }
+/* Rubik's tabular-number feature also widens ( ) : to a digit's width, which opens gaps around brackets in Hebrew
+   text. Headings and running text use the normal widths; prices and tables keep the tabular digits from body. */
+h1, h2, h3, p, summary, .prose li, details.faq, .answer, .ttl { font-feature-settings: normal; }
 ::selection { background: var(--primary); color: #fff; }
 a { color: var(--primary-ink); text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
 a:hover { color: var(--primary); }
