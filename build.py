@@ -593,7 +593,10 @@ document.querySelectorAll('form.checker').forEach(function (f) {
         brands.map(function (b) { return '<button type="button" class="chip bchip" data-bq="' + esc(b + ' ' + q) + '" aria-label="לחפש שוב רק ממותג ' + esc(b) + '">' + esc(b) + '</button>'; }).join('') + '</div></div>' : '';
       // a brand search that was narrowed to the brand's own stores says so
       var st = d.stores && typeof d.stores.brand === 'string' && d.stores.brand ? d.stores : null;
-      var snote = !st ? '' : '<p class="snote">' + (st.kind === 'official' ? 'מוצגים רק מוצרים מהחנות הרשמית של ' : 'מוצגים רק מוצרים מחנויות של ') + '<bdi>' + esc(st.brand) + '</bdi> באליאקספרס.</p>';
+      // (worded as what the store calls itself on AliExpress: the store's name is all we know)
+      var snote = !st ? '' : '<p class="snote">' + (st.kind === 'official'
+        ? 'מוצגים רק מוצרים מחנויות שמציגות את עצמן באליאקספרס כחנות הרשמית של <bdi>' + esc(st.brand) + '</bdi>.'
+        : 'מוצגים רק מוצרים מחנויות שנושאות את השם <bdi>' + esc(st.brand) + '</bdi> באליאקספרס.') + '</p>';
       body.innerHTML = '<p>מצאתי ' + items.length + ' דילים ל"' + esc(q) + '"' + (coded.length ? ', ' + coded.length + ' מהם עם קוד קופון' : '') + ':</p>' + snote +
         (coded.length ? group('עם קוד קופון', coded) + group('עוד דילים', rest) : '<ul class="tiles">' + rest.map(tile).join('') + '</ul>') + brow +
         '<p class="cnote">תוצאות חיות מאליאקספרס. ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. רוצים מוכר זול יותר למוצר מסוים? הדביקו את הלינק שלו בחיפוש. * קישורי שותפים של אליאקספרס.</p>';
