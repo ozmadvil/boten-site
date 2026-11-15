@@ -575,7 +575,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
       coupons(p) + '<a class="btn wbtn" ' + attrs + '>' + (alt ? 'לצפייה במוצר' : 'לקנייה באליאקספרס') + '</a></div></div>';
   }
   function fail(body, text) { body.innerHTML = '<p class="cerr">' + esc(text) + '</p><p class="cnote"><a href="' + botLink('') + '">אפשר לנסות גם בבוט בטלגרם</a></p>'; }
-  function siteSearch(q) {
+  function siteSearch(q, fromChip) {
     var body = ask(q), stop = waiting(body, 'search');
     busy(true, 'מחפש…'); say('מחפשים את הדילים הכי שווים…');
     fetch(f.dataset.search + '?q=' + encodeURIComponent(q) + '&v=2').then(function (r) {
@@ -587,9 +587,10 @@ document.querySelectorAll('form.checker').forEach(function (f) {
       var coded = items.filter(function (p) { return p.coupon; }), rest = items.filter(function (p) { return !p.coupon; });
       var group = function (title, list) { return list.length ? '<h3 class="cgroup">' + title + '</h3><ul class="tiles">' + list.map(tile).join('') + '</ul>' : ''; };
       // leading brands for this kind of product: one tap searches the same thing from that brand
-      var brands = (d.brands || []).slice(0, 5);
-      var brow = brands.length ? '<div class="brow"><p class="blabel">אותו חיפוש, רק ממותג מוביל:</p><div class="chips">' +
-        brands.map(function (b) { return '<button type="button" class="chip bchip" data-bq="' + esc(b + ' ' + q) + '">' + esc(b) + '</button>'; }).join('') + '</div></div>' : '';
+      // (not under an answer that came from a chip, and only brands whose search fits the 80-character limit)
+      var brands = fromChip ? [] : (Array.isArray(d.brands) ? d.brands : []).filter(function (b) { return typeof b === 'string' && b && (b + ' ' + q).length <= 80; }).slice(0, 5);
+      var brow = brands.length ? '<div class="brow" role="group" aria-label="אותו חיפוש, רק ממותג מוביל"><p class="blabel" aria-hidden="true">אותו חיפוש, רק ממותג מוביל:</p><div class="chips">' +
+        brands.map(function (b) { return '<button type="button" class="chip bchip" data-bq="' + esc(b + ' ' + q) + '" aria-label="לחפש שוב רק ממותג ' + esc(b) + '">' + esc(b) + '</button>'; }).join('') + '</div></div>' : '';
       body.innerHTML = '<p>מצאתי ' + items.length + ' דילים ל"' + esc(q) + '"' + (coded.length ? ', ' + coded.length + ' מהם עם קוד קופון' : '') + ':</p>' +
         (coded.length ? group('עם קוד קופון', coded) + group('עוד דילים', rest) : '<ul class="tiles">' + rest.map(tile).join('') + '</ul>') + brow +
         '<p class="cnote">תוצאות חיות מאליאקספרס. ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. רוצים מוכר זול יותר למוצר מסוים? הדביקו את הלינק שלו בחיפוש. * קישורי שותפים של אליאקספרס.</p>';
@@ -629,8 +630,9 @@ document.querySelectorAll('form.checker').forEach(function (f) {
   }
   document.addEventListener('click', function (ev) {      // a brand chip under the results
     var chip = ev.target.closest ? ev.target.closest('.bchip') : null;
-    if (!chip || btn.getAttribute('aria-busy')) return;
-    siteSearch(chip.getAttribute('data-bq'));
+    if (!chip) return;
+    if (btn.getAttribute('aria-busy')) { say('רגע, מסיימים את החיפוש הקודם…'); return; }
+    siteSearch(chip.getAttribute('data-bq'), true);
   });
   f.addEventListener('submit', function (ev) {
     ev.preventDefault();

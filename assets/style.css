@@ -502,7 +502,7 @@ code.code.bad { background: transparent; color: var(--text-3); text-decoration: 
 /* leading brands under the search results */
 .cbody .brow { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
 .cbody .brow .blabel { margin: 0 0 10px; font-weight: 700; }
-.bchip { cursor: pointer; font: inherit; font-weight: 700; direction: ltr; border: 0; }
+.bchip { cursor: pointer; font-family: inherit; font-weight: 700; direction: ltr; border: 0; }
 .bchip:hover { background: var(--primary-soft); }
 .bchip:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
 /* waiting for an answer: the current step, a bar that keeps moving, and placeholders where the results will land */
