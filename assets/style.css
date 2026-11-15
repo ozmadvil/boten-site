@@ -499,6 +499,8 @@ code.code.bad { background: transparent; color: var(--text-3); text-decoration: 
 .cbody .cerr { color: var(--bad); font-weight: 700; }
 .cbody .cgroup { margin: 14px 0 10px; font-size: 17px; }
 .cbody .tiles { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+/* a brand search narrowed to the brand's own stores */
+.cbody .snote { font-size: 14px; color: var(--text-3); }
 /* leading brands under the search results */
 .cbody .brow { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
 .cbody .brow .blabel { margin: 0 0 10px; font-weight: 700; }
