@@ -586,8 +586,12 @@ document.querySelectorAll('form.checker').forEach(function (f) {
       if (!items.length) { body.innerHTML = '<p>לא מצאתי תוצאות טובות ל"' + esc(q) + '". נסו מילה אחרת, או באנגלית (למשל power bank).</p>'; return; }
       var coded = items.filter(function (p) { return p.coupon; }), rest = items.filter(function (p) { return !p.coupon; });
       var group = function (title, list) { return list.length ? '<h3 class="cgroup">' + title + '</h3><ul class="tiles">' + list.map(tile).join('') + '</ul>' : ''; };
+      // leading brands for this kind of product: one tap searches the same thing from that brand
+      var brands = (d.brands || []).slice(0, 5);
+      var brow = brands.length ? '<div class="brow"><p class="blabel">אותו חיפוש, רק ממותג מוביל:</p><div class="chips">' +
+        brands.map(function (b) { return '<button type="button" class="chip bchip" data-bq="' + esc(b + ' ' + q) + '">' + esc(b) + '</button>'; }).join('') + '</div></div>' : '';
       body.innerHTML = '<p>מצאתי ' + items.length + ' דילים ל"' + esc(q) + '"' + (coded.length ? ', ' + coded.length + ' מהם עם קוד קופון' : '') + ':</p>' +
-        (coded.length ? group('עם קוד קופון', coded) + group('עוד דילים', rest) : '<ul class="tiles">' + rest.map(tile).join('') + '</ul>') +
+        (coded.length ? group('עם קוד קופון', coded) + group('עוד דילים', rest) : '<ul class="tiles">' + rest.map(tile).join('') + '</ul>') + brow +
         '<p class="cnote">תוצאות חיות מאליאקספרס. ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. רוצים מוכר זול יותר למוצר מסוים? הדביקו את הלינק שלו בחיפוש. * קישורי שותפים של אליאקספרס.</p>';
       body.closest('.cmsg').classList.add('wide');
     }).catch(function (e) {
@@ -623,6 +627,11 @@ document.querySelectorAll('form.checker').forEach(function (f) {
         (start ? '<p><a class="btn secondary" href="' + botLink(start) + '">לבדוק את המוצר בבוט בטלגרם</a></p>' : '');
     });
   }
+  document.addEventListener('click', function (ev) {      // a brand chip under the results
+    var chip = ev.target.closest ? ev.target.closest('.bchip') : null;
+    if (!chip || btn.getAttribute('aria-busy')) return;
+    siteSearch(chip.getAttribute('data-bq'));
+  });
   f.addEventListener('submit', function (ev) {
     ev.preventDefault();
     var v = input.value.trim();
