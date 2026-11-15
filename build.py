@@ -532,6 +532,24 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     me.scrollIntoView({ behavior: 'smooth', block: 'start' });
     return ans.querySelector('.cbody');
   }
+  // While the answer is on its way: the step being done now, a bar that keeps moving, and grey placeholders
+  // where the results will land. The steps are the real ones, on a timer; the last line stays until the answer.
+  var WAIT = {
+    search: { every: 2600, steps: ['מחפש באליאקספרס…', 'מסנן מוצרים שלא מתאימים…', 'בודק דירוג, מכירות ומחיר…', 'מסדר את הדילים הכי שווים…', 'עוד רגע, כמעט שם…'] },
+    link: { every: 4500, steps: ['קורא את פרטי המוצר…', 'בודק מחיר וקוד קופון…', 'מחפש מוכרים אחרים לאותו מוצר…', 'משווה מחירים ודירוגים…', 'עוד רגע, כמעט שם…'] }
+  };
+  function waiting(body, kind) {
+    var w = WAIT[kind], i = 0, sk = '';
+    if (kind === 'search') { for (var k = 0; k < 4; k++) sk += '<li><div class="sktile"><span class="skpic"></span><span class="skl"></span><span class="skl s"></span></div></li>'; sk = '<ul class="tiles sk" aria-hidden="true">' + sk + '</ul>'; }
+    else sk = '<div class="wcard sk" aria-hidden="true"><span class="skpic"></span><div><span class="skl"></span><span class="skl"></span><span class="skl s"></span></div></div>';
+    body.innerHTML = '<p class="wstep" aria-hidden="true">' + w.steps[0] + '</p><div class="wbar ' + kind + '" aria-hidden="true"><span></span></div>' + sk;
+    var step = body.querySelector('.wstep');
+    var t = setInterval(function () {
+      if (!step.isConnected || i >= w.steps.length - 1) { clearInterval(t); return; }
+      step.textContent = w.steps[++i];
+    }, w.every);
+    return function () { clearInterval(t); };
+  }
   function botLink(start) { return bot + '?start=' + start + '-' + src; }
   function tile(p) {
     p.link = safeLink(p.link); if (!p.link) return '';
@@ -558,12 +576,12 @@ document.querySelectorAll('form.checker').forEach(function (f) {
   }
   function fail(body, text) { body.innerHTML = '<p class="cerr">' + esc(text) + '</p><p class="cnote"><a href="' + botLink('') + '">אפשר לנסות גם בבוט בטלגרם</a></p>'; }
   function siteSearch(q) {
-    var body = ask(q);
+    var body = ask(q), stop = waiting(body, 'search');
     busy(true, 'מחפש…'); say('מחפשים את הדילים הכי שווים…');
     fetch(f.dataset.search + '?q=' + encodeURIComponent(q) + '&v=2').then(function (r) {
       if (r.status === 429) throw new Error('slow'); if (!r.ok) throw new Error('bad'); return r.json();
     }).then(function (d) {
-      busy(false); msg.innerHTML = idle; msg.classList.remove('err');
+      stop(); busy(false); msg.innerHTML = idle; msg.classList.remove('err');
       var items = (d.products || []);
       if (!items.length) { body.innerHTML = '<p>לא מצאתי תוצאות טובות ל"' + esc(q) + '". נסו מילה אחרת, או באנגלית (למשל power bank).</p>'; return; }
       var coded = items.filter(function (p) { return p.coupon; }), rest = items.filter(function (p) { return !p.coupon; });
@@ -573,7 +591,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
         '<p class="cnote">תוצאות חיות מאליאקספרס. ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. רוצים מוכר זול יותר למוצר מסוים? הדביקו את הלינק שלו בחיפוש. * קישורי שותפים של אליאקספרס.</p>';
       body.closest('.cmsg').classList.add('wide');
     }).catch(function (e) {
-      busy(false); msg.innerHTML = idle;
+      stop(); busy(false); msg.innerHTML = idle;
       fail(body, e.message === 'slow' ? 'רגע, יותר מדי חיפושים. נסו שוב בעוד דקה.' : 'החיפוש לא זמין כרגע. נסו שוב בעוד רגע.');
     });
   }
@@ -582,12 +600,12 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     var m = v.match(/(?:\/item\/|productIds?=|[?&]id=|\/i\/)(\d{10,20})/) || v.match(/(\d{13,20})/);
     var sh = v.match(/a\.aliexpress\.[a-z.]+\/_([A-Za-z0-9]{3,40})/i);
     var start = m ? 'p_' + m[1] : (sh ? 's_' + sh[1] : '');
-    body.innerHTML = '<p>בודק את המחיר והקופון, ומחפש אם מוכרים אחרים מוכרים את זה בזול יותר… (עד חצי דקה)</p><p class="typing"><span></span><span></span><span></span></p>';
-    busy(true, 'בודק…'); say('בודק את הלינק שלכם…');
+    var stop = waiting(body, 'link');
+    busy(true, 'בודק…'); say('בודק את הלינק שלכם ומחפש מוכרים זולים יותר, עד חצי דקה…');
     fetch(f.dataset.product + '?url=' + encodeURIComponent(v)).then(function (r) {
       if (r.status === 429) throw new Error('slow'); if (!r.ok && r.status !== 400) throw new Error('bad'); return r.json();
     }).then(function (d) {
-      busy(false); msg.innerHTML = idle; msg.classList.remove('err');
+      stop(); busy(false); msg.innerHTML = idle; msg.classList.remove('err');
       if (!d.ok) { body.innerHTML = '<p class="cerr">' + esc(d.message || 'לא הצלחתי לבדוק את הלינק הזה.') + '</p>'; return; }
       var p = d.product, alts = d.alternatives || [];
       var html = '<p>זה המוצר שלכם' + (p.code && p.code.code ? ', ויש לו קוד הנחה של המוכר' : '') + ':</p>' + wide(p, false) + '<p class="cnote">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס.</p>';
@@ -600,7 +618,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
       html += '<p class="cnote">* קישורי שותפים של אליאקספרס.' + (start ? ' <a href="' + botLink(start) + '">להמשיך בבוט בטלגרם</a>' : '') + '</p>';
       body.innerHTML = html;
     }).catch(function (e) {
-      busy(false); msg.innerHTML = idle;
+      stop(); busy(false); msg.innerHTML = idle;
       body.innerHTML = '<p class="cerr">' + (e.message === 'slow' ? 'רגע, יותר מדי בדיקות. נסו שוב בעוד דקה.' : 'לא הצלחתי לבדוק כרגע.') + '</p>' +
         (start ? '<p><a class="btn secondary" href="' + botLink(start) + '">לבדוק את המוצר בבוט בטלגרם</a></p>' : '');
     });

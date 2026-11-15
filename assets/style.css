@@ -499,6 +499,26 @@ code.code.bad { background: transparent; color: var(--text-3); text-decoration: 
 .cbody .cerr { color: var(--bad); font-weight: 700; }
 .cbody .cgroup { margin: 14px 0 10px; font-size: 17px; }
 .cbody .tiles { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+/* waiting for an answer: the current step, a bar that keeps moving, and placeholders where the results will land */
+.cbody .wstep { margin: 0 0 8px; font-weight: 700; color: var(--text); min-height: 1.7em; }
+.wbar { height: 6px; border-radius: 99px; background: var(--primary-soft); overflow: hidden; margin: 0 0 14px; min-width: min(64vw, 420px); }
+.wbar span { display: block; height: 100%; width: 35%; border-radius: 99px; background: var(--primary); }
+.sk .skpic, .sk .skl { display: block; background: var(--primary-soft); border-radius: 10px; }
+.tiles.sk { list-style: none; padding: 0; margin: 0; }
+.sktile { border-radius: var(--radius); box-shadow: 0 0 0 1px var(--line); background: var(--card); padding: 10px; }
+.sktile .skpic { aspect-ratio: 1; margin-bottom: 10px; }
+.sk .skl { height: 12px; margin: 8px 0 0; } .sk .skl.s { width: 55%; }
+.wcard.sk .skpic { aspect-ratio: 1; align-self: start; }
+@media (prefers-reduced-motion: no-preference) {
+  .wbar span { width: 100%; transform-origin: right center; transform: scaleX(.04); animation: wfill 11s cubic-bezier(.12, .7, .2, 1) forwards; }
+  .wbar.link span { animation-duration: 26s; }
+  @keyframes wfill { to { transform: scaleX(.93); } }
+  .sk .skpic, .sk .skl { animation: skpulse 1.4s ease-in-out infinite; }
+  .sk li:nth-child(2) .skpic, .sk li:nth-child(2) .skl { animation-delay: .15s; } .sk li:nth-child(3) .skpic, .sk li:nth-child(3) .skl { animation-delay: .3s; } .sk li:nth-child(4) .skpic, .sk li:nth-child(4) .skl { animation-delay: .45s; }
+  @keyframes skpulse { 50% { opacity: .45; } }
+  .cbody .wstep { animation: wstep .35s ease-out; }
+  @keyframes wstep { from { opacity: 0; transform: translateY(4px); } }
+}
 .typing { display: inline-flex; gap: 5px; padding: 4px 0; }
 .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--primary-line); }
 @media (prefers-reduced-motion: no-preference) {
