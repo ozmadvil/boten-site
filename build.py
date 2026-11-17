@@ -313,6 +313,46 @@ def load_categories() -> list[dict]:
 
 
 categories = load_categories()
+
+
+# Creators who work with NiceBuy (data/creators.json, checked by creators.py). The file says who chose which
+# products; today's price and the affiliate link, made with the creator's own tracking ID so that her orders are
+# counted apart, come from the bot's /picks. A product /picks did not answer for is not shown; a creator with no
+# product to show has no page; a topic with no creator has no page and no chip. With no file nothing here exists.
+import creators as creators_data
+PICKS_URL = os.environ.get("PICKS_URL") or BOT_FEED_URL.replace("/products.json", "/picks")
+
+
+def load_creator_topics() -> list[dict]:
+    from urllib.parse import urlencode
+    topics = []
+    for t in creators_data.load(ROOT / "data" / "creators.json", ROOT / "assets")["topics"]:
+        live = []
+        for c in t["creators"]:
+            if not c["products"]:
+                continue
+            q = urlencode({"tid": c["tracking"], "ids": ",".join(p["id"] for p in c["products"])})
+            feed = load_feed(f"picks-{t['slug']}-{c['slug']}.json", f"{PICKS_URL}?{q}", "products") or {}
+            if feed.get("tid") not in (None, c["tracking"]):     # a kept copy from before her tracking ID changed
+                print(f"creators: {c['slug']}: the kept prices carry another tracking id, not used")
+                continue
+            by_id = {str(p.get("id")): p for p in feed.get("products", []) if _usable(p)}
+            c["products"] = [dict(p, live=by_id[p["id"]]) for p in c["products"] if p["id"] in by_id]
+            if c["products"]:
+                live.append(c)
+            else:
+                print(f"creators: {c['slug']}: no product with a price and a link today, not shown")
+        if live:
+            topics.append(dict(t, creators=live))
+    return topics
+
+
+creator_topics = load_creator_topics()
+# a creator's video plays inside the page, from its own network, and only after the visitor presses play
+_players = {"youtube": "https://www.youtube-nocookie.com", "instagram": "https://www.instagram.com", "tiktok": "https://www.tiktok.com"}
+_used = sorted({_players[p["video"]["kind"]] for t in creator_topics for c in t["creators"] for p in c["products"] if p["video"]})
+if _used:
+    CSP += "; frame-src " + " ".join(_used)
 # The owner's own videos (YouTube channel): data/videos.json. Shorts carry the product and its affiliate link.
 VIDEOS = json.loads((ROOT / "data" / "videos.json").read_text(encoding="utf-8")) if (ROOT / "data" / "videos.json").exists() else []
 VIDEO_BY_PID = {v["product_id"]: v for v in VIDEOS if v.get("product_id")}
@@ -689,6 +729,20 @@ ORG = {"@type": "Organization", "@id": f"{SITE_URL}/#org", "name": NAME, "altern
        "url": f"{SITE_URL}/", "logo": f"{SITE_URL}/assets/logo-192.png", "sameAs": [BOT, CHANNEL, YOUTUBE]}
 
 SITEMAP: list[tuple[str, date | None]] = []
+
+# A creator's video: a picture with a play button; the player itself (an iframe from YouTube, Instagram or TikTok)
+# is put in only when the visitor presses it, so those networks get nothing from a visit that did not ask for them.
+PLAYER_JS = r"""
+document.addEventListener('click', function (ev) {
+  var b = ev.target.closest && ev.target.closest('button.vembed');
+  if (!b || !/^https:\/\/(www\.youtube-nocookie\.com|www\.instagram\.com|www\.tiktok\.com)\//.test(b.dataset.src || '')) return;
+  var f = document.createElement('iframe');
+  f.src = b.dataset.src; f.title = b.dataset.title || ''; f.className = b.className.replace('vembed', 'vframe');
+  f.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen'); f.setAttribute('allowfullscreen', '');
+  f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+  b.replaceWith(f); f.focus();
+});
+"""
 LOGO_OG = (f"{SITE_URL}/assets/logo.png", 512, 512)
 
 
@@ -735,6 +789,9 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
             f'<a class="chip" href="{BASE}/c/{c["slug"]}/"'
             f'{" aria-current=\"page\"" if path == "/c/" + c["slug"] + "/" else ""}>{cat_icon(c["slug"])}<span>{e(c["name"])}</span></a>'
             for c in categories)
+        chips = "".join(                       # a topic with creators' picks comes first
+            f'<a class="chip" href="{BASE}/{t["slug"]}/"{" aria-current=\"page\"" if path.startswith("/" + t["slug"] + "/") else ""}>'
+            f'<span>{e(t.get("chip") or t["name"] + " · המלצות")}</span></a>' for t in creator_topics) + chips
         if stores:                             # stores on sale lead the strip while there are any
             chips = (f'<a class="chip hot" href="{BASE}/stores/"{" aria-current=\"page\"" if path == "/stores/" else ""}>'
                      f'🏷️ חנויות במבצע</a>') + chips
@@ -807,7 +864,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <p class="legal">{"".join(f'<a href="{BASE}{p}">{n}</a>' for p, n in LEGAL)}<a href="mailto:{EMAIL}">{EMAIL}</a></p>
 {footer_date}
 </div></footer>
-{platform_js() if js else ""}{'<script src="' + BASE + '/assets/app.js?v=' + hashlib.sha256(CHECKER_JS.encode('utf-8')).hexdigest()[:10] + '" defer></script>' if js else ""}{BEACON_HTML}
+{platform_js() if js else ""}{'<script src="' + BASE + '/assets/app.js?v=' + hashlib.sha256((CHECKER_JS + PLAYER_JS).encode('utf-8')).hexdigest()[:10] + '" defer></script>' if js else ""}{BEACON_HTML}
 </body>
 </html>
 """
@@ -1564,6 +1621,132 @@ def build_categories():
             SITEMAP[:] = [(u, d) for u, d in SITEMAP if u != SITE_URL + url]
 
 
+# ------------------------------------------------------------------ creators' pages
+def _collab_note(name: str) -> str:
+    """The disclosure on every creator page: who chose the products, who is paid, and that the price is the same."""
+    return (f'<p class="collab-note"><b>שיתוף פעולה.</b> המוצרים בדף נבחרו על ידי {e(name)}, וחלק מהעמלה על קניות דרך הדף עובר אל '
+            f'{e(name)}. הקישורים לאליאקספרס הם קישורי שותפים, והמחיר שלכם לא משתנה.</p>')
+
+
+def _avatar(c: dict, big: bool = False) -> str:
+    cls = "cavatar2 big" if big else "cavatar2"
+    if c["photo"]:
+        return f'<img class="{cls}" src="{BASE}/assets/{e(c["photo"])}" alt="" width="96" height="96" loading="lazy" decoding="async">'
+    return f'<span class="{cls}" aria-hidden="true">{e(c["name"][:1])}</span>'
+
+
+def _pick_has_page(p: dict) -> bool:
+    return bool(p["video"] or p["text"])               # a page of its own needs her video or her words
+
+
+def _asof(p: dict) -> str:
+    when = iso_dt(p["live"].get("checked"))
+    return f'נכון ל-{when.strftime("%d/%m")}' if when else ""
+
+
+def pick_cards(t: dict, c: dict, rows: list[dict]) -> str:
+    """A creator's products as cards. A product with a video or a text opens its own page; the others open
+    AliExpress, like every product tile on the site."""
+    out = []
+    for p in rows:
+        live = p["live"]
+        price_v, orig, disc = float(live["price"]), live.get("original"), live.get("discount")
+        was = f'<span class="was">₪{float(orig):.2f}</span>' if orig and float(orig) > price_v + 0.5 else ""
+        burst = f'<span class="burst"><span class="sr-only">הנחה של </span>-{disc:.0f}%</span>' if disc and disc >= 5 else ""
+        inner = _pick_has_page(p)
+        attrs = (f'href="{BASE}/{t["slug"]}/{c["slug"]}/{p["slug"]}/"' if inner
+                 else f'href="{e(live["link"])}" rel="sponsored nofollow noopener" target="_blank"')
+        vtag = '<span class="vtag">▶ עם סרטון</span>' if p["video"] else ""
+        quote = f'<span class="tquote">"{e(p["quote"])}"</span>' if p["quote"] else ""
+        cta = "לסרטון ולמחיר" if p["video"] else "לפרטים ולמחיר" if inner else f"{ICON_CART}לצפייה במוצר"
+        out.append(f"""<li><div class="tile">{vtag}
+<a class="tlink" {attrs}>
+<span class="pic"><img src="{e(live['image'])}" alt="" width="300" height="300" loading="lazy" decoding="async" referrerpolicy="no-referrer"></span>
+{burst}
+<span class="tprice">{price(price_v)}{was}</span>
+<span class="ttl">{e(p['name'])}</span>
+{quote}<span class="tfoot"><span class="cat pick">הבחירה של {e(c['name'])}</span><span class="asof">{_asof(p)}</span></span>
+</a>
+<a class="cta" {attrs} tabindex="-1">{cta}</a>
+</div></li>""")
+    return f'<ul class="tiles">{"".join(out)}</ul>'
+
+
+def build_creators():
+    for t in creator_topics:
+        t_url = f"/{t['slug']}/"
+        people = e(t.get("people") or "היוצרים")
+        stamps = [p["live"].get("checked") for c in t["creators"] for p in c["products"]]
+        # -- the topic: its creators, then each one's products
+        cards = "".join(
+            f'<li><a class="ccard" href="{BASE}{t_url}{c["slug"]}/">{_avatar(c)}<span class="cwho"><b>{e(c["name"])}</b>'
+            f'<span>{e(c["about"])}</span><span class="go">לדף ולמוצרים {ICON_ARROW}</span></span></a></li>' for c in t["creators"])
+        rows = "".join(
+            f'<section aria-labelledby="by-{c["slug"]}"><div class="sec-head"><h2 id="by-{c["slug"]}">הבחירות של {e(c["name"])}</h2>'
+            f'<a href="{BASE}{t_url}{c["slug"]}/">כל המוצרים {ICON_ARROW}</a></div>{pick_cards(t, c, c["products"][:4])}</section>'
+            for c in t["creators"])
+        names = " ו".join(c["name"] for c in t["creators"][:2]) + (" ועוד" if len(t["creators"]) > 2 else "")
+        body = f"""<header class="page-head"><h1>{e(t['h1'])}</h1>
+{f'<p class="lead">{e(t["lead"])}</p>' if t["lead"] else ''}</header>
+<h2>{people}</h2><ul class="ccards">{cards}</ul>
+{rows}
+<p class="collab-note"><b>שיתוף פעולה.</b> כל מוצר בדף נבחר על ידי מי ששמו מופיע עליו, וחלק מהעמלה על קנייה דרך הדף שלו עובר אליו. הקישורים לאליאקספרס הם קישורי שותפים, והמחיר שלכם לא משתנה.</p>"""
+        page(t_url, f"{t['name']}: מוצרים מאליאקספרס שאנשי מקצוע בחרו | {NAME}",
+             f"מוצרי {t['name']} מאליאקספרס ש{names} בחרו ומראים בסרטונים, עם המחיר של היום בשקלים.",
+             body, crumbs=[(t_url, t["name"])], updated=latest(*stamps))
+        for c in t["creators"]:
+            c_url = f"{t_url}{c['slug']}/"
+            links = "".join(f'<a href="{e(u)}" target="_blank" rel="noopener">{creators_data.NAMES[k]}</a>' for k, u in c["links"].items())
+            c_stamps = [p["live"].get("checked") for p in c["products"]]
+            # -- one creator: who, then the products
+            body = f"""<span class="collab-tag">שיתוף פעולה</span>
+<header class="cprofile">{_avatar(c, big=True)}<div><h1>{e(c['name'])}</h1>
+{f'<p>{e(c["about"])}</p>' if c["about"] else ''}{f'<p class="csocial">{links}</p>' if links else ''}</div></header>
+{_collab_note(c['name'])}
+<h2>המוצרים של {e(c['name'])}</h2>
+{pick_cards(t, c, c['products'])}
+<p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המחירים נבדקים כמה פעמים ביום ועשויים להשתנות.</p>"""
+            page(c_url, f"{c['name']}: מוצרי {t['name']} מאליאקספרס | {NAME}",
+                 f"המוצרים ש{c['name']} בחרה ל{t['name']}, עם סרטונים והמחיר של היום בשקלים."[:155],
+                 body, crumbs=[(t_url, t["name"]), (c_url, c["name"])], updated=latest(*c_stamps))
+            for p in (x for x in c["products"] if _pick_has_page(x)):
+                p_url, live = f"{c_url}{p['slug']}/", p["live"]
+                v = p["video"]
+                poster = f"{BASE}/assets/{e(p['poster'])}" if p["poster"] else e(live["image"])
+                video = ""
+                if v:
+                    where = creators_data.NAMES[v["kind"]]
+                    video = f"""<div class="vwrap{' tall' if v['tall'] else ''}">
+<button type="button" class="vembed{' tall' if v['tall'] else ''}" data-src="{e(v['src'])}" data-title="הסרטון של {e(c['name'])}: {e(p['name'])}">
+<img src="{poster}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"><span class="play" aria-hidden="true">▶</span>
+<span class="sr-only">הפעלת הסרטון של {e(c['name'])} על {e(p['name'])} (נטען מ{where})</span></button>
+<p class="vsrc">הסרטון נטען מ{where} כשלוחצים עליו. <a href="{e(v['watch'])}" target="_blank" rel="noopener">לצפייה ב{where}</a></p></div>"""
+                price_v, orig = float(live["price"]), live.get("original")
+                was = f'<span class="was">₪{float(orig):.2f}</span>' if orig and float(orig) > price_v + 0.5 else ""
+                go = (f'<a class="btn buy" href="{e(live["link"])}" rel="sponsored nofollow noopener" target="_blank">'
+                      f'{ICON_CART}לצפייה במוצר באליאקספרס</a>')
+                text = (f'<section class="cread"><h2>במילים של {e(c["name"])}</h2>'
+                        + "".join(f"<p>{e(x)}</p>" for x in p["text"]) + f"</section>{go}") if p["text"] else ""
+                others = [x for x in c["products"] if x is not p][:4]
+                more = (f'<section aria-labelledby="more-picks"><h2 id="more-picks">עוד מוצרים של {e(c["name"])}</h2>'
+                        f'{pick_cards(t, c, others)}</section>') if others else ""
+                body = f"""<span class="collab-tag">שיתוף פעולה</span>
+<header class="page-head"><h1>{e(p['name'])}: הבחירה של {e(c['name'])}</h1>
+<p class="cby">{_avatar(c)}<span><a href="{BASE}{c_url}">{e(c['name'])}</a>{' · ' + e(c['about']) if c['about'] else ''}</span></p></header>
+{video}
+<div class="buybox"><img src="{e(live['image'])}" alt="" width="96" height="96" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+<div><p class="bname">{e(short_title(live['title']))}</p><p class="bprice">{price(price_v)}{was}</p>
+<p class="basof">{_asof(p)} · המחיר עשוי להשתנות</p></div></div>
+{go}
+{text}
+{_collab_note(c['name'])}
+{more}"""
+                page(p_url, f"{p['name']}: הבחירה של {c['name']} | {NAME}",
+                     (p["text"][0] if p["text"] else f"{p['name']} מאליאקספרס: הסרטון של {c['name']} והמחיר של היום בשקלים.")[:155],
+                     body, crumbs=[(t_url, t["name"]), (c_url, c["name"]), (p_url, p["name"])],
+                     updated=latest(live.get("checked")))
+
+
 def build_stores():
     """Stores with a worthwhile seller code this week, each with its best sellers (from the bot's weekly scan)."""
     url = "/stores/"
@@ -1641,9 +1824,18 @@ def build_accessibility():
          card={"lines": [("הצהרת נגישות", "ink")], "sub": "NiceBuy"})
 
 
+# said on the privacy page only while a creator's video is on the site (date: when the first one went up)
+CREATOR_VIDEOS_SINCE = "2026-11-18"
+CREATOR_VIDEO_PRIVACY = ("<li><b>סרטונים של יוצרים:</b> בדפי המוצרים של יוצרים שעובדים איתנו יש סרטון שנטען מ"
+                         + ", ".join({"https://www.youtube-nocookie.com": "יוטיוב", "https://www.instagram.com": "אינסטגרם",
+                                      "https://www.tiktok.com": "טיקטוק"}[u] for u in _used)
+                         + " רק אחרי שלוחצים על כפתור ההפעלה. עד הלחיצה שום דבר לא נטען משם. אחרי הלחיצה הנגן מגיע ישירות "
+                           "מהרשת שבה הסרטון פורסם, והיא עשויה לקבל את כתובת ה-IP שלכם ולהשתמש בעוגיות לפי המדיניות שלה.</li>\n") if _used else ""
+
+
 def build_privacy():
     path = "/privacy/"
-    updated = latest(EDITED[path]) or NOW.date()
+    updated = latest(EDITED[path], CREATOR_VIDEOS_SINCE if _used else None) or NOW.date()
     body = f"""<header class="page-head"><h1>מדיניות פרטיות</h1></header>
 <div class="prose">
 <p class="lead">NiceBuy לא צריך לדעת מי אתם כדי לעזור לכם לקנות בזול. כאן מוסבר בדיוק איזה מידע עובר דרכנו, למה, ומה אנחנו עושים איתו.</p>
@@ -1663,7 +1855,7 @@ def build_privacy():
 <li><b>הבוט בטלגרם:</b> הבוט מקבל מטלגרם את מזהה המשתמש ואת ההודעות שאתם שולחים לו, ומשתמש בהם כדי לענות לכם ולהגביל עומס. אנחנו לא שומרים מאגר של משתמשים, והבוט שולח הודעות רק בתגובה לפנייה שלכם.</li>
 <li><b>סטטיסטיקת ביקורים:</b> אנחנו משתמשים ב-Cloudflare Web Analytics כדי לדעת כמה ביקורים יש באתר, באילו דפים ומאיזה סוג מקור (למשל גוגל או טלגרם). הכלי לא משתמש בעוגיות, לא שומר מזהה של מבקר ולא עוקב אחריכם בין אתרים.</li>
 <li><b>פנייה במייל:</b> אם תכתבו לנו, נשתמש בכתובת ובתוכן הפנייה רק כדי לענות לכם.</li>
-</ul>
+{CREATOR_VIDEO_PRIVACY}</ul>
 <h2>מי מעבד את המידע בשבילנו</h2>
 <p>אנחנו נעזרים בספקים שמעבדים את המידע רק לצורך הפעלת השירות: GitHub (אחסון האתר), Cloudflare (שרתי שמות, אבטחה וסטטיסטיקת ביקורים), Railway (השרת של הבוט והחיפוש), Anthropic (בינה מלאכותית לחיפוש) וטלגרם (הבוט והערוץ). חלק מהספקים פועלים מחוץ לישראל. יומני השרת נשמרים לתקופה מוגבלת, לפי מדיניות כל ספק.</p>
 <h2>מעבר לאליאקספרס</h2>
@@ -1776,7 +1968,7 @@ def main():
         shutil.rmtree(OUT)
     OUT.mkdir()
     shutil.copytree(ROOT / "assets", OUT / "assets")
-    (OUT / "assets" / "app.js").write_text(CHECKER_JS, encoding="utf-8")
+    (OUT / "assets" / "app.js").write_text(CHECKER_JS + PLAYER_JS, encoding="utf-8")
     for f in [*ROOT.glob("google*.html"), *ROOT.glob("BingSiteAuth.xml")]:   # Google / Bing site verification files
         shutil.copy(f, OUT / f.name)
     try:                                          # product photos for the share cards, fetched in parallel
@@ -1785,7 +1977,7 @@ def main():
                              [p["image"] for c in categories for p in c["products"][:3]], OUT)
     except Exception as ex:
         print(f"share cards: no prefetch ({ex})")
-    build_home(); build_coupons_page(); build_coupon_types(); build_not_working(); build_guides(); build_categories(); build_stores(); build_about(); build_videos(); build_accessibility(); build_privacy(); build_terms(); build_404()
+    build_home(); build_coupons_page(); build_coupon_types(); build_not_working(); build_guides(); build_categories(); build_creators(); build_stores(); build_about(); build_videos(); build_accessibility(); build_privacy(); build_terms(); build_404()
     build_meta_files()
     print(f"built {len(SITEMAP)} pages into {OUT} (base={BASE or '/'}), {len(seller)} seller codes, "
           f"{len(platform_active)} platform codes active, {len(events_live)} sale events ahead")
