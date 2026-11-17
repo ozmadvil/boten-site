@@ -73,7 +73,7 @@ with tempfile.TemporaryDirectory() as tmp:
     # the product page: the player waits for a press, her words are escaped in the page itself, the price is dated
     assert 'data-src="https://www.instagram.com/reel/DZE-pBygPIr/embed/"' in lamp and "<iframe" not in lamp
     assert "<p>פסקה &lt;b&gt;ראשונה&lt;/b&gt; של דנה.</p>" in main(lamp) and "<b>ראשונה</b>" not in lamp and "במילים של דנה לדוגמה" in lamp
-    assert lamp.count(f'href="{LINK}0001" rel="sponsored nofollow noopener"') == 2 and "נכון ל-18/11" in lamp
+    assert lamp.count(f'href="{LINK}0001" rel="sponsored nofollow noopener"') == 1 and "נכון ל-18/11" in lamp    # one button to AliExpress, under the price
     assert 'data-src="https://www.youtube-nocookie.com/embed/3g_UNj5KyS8?autoplay=1&amp;rel=0"' in gel and "במילים של" not in gel
     assert gel.count(f'href="{LINK}0002" rel="sponsored nofollow noopener"') == 1
     assert 'data-src="https://www.tiktok.com/player/v1/7301234567890123456?autoplay=1&amp;rel=0"' in top

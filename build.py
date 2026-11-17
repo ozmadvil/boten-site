@@ -1779,7 +1779,7 @@ def build_creators():
                 go = (f'<a class="btn buy" href="{e(live["link"])}" rel="sponsored nofollow noopener" target="_blank">'
                       f'{ICON_CART}למוצר באליאקספרס</a>')
                 text = (f'<section class="cread"><h2>במילים של {e(c["name"])}</h2>'
-                        + "".join(f"<p>{e(x)}</p>" for x in p["text"]) + f"</section>{go}") if p["text"] else ""
+                        + "".join(f"<p>{e(x)}</p>" for x in p["text"]) + "</section>") if p["text"] else ""
                 others = [x for x in c["products"] if x is not p][:4]
                 more = (f'<section aria-labelledby="more-picks"><h2 id="more-picks">עוד בחירות של {e(c["name"])}</h2>'
                         f'{pick_cards(t, c, others)}</section>') if others else ""
