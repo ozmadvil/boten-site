@@ -63,7 +63,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert "בלי מוצרים חיים" not in hub and "מוצר שירד" not in dana
     # the topic: both creators, each one's products under their name, the people heading from the file
     assert "דנה לדוגמה" in hub and "נועה לדוגמה" in hub and "<h2>היוצרות</h2>" in hub and 'href="/nails/dana/"' in hub
-    assert "הבחירות של דנה לדוגמה" in hub and "הבחירות של נועה לדוגמה" in hub
+    assert "המוצרים של דנה לדוגמה</h2>" in hub and "המוצרים של נועה לדוגמה</h2>" in hub
     # the line about a creator is shown only when the creator approved it
     assert "בונה ציפורניים בג&#x27;ל" in dana and "לא אושר" not in hub and "לא אושר" not in read("nails/noa")
     # a card opens the product's own page when there is one, AliExpress (as a sponsored link, and saying so) when not

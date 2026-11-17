@@ -1726,10 +1726,10 @@ def build_creators():
         # -- the topic: its creators, then each one's products
         cards = "".join(
             f'<li><a class="ccard" href="{BASE}{t_url}{c["slug"]}/">{_avatar(c)}<span class="cwho"><b>{e(c["name"])}</b>'
-            f'<span>{e(c["about"])}</span><span class="go">לדף ולבחירות {ICON_ARROW}</span></span></a></li>' for c in t["creators"])
+            f'<span>{e(c["about"])}</span><span class="go">לדף ולמוצרים {ICON_ARROW}</span></span></a></li>' for c in t["creators"])
         rows = "".join(
-            f'<section aria-labelledby="by-{c["slug"]}"><div class="sec-head"><h2 id="by-{c["slug"]}">הבחירות של {e(c["name"])}</h2>'
-            f'<a href="{BASE}{t_url}{c["slug"]}/">כל הבחירות {ICON_ARROW}</a></div>{pick_cards(t, c, c["products"][:4])}</section>'
+            f'<section aria-labelledby="by-{c["slug"]}"><div class="sec-head"><h2 id="by-{c["slug"]}">המוצרים של {e(c["name"])}</h2>'
+            f'<a href="{BASE}{t_url}{c["slug"]}/">כל המוצרים {ICON_ARROW}</a></div>{pick_cards(t, c, c["products"][:4])}</section>'
             for c in t["creators"])
         note = ('<b>שיתוף פעולה.</b> על כל מוצר מופיע השם של מי שבחר אותו. הקישורים לאליאקספרס הם קישורי שותפים: על קנייה דרכם '
                 'NiceBuy מקבל עמלה מאליאקספרס, וחלק ממנה עובר למי שבחר את המוצר. המחיר שלכם לא משתנה.')
@@ -1756,7 +1756,7 @@ def build_creators():
 <header class="cprofile">{_avatar(c, big=True)}<div><h1>{e(c['name'])}</h1>
 {f'<p>{e(c["about"])}</p>' if c["about"] else ''}{f'<p class="csocial">{links}</p>' if links else ''}</div></header>
 {_collab_note(c)}
-<h2>הבחירות של {e(c['name'])}</h2>
+<h2>המוצרים של {e(c['name'])}</h2>
 {pick_cards(t, c, c['products'])}
 <p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המחירים מתעדכנים באתר לאורך היום ועשויים להשתנות.</p>"""
             page(c_url, f"{c['name']}: מוצרי {t['name']} מאליאקספרס | {NAME}",
@@ -1781,7 +1781,7 @@ def build_creators():
                 text = (f'<section class="cread"><h2>במילים של {e(c["name"])}</h2>'
                         + "".join(f"<p>{e(x)}</p>" for x in p["text"]) + "</section>") if p["text"] else ""
                 others = [x for x in c["products"] if x is not p][:4]
-                more = (f'<section aria-labelledby="more-picks"><h2 id="more-picks">עוד בחירות של {e(c["name"])}</h2>'
+                more = (f'<section aria-labelledby="more-picks"><h2 id="more-picks">עוד מוצרים של {e(c["name"])}</h2>'
                         f'{pick_cards(t, c, others)}</section>') if others else ""
                 body = f"""{DEMO_BANNER if demo else ''}{_collab_tag(c['name'])}
 <header class="page-head"><h1>{e(p['name'])}: הבחירה של {e(c['name'])}</h1>
