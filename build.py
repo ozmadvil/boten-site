@@ -1670,8 +1670,8 @@ def _collab_note(c: dict) -> str:
     return f'<p class="collab-note">{note}</p>'
 
 
-DEMO_BANNER = ('<p class="demo-note"><b>דף לדוגמה.</b> כך ייראה דף של יוצר או יוצרת שעובדים עם NiceBuy. השם, הטקסטים והשיוך '
-               'של הסרטון כאן הם להמחשה בלבד; המוצרים, המחירים והקישורים אמיתיים.</p>')
+DEMO_BANNER = ('<p class="demo-note"><b>דף לדוגמה.</b> כך ייראה דף של יוצר או יוצרת שעובדים עם NiceBuy. השם, התמונה, הטקסטים '
+               'והשיוך של הסרטון כאן הם להמחשה בלבד; המוצרים, המחירים והקישורים אמיתיים.</p>')
 
 
 def _avatar(c: dict, big: bool = False) -> str:
