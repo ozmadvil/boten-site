@@ -511,20 +511,21 @@ document.querySelectorAll('form.checker').forEach(function (f) {
   function say(t, err) { msg.textContent = t; msg.classList.toggle('err', !!err); }
   function busy(on, t) { if (on) { btn.setAttribute('aria-busy', 'true'); btn.querySelector('span').textContent = t; } else { btn.removeAttribute('aria-busy'); btn.querySelector('span').textContent = label; } }
   input.addEventListener('input', function () { if (msg.classList.contains('err')) { msg.innerHTML = idle; msg.classList.remove('err'); } });
-  // the answers appear as a chat right under the search, newest at the bottom
+  // the answer appears right under the search; a new search replaces the one before it (no clear button:
+  // the owner asked that the next search simply clears the previous results)
   function chatLog() {
     var box = document.getElementById('sresults');
     if (!box) {
       var band = f.closest('section') || f;
       box = document.createElement('section'); box.id = 'sresults'; box.className = 'sresults chat'; box.setAttribute('aria-live', 'polite');
-      box.innerHTML = '<div class="wrap"><div class="chat-head"><b>התשובות שלכם</b><button type="button" class="chat-clear">ניקוי</button></div><div class="chat-log"></div></div>';
+      box.innerHTML = '<div class="wrap"><div class="chat-head"><b>התשובות שלכם</b></div><div class="chat-log"></div></div>';
       band.insertAdjacentElement('afterend', box);
-      box.querySelector('.chat-clear').addEventListener('click', function () { box.remove(); input.focus(); });
     }
     return box.querySelector('.chat-log');
   }
   function ask(text) {
     var log = chatLog();
+    log.textContent = '';
     var me = document.createElement('div'); me.className = 'cmsg me'; me.innerHTML = '<p>' + esc(text) + '</p>'; log.appendChild(me);
     var ans = document.createElement('div'); ans.className = 'cmsg bot';
     ans.innerHTML = '<span class="cavatar" aria-hidden="true">N</span><div class="cbody"><p class="typing"><span></span><span></span><span></span></p></div>';
