@@ -2,3 +2,4 @@ _site/
 __pycache__/
 data/products.json
 data/categories.json
+data/picks-*.json
