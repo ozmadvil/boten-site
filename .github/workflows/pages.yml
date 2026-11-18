@@ -9,8 +9,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -25,7 +23,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install share-card tools
-        run: pip install "pillow==12.3.0" "python-bidi==0.6.12" "fonttools==4.67.0" "brotli==1.2.1"
+        run: pip install "pillow==13.0.0" "python-bidi==0.6.12" "fonttools==4.67.0" "brotli==1.2.1"
       - name: Build
         env:
           SITE_URL: ${{ vars.SITE_URL || 'https://nicebuy.co.il' }}
@@ -39,6 +37,9 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:                # only the job that publishes may publish; the build runs third-party packages
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

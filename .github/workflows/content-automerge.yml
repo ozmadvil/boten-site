@@ -54,6 +54,25 @@ jobs:
         if: steps.files.outputs.ok == 'true'
         with:
           python-version: "3.12"
+      - name: The guides file is data only
+        # guides_content.py is imported by the build, so it would run as code on main after the merge. It may hold
+        # one thing: GUIDES = <a literal list>. No imports, no calls, nothing else.
+        if: steps.files.outputs.ok == 'true'
+        run: |
+          python - <<'PY'
+          import ast, sys
+          tree = ast.parse(open("guides_content.py", encoding="utf-8").read())
+          body = [n for n in tree.body if not (isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str))]
+          ok = (len(body) == 1 and isinstance(body[0], ast.Assign) and len(body[0].targets) == 1
+                and isinstance(body[0].targets[0], ast.Name) and body[0].targets[0].id == "GUIDES")
+          if ok:
+              try:
+                  ast.literal_eval(body[0].value)
+              except Exception:
+                  ok = False
+          if not ok:
+              sys.exit("guides_content.py must be exactly: GUIDES = <literal>. Not merged automatically.")
+          PY
       - name: The site builds with the change
         if: steps.files.outputs.ok == 'true'
         env:

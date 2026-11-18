@@ -149,7 +149,7 @@ def _photo(src: str, out: Path, size: int) -> Image.Image | None:
     if not data:
         return None
     try:
-        im = Image.open(io.BytesIO(data)).convert("RGB")
+        im = Image.open(io.BytesIO(data), formats=["JPEG", "PNG", "WEBP"]).convert("RGB")   # sellers' photos: only the formats they come in
     except Exception:
         return None
     im.thumbnail((size, size), Image.LANCZOS)

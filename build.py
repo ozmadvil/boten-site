@@ -292,11 +292,12 @@ def load_feed(name: str, bot_url: str, key: str, ok=None) -> dict | None:
 
 
 AFFILIATE = re.compile(r"^https://s\.click\.aliexpress\.com/")    # the owner's affiliate links, nothing else
+IMAGE_HOST = re.compile(r"^https://[a-z0-9.-]+\.(?:aliexpress-media\.com|alicdn\.com|aliexpress\.com)/")   # product photos, as the CSP allows
 
 
 def _usable(p: dict) -> bool:
     """A product is shown only with an affiliate link (never a plain AliExpress link that earns nothing)."""
-    return bool(p.get("title") and p.get("image") and AFFILIATE.match(str(p.get("link", ""))) and p.get("price"))
+    return bool(p.get("title") and IMAGE_HOST.match(str(p.get("image", ""))) and AFFILIATE.match(str(p.get("link", ""))) and p.get("price"))
 
 
 products = [p for p in (load_feed("products.json", BOT_FEED_URL, "products") or {}).get("products", []) if _usable(p)][:36]   # home page "מוצרים נבחרים": 36 tiles, pinned first (the feed orders them)
@@ -501,6 +502,9 @@ def checker(src: str, field_id: str = "link", compact: bool = False) -> str:
 
 
 CHECKER_JS = r"""
+// The site is not meant to be shown inside another site's frame (GitHub Pages cannot send the header that forbids it).
+if (window.top !== window.self) { try { window.top.location = window.self.location.href; } catch (e) { document.documentElement.hidden = true; } }
+
 var NB_PLATFORM = (function () { try { return JSON.parse(document.getElementById('nb-platform').textContent) || []; } catch (e) { return []; } })();
 // only the owner's AliExpress links and AliExpress photos, whatever a response holds
 function safeLink(u) { try { var x = new URL(u); return x.protocol === 'https:' && x.hostname === 's.click.aliexpress.com' ? x.href : ''; } catch (e) { return ''; } }  // affiliate links only
@@ -660,7 +664,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
         : 'מוצגים רק מוצרים מחנויות שנושאות את השם <bdi>' + esc(st.brand) + '</bdi> באליאקספרס.') + '</p>';
       body.innerHTML = '<p>מצאתי ' + items.length + ' דילים ל"' + esc(q) + '"' + (coded.length ? ', ' + coded.length + ' מהם עם קוד קופון' : '') + ':</p>' + snote +
         (coded.length ? group('עם קוד קופון', coded) + group('עוד דילים', rest) : '<ul class="tiles">' + rest.map(tile).join('') + '</ul>') + brow +
-        '<p class="cnote">תוצאות חיות מאליאקספרס. ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. רוצים מוכר זול יותר למוצר מסוים? הדביקו את הלינק שלו בחיפוש. * קישורי שותפים של אליאקספרס.</p>';
+        '<p class="cnote">מחירים מאליאקספרס מהשעות האחרונות, בלי משלוח. ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. רוצים מוכר זול יותר למוצר מסוים? הדביקו את הלינק שלו בחיפוש. * קישורי שותפים של אליאקספרס.</p>';
       body.closest('.cmsg').classList.add('wide');
     }).catch(function (e) {
       stop(); busy(false); msg.innerHTML = idle;
@@ -687,7 +691,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
       } else {
         html += '<p class="cgap">👌 בדקתי מוכרים אחרים ולא מצאתי את זה זול יותר עם דירוג טוב. נראה שזה כבר מחיר טוב.</p>';
       }
-      html += '<p class="cnote">* קישורי שותפים של אליאקספרס.' + (start ? ' <a href="' + botLink(start) + '">להמשיך בבוט בטלגרם</a>' : '') + '</p>';
+      html += '<p class="cnote">* קישורי שותפים: NiceBuy מקבל עמלה מאליאקספרס על קנייה דרכם.' + (start ? ' <a href="' + botLink(start) + '">להמשיך בבוט בטלגרם</a>' : '') + '</p>';
       body.innerHTML = html;
     }).catch(function (e) {
       stop(); busy(false); msg.innerHTML = idle;
@@ -842,6 +846,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="{CSP}">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(tab or title)}</title>
 <meta name="description" content="{e(description)}">{'<meta name="robots" content="noindex, nofollow">' if noindex else ''}
@@ -879,8 +884,8 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 </main>
 <footer class="site"><div class="wrap">
 <div class="links">{"".join(f'<a href="{BASE}{p}">{n}</a>' for p, n in NAV)}<a href="{bot_link(src=src_for('footer', path))}">הבוט בטלגרם</a><a href="{CHANNEL}">ערוץ הדילים</a><a href="{YOUTUBE}">יוטיוב</a></div>
-<p>* גילוי נאות: הקישורים לאליאקספרס באתר ובבוט הם קישורי שותפים. על קנייה דרכם NiceBuy מקבל עמלה, והמחיר שלכם לא משתנה.</p>
-<p>* NiceBuy אינו קשור לאליאקספרס ואינו מייצג אותה. AliExpress הוא סימן מסחר של בעליו. המחירים וההנחות נכונים ליום הבדיקה בלבד, אינם כוללים משלוח, ואחוזי ההנחה מחושבים לפי המחיר המקורי שמוצג באליאקספרס.</p>
+<p>* גילוי נאות: הקישורים לאליאקספרס באתר ובבוט הם קישורי שותפים. על קנייה דרכם NiceBuy מקבל עמלה מאליאקספרס, והמחיר שלכם לא משתנה. הקנייה עצמה נעשית באתר אליאקספרס.</p>
+<p>* NiceBuy הוא אתר עצמאי. הוא אינו חלק מאליאקספרס ואינו מייצג אותה; הקשר היחיד הוא השתתפות בתוכנית השותפים שלה. AliExpress הוא סימן מסחר של בעליו. המחירים וההנחות נכונים ליום הבדיקה בלבד, אינם כוללים משלוח, ואחוזי ההנחה מחושבים לפי המחיר המקורי שמוצג באליאקספרס.</p>
 <p class="legal">{"".join(f'<a href="{BASE}{p}">{n}</a>' for p, n in LEGAL)}<a href="mailto:{EMAIL}">{EMAIL}</a></p>
 {footer_date}
 </div></footer>
@@ -893,6 +898,12 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
     target.write_text(doc, encoding="utf-8")
     if path != "/404.html" and not noindex:
         SITEMAP.append((url, updated))
+
+
+# Shown above the first affiliate link on pages that open with products (the footer line alone is thousands of
+# pixels below it on a phone): what the links are, who pays, that the price is the same, where the purchase is made.
+AFF_NOTE = ('<p class="aff-note">הקישורים למוצרים הם קישורי שותפים: על קנייה דרכם NiceBuy מקבל עמלה מאליאקספרס, '
+            'והמחיר שלכם לא משתנה. הקנייה עצמה נעשית באתר אליאקספרס, והמחירים אינם כוללים משלוח.</p>')
 
 
 def faq_block(items: list[tuple[str, str]]) -> tuple[str, dict]:
@@ -1121,9 +1132,9 @@ def hero(src: str, main_heading: bool, compact: bool = False) -> str:
 
 
 # The date someone last changed each page's own text here in build.py (data-driven parts date themselves).
-EDITED = {"/": "2026-11-10", "/videos/": "2026-11-10", "/coupons/": "2026-10-21", "/guides/": "2026-11-12", "/guides/coupon-types/": "2026-10-20",
-          "/guides/code-not-working/": "2026-10-20", "/about/": "2026-11-12",
-          "/accessibility/": "2026-11-12", "/privacy/": "2026-11-12", "/terms/": "2026-11-03"}
+EDITED = {"/": "2026-11-18", "/videos/": "2026-11-10", "/coupons/": "2026-11-18", "/guides/": "2026-11-12", "/guides/coupon-types/": "2026-10-20",
+          "/guides/code-not-working/": "2026-10-20", "/about/": "2026-11-18",
+          "/accessibility/": "2026-11-12", "/privacy/": "2026-11-18", "/terms/": "2026-11-18"}
 
 
 def event_card() -> tuple[str, str, str]:
@@ -1178,6 +1189,7 @@ def build_videos():
                "embedUrl": f"https://www.youtube.com/embed/{v['yt']}"} for v in VIDEOS]
     body = f"""<header class="page-head"><h1>סרטונים: מוצרים שבדקנו בעצמנו</h1>
 <p class="lead">קונים, מצלמים ומראים איך המוצר נראה באמת, לפני שאתם קונים. כל הסרטונים גם ב<a href="{YOUTUBE}">ערוץ היוטיוב שלנו</a>.</p></header>
+{AFF_NOTE}
 {('<section aria-labelledby="ep-title"><h2 id="ep-title">פרקים</h2>' + video_cards(longs, wide=True) + '</section>') if longs else ''}
 <section aria-labelledby="sh-title"><h2 id="sh-title">סרטונים קצרים</h2>
 {video_cards(shorts, wide=True)}
@@ -1196,6 +1208,7 @@ def build_home():
     if products:
         tiles = f"""<section aria-labelledby="hot-title">
 <div class="sec-head"><h2 id="hot-title">מוצרים נבחרים</h2><a href="{CHANNEL}">כל הדילים בערוץ {ICON_ARROW}</a></div>
+{AFF_NOTE}
 {product_tiles(products, path)}
 <p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המחירים נכונים לתאריך שמופיע על כל מוצר, ועשויים להשתנות. לחיצה על מוצר פותחת אותו באליאקספרס (קישור שותפים: המחיר שלכם לא משתנה).</p>
 </section>"""
@@ -1244,7 +1257,7 @@ def build_home():
                      *[r["_date"] for r in checks], *[r.get("checked") for r in seller],
                      *[r["_end"] for r in read_csv_ends("seller_codes.csv")], *event_marks())
     page(path, f"אל תשלמו יקר באליאקספרס | {NAME}",
-         "השוואת מחירים: מדביקים לינק של מוצר, ו-NiceBuy מוצא מוכרים אחרים שמוכרים אותו בפחות, עם קודי קופון שמורידים עוד מהמחיר.",
+         "השוואת מחירים: מדביקים לינק של מוצר, ו-NiceBuy מחפש מוכרים אחרים שמוכרים מוצר דומה בפחות, עם קודי קופון שמורידים עוד מהמחיר.",
          body, full=True, js=True, updated=updated, tab=NAME,     # the browser tab shows the name only (owner)
          card={"lines": [("המוצרים", "ink"), ("הכי שווים", "red"), ("ברשת", "ink")],
                "sub": "מחיר בשקלים, הנחה וקוד אם יש. בבוט טלגרם חינמי.", "products": products[:3]})
@@ -1289,7 +1302,8 @@ def build_coupons_page():
                        f"<td>מעל {platform_amt(r, 'min')}</td></tr>" for r in platform_active)
         open_end = any(r.get("status") == "no-end-date" for r in platform_active)
         until = "פעיל כרגע (אליאקספרס לא פרסמה תאריך סיום)" if open_end else f"פעיל עד {fmt_d(end, True)}"
-        platform_html = (f"<p><b>סט קודי ישראל {until}.</b> מזינים קוד אחד, לפי הסכום בסל אחרי הנחות.</p>"
+        platform_html = (f"<p><b>סט קודי ישראל {until}.</b> מזינים קוד אחד, לפי הסכום בסל אחרי הנחות. "
+                         "המקור: עמוד המבצע באפליקציית אליאקספרס. לא בדקנו כל מדרגה בקופה.</p>"
                          f'<div class="table-wrap"><table class="codes"><thead><tr><th>קוד</th><th>הנחה</th><th>מינימום לסל</th>'
                          f"</tr></thead><tbody>{prow}</tbody></table></div>")
         answer_now = ("יש כרגע קודי ישראל פעילים, ראו בטבלה." if open_end
@@ -1385,7 +1399,7 @@ def build_coupons_page():
          "ורק במשלוח לישראל."),
         ("למה באתרים אחרים יש הרבה יותר קודים?",
          "כי הם מעתיקים רשימות בלי לבדוק. חלק מהקודים שמופיעים שם בדקנו בקופה, והם נגמרו או לא תקפים "
-         "(ראו את הטבלה \"קודים שלא עובדים\"). אנחנו מפרסמים רק מה שנבדק או שמופיע בפורטל הרשמי של אליאקספרס."),
+         "(ראו את הטבלה \"קודים שלא עובדים\"). אנחנו מפרסמים רק קודים שבדקנו בקופה או שלקחנו ממקור רשמי של אליאקספרס (האפליקציה או פורטל השותפים), וכותבים ליד כל קוד מה המקור."),
         ("מתי יוצאים קודים חדשים?", when_new),
         ("איך מקבלים קוד למוצר מסוים?",
          f'שולחים את הלינק של המוצר <a href="{bot_link(src=src_for("faq", path))}">לבוט בטלגרם</a>. הוא בודק את המוצר ומחזיר מחיר בשקלים, '
@@ -1395,10 +1409,11 @@ def build_coupons_page():
                      *[r.get("checked") for r in circulating_all], *[_show_until(r) for r in circulating_all],
                      *[r["_date"] for r in checks], *event_marks())
     upd = updated.strftime("%d/%m/%Y") if updated else TODAY
-    body = f"""<header class="page-head"><h1>קודי קופון לאליאקספרס בישראל ({MONTH_YEAR}): רק קודים שנבדקו בקופה</h1>
-<span class="updated">עודכן: {upd} · ליד כל קוד מופיע מתי נבדק</span></header>
+    body = f"""<header class="page-head"><h1>קודי קופון לאליאקספרס בישראל ({MONTH_YEAR}): עם תוקף, מקור ותנאים</h1>
+<span class="updated">עודכן: {upd} · ליד כל קוד מופיע המקור שלו, ואם בדקנו אותו בקופה</span></header>
 <div class="answer"><p><b>בקצרה, נכון ל-{TODAY}:</b> {answer_now}
 {" ".join(set_lines)}</p></div>
+{AFF_NOTE}
 <p class="actions">{buy}{bot_btn}</p>
 <h2>קודי ישראל של אליאקספרס (ILAFF)</h2>
 {platform_html}
@@ -1409,13 +1424,13 @@ def build_coupons_page():
 <p>לפני שמזינים קוד, כדאי לאסוף בדף המוצר את קופוני החנות ("קבלו קופונים"). הם מצטרפים לקוד ולא תופסים את מקומו.</p>
 <h2>שאלות נפוצות</h2>
 {faq_html}
-<p class="fine">* הקישורים בדף הם קישורי שותפים של אליאקספרס. הקודים והתוקף נכונים ליום הבדיקה בלבד, וקודים עלולים להיגמר במכסה לפני התאריך.</p>"""
-    page(path, f"קודי קופון לאליאקספרס ({MONTH_YEAR}): רק קודים שנבדקו בקופה | {NAME}",
-         f"קודי קופון לאליאקספרס בישראל, {MONTH_YEAR}: קודי מוכר שנבדקו בקופה, קודי ישראל (ILAFF) עם תוקף, "
-         "ורשימת קודים שמסתובבים ברשת ולא עובדים. מתעדכן כל יום.",
+<p class="fine">* הקודים והתוקף נכונים ליום הבדיקה בלבד, וקודים עלולים להיגמר במכסה לפני התאריך.</p>"""
+    page(path, f"קודי קופון לאליאקספרס ({MONTH_YEAR}): עם תוקף, מקור ותנאים | {NAME}",
+         f"קודי קופון לאליאקספרס בישראל, {MONTH_YEAR}: קודי ישראל (ILAFF) עם תוקף ומקור, קודי מוכר, "
+         "ורשימת קודים שמסתובבים ברשת ולא עובדים.",
          body, crumbs=[(path, "קודי קופון")], schema=[faq_schema], updated=updated,
          card={"lines": [("קודי קופון", "ink"), ("לאליאקספרס בישראל", "ink")],
-               "sub": f"רק קודים שנבדקו בקופה · {MONTH_YEAR}", "stamp": True})
+               "sub": f"עם תוקף, מקור ותנאים · {MONTH_YEAR}", "stamp": True})
 
 
 def build_coupon_types():
@@ -1507,8 +1522,10 @@ def build_guides():
     """Guide pages from guides_content.py, plus the guides hub."""
     from guides_content import GUIDES
     for g in GUIDES:
+        fill = lambda v: v.replace("{BASE}", BASE).replace("{BOT}", BOT) if isinstance(v, str) else v
+        g = {k: ([tuple(fill(x) for x in row) for row in v] if k == "faq" and isinstance(v, list) else fill(v)) for k, v in g.items()}
         url = f"/guides/{g['slug']}/"
-        body_html = g["body"].replace("{BASE}", BASE).replace("{BOT}", BOT)
+        body_html = g["body"]
         faq_html, faq_schema = faq_block(g.get("faq") or [])
         upd = datetime.strptime(g["updated"], "%Y-%m-%d")
         tiles = ""
@@ -1625,8 +1642,9 @@ def build_categories():
         updated = latest(stamp, *[p.get("checked") or p.get("posted") for p in c["products"]]) if c["products"] else None
         upd_txt = f"עודכן: {fmt_d(stamp, True) if stamp else updated.strftime('%d/%m/%Y')} · " if updated else ""
         body = f"""<header class="page-head"><h1>{e(c['name'])} מאליאקספרס: הדילים של השבוע</h1>
-<span class="updated">{upd_txt}מחיר בשקלים, עם הנחה ודירוג</span></header>
+<span class="updated">{upd_txt}מחיר בשקלים והנחה לפי אליאקספרס</span></header>
 {category_intro(c['slug'])}
+{AFF_NOTE if c["products"] else ""}
 {grid}"""
         items = [{"@type": "ListItem", "position": i, "url": p["link"], "name": short_title(p["title"])}
                  for i, p in enumerate(c["products"][:24], 1)]
@@ -1671,7 +1689,8 @@ def _collab_note(c: dict) -> str:
 
 
 DEMO_BANNER = ('<p class="demo-note"><b>דף לדוגמה.</b> כך ייראה דף של יוצר או יוצרת שעובדים עם NiceBuy. השם, התמונה, הטקסטים '
-               'והשיוך של הסרטון כאן הם להמחשה בלבד; המוצרים, המחירים והקישורים אמיתיים.</p>')
+               'והשיוך של הסרטון כאן הם להמחשה בלבד, ואין מאחוריהם אדם אמיתי. המוצרים והמחירים אמיתיים, והקישורים הם קישורי '
+               'שותפים של NiceBuy: על קנייה דרכם NiceBuy מקבל עמלה מאליאקספרס.</p>')
 
 
 def _avatar(c: dict, big: bool = False) -> str:
@@ -1741,8 +1760,8 @@ def build_creators():
 <p class="collab-note">{note}</p>
 <h2>{e(t["people"] or "היוצרים")}</h2><ul class="ccards">{cards}</ul>
 {rows}"""
-        page(t_url, f"מוצרי {t['name']} מאליאקספרס: המלצות של יוצרים | {NAME}",
-             _meta(f"מוצרי {t['name']} מאליאקספרס: הבחירות של {_joined([c['name'] for c in t['creators']])}, עם מחיר מעודכן בשקלים."),
+        page(t_url, f"{'דף לדוגמה: ' if demo_t else ''}מוצרי {t['name']} מאליאקספרס: המלצות של יוצרים | {NAME}",
+             _meta(f"{'דף לדוגמה: ' if demo_t else ''}מוצרי {t['name']} מאליאקספרס: הבחירות של {_joined([c['name'] for c in t['creators']])}, עם מחיר מעודכן בשקלים."),
              body, crumbs=[(t_url, t["name"])], updated=latest(*stamps), noindex=demo_t)
         for c in t["creators"] + t["hidden"]:
             c_url, demo = f"{t_url}{c['slug']}/", c["demo"]
@@ -1759,8 +1778,9 @@ def build_creators():
 <h2>המוצרים של {e(c['name'])}</h2>
 {pick_cards(t, c, c['products'])}
 <p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המחירים מתעדכנים באתר לאורך היום ועשויים להשתנות.</p>"""
-            page(c_url, f"{c['name']}: מוצרי {t['name']} מאליאקספרס | {NAME}",
-                 _meta(f"הבחירות של {c['name']}: מוצרי {t['name']} מאליאקספרס{', עם סרטונים' if with_video else ''} ועם מחיר מעודכן בשקלים."),
+            eg = "דף לדוגמה: " if demo else ""
+            page(c_url, f"{eg}{c['name']}: מוצרי {t['name']} מאליאקספרס | {NAME}",
+                 _meta(f"{eg}הבחירות של {c['name']}: מוצרי {t['name']} מאליאקספרס{', עם סרטונים' if with_video else ''} ועם מחיר מעודכן בשקלים."),
                  body, crumbs=trail + [(c_url, c["name"])], updated=latest(*c_stamps), noindex=demo)
             for p in (x for x in c["products"] if _pick_has_page(x)):
                 p_url, live = f"{c_url}{p['slug']}/", p["live"]
@@ -1796,8 +1816,8 @@ def build_creators():
 {more}"""
                 first = f"{p['name']} מאליאקספרס: הבחירה של {c['name']}, עם מחיר מעודכן בשקלים."
                 # a page with the video alone is thin: it is reached from the creator's page, not offered to search engines
-                page(p_url, f"{p['name']}: הבחירה של {c['name']} | {NAME}",
-                     _meta(first + (" " + p["text"][0] if p["text"] else "")),
+                page(p_url, f"{eg}{p['name']}: הבחירה של {c['name']} | {NAME}",
+                     _meta(eg + first + (" " + p["text"][0] if p["text"] else "")),
                      body, crumbs=trail + [(c_url, c["name"]), (p_url, p["name"])],
                      updated=latest(live.get("checked")), noindex=demo)
                 if not p["text"] and not demo:
@@ -1883,7 +1903,7 @@ def build_accessibility():
 
 # said on the privacy page only while a creator's video is on the site (dated from the first creator's consent)
 CREATOR_VIDEOS_SINCE = min([c["since"] for c in _creators_all if c["since"]] or ["2026-11-17"])
-CREATOR_VIDEO_PRIVACY = ("<li><b>סרטונים של יוצרים:</b> בדפי המוצרים של יוצרים שעובדים איתנו יש סרטון שנטען "
+CREATOR_VIDEO_PRIVACY = ("<li><b>סרטונים של יוצרים:</b> בדפי המוצרים של יוצרים יש סרטון שנטען "
                          + " או ".join(filter(None, [", ".join([creators_data.FROM[k] for k in ("youtube", "instagram", "tiktok")
                                                                 if _players[k] in _used][:-1]),
                                                      [creators_data.FROM[k] for k in ("youtube", "instagram", "tiktok")
@@ -1910,16 +1930,19 @@ def build_privacy():
 </ul>
 <h2>איזה מידע עובר דרכנו</h2>
 <ul>
-<li><b>מה שאתם מקלידים בחיפוש:</b> שם מוצר או לינק מאליאקספרס נשלחים לשרת שלנו כדי למצוא תוצאות. כדי להבין את החיפוש ולבחור מוצרים מתאימים, טקסט החיפוש ושמות המוצרים נשלחים גם לשירות בינה מלאכותית (Anthropic). אנחנו שומרים סטטיסטיקה מצטברת של מילות חיפוש, למשל כמה פעמים חיפשו "מטען נייד", כדי לשפר את התוצאות. הסטטיסטיקה לא מקושרת לאדם מסוים. טקסט החיפוש נשמר גם ביומן השרת, בלי שם או מזהה משתמש. ובכל זאת, עדיף לא להקליד בחיפוש פרטים אישיים.</li>
-<li><b>מידע טכני:</b> כמו בכל אתר, ספקי התשתית שלנו רושמים ביומני השרת את כתובת ה-IP, סוג הדפדפן ושעת הגישה. בכתובת ה-IP אנחנו משתמשים גם כדי להגביל עומס, למשל מספר חיפושים בדקה, והיא נשמרת לשם כך בזיכרון זמני בלבד.</li>
-<li><b>הבוט בטלגרם:</b> הבוט מקבל מטלגרם את מזהה המשתמש ואת ההודעות שאתם שולחים לו, ומשתמש בהם כדי לענות לכם ולהגביל עומס. אנחנו לא שומרים מאגר של משתמשים, והבוט שולח הודעות רק בתגובה לפנייה שלכם.</li>
+<li><b>מה שאתם מקלידים בחיפוש:</b> שם מוצר או לינק מאליאקספרס נשלחים לשרת שלנו כדי למצוא תוצאות. כדי להבין את החיפוש ולבחור מוצרים מתאימים, טקסט החיפוש ושמות המוצרים נשלחים גם לשירות בינה מלאכותית (Anthropic), מילות החיפוש נשלחות לאליאקספרס כדי לקבל תוצאות, ולעיתים לשירות תרגום (MyMemory או Google). אנחנו שומרים את מילות החיפוש עצמן ואת מספר הפעמים שחיפשו אותן, למשל כמה פעמים חיפשו "מטען נייד", כדי לשפר את התוצאות. הרשימה נשמרת 60 יום בלי שם ובלי מזהה משתמש, ותרגומים של ביטויי חיפוש נשמרים בלי הגבלת זמן כדי לא לתרגם שוב. טקסט החיפוש נכתב גם ליומן של השרת, בלי מזהה. באותו ספק נשמר בנפרד יומן גישה עם כתובת ה-IP ושעת הפנייה, כך שמי שיש לו גישה לשני היומנים יכול עקרונית לקשר ביניהם. לכן עדיף לא להקליד בחיפוש פרטים אישיים.</li>
+<li><b>לינק שהדבקתם:</b> אנחנו שומרים את מספר המוצר ואת מספר הפעמים שבדקו אותו, 60 יום, בלי מזהה משתמש.</li>
+<li><b>מידע טכני:</b> כמו בכל אתר, ספקי התשתית שלנו רושמים ביומני השרת את כתובת ה-IP, סוג הדפדפן ושעת הגישה. בכתובת ה-IP אנחנו משתמשים גם כדי להגביל עומס, למשל מספר חיפושים בדקה. לשם כך היא נשמרת בזיכרון של השרת בלבד, לא בקובץ, ונמחקת כשהשרת מופעל מחדש.</li>
+<li><b>תמונות המוצרים:</b> התמונות נטענות ישירות מהשרתים של אליאקספרס כבר כשהדף נפתח, ולכן אליאקספרס מקבלת את כתובת ה-IP ואת סוג הדפדפן שלכם גם בלי שלחצתם על מוצר. אנחנו לא שולחים לה מאיזה דף באתר הגעתם.</li>
+<li><b>לחיצות:</b> אנחנו סופרים כמה לחיצות על קישורים לאליאקספרס היו ביום, כמספר בלבד. כפתורי הקנייה בערוץ ובבוט בטלגרם עוברים דרך השרת שלנו לצורך הספירה, ויומן הגישה של הספק רושם את כתובת ה-IP ואת הקישור שנלחץ.</li>
+<li><b>הבוט בטלגרם:</b> הבוט מקבל מטלגרם את מזהה המשתמש ואת ההודעות שאתם שולחים לו, ומשתמש בהם כדי לענות לכם ולהגביל עומס. המזהה נשמר בזיכרון של השרת בלבד. חיפוש או לינק ששלחתם לבוט מטופלים בדיוק כמו באתר (ראו למעלה). אנחנו לא שומרים מאגר של משתמשים, והבוט שולח הודעות רק בתגובה לפנייה שלכם.</li>
 <li><b>סטטיסטיקת ביקורים:</b> אנחנו משתמשים ב-Cloudflare Web Analytics כדי לדעת כמה ביקורים יש באתר, באילו דפים ומאיזה סוג מקור (למשל גוגל או טלגרם). הכלי לא משתמש בעוגיות, לא שומר מזהה של מבקר ולא עוקב אחריכם בין אתרים.</li>
 <li><b>פנייה במייל:</b> אם תכתבו לנו, נשתמש בכתובת ובתוכן הפנייה רק כדי לענות לכם.</li>
 {CREATOR_VIDEO_PRIVACY}</ul>
 <h2>מי מעבד את המידע בשבילנו</h2>
-<p>אנחנו נעזרים בספקים שמעבדים את המידע רק לצורך הפעלת השירות: GitHub (אחסון האתר), Cloudflare (שרתי שמות, אבטחה וסטטיסטיקת ביקורים), Railway (השרת של הבוט והחיפוש), Anthropic (בינה מלאכותית לחיפוש) וטלגרם (הבוט והערוץ). חלק מהספקים פועלים מחוץ לישראל. יומני השרת נשמרים לתקופה מוגבלת, לפי מדיניות כל ספק.</p>
+<p>אנחנו נעזרים בספקים שמעבדים את המידע רק לצורך הפעלת השירות: GitHub (אחסון האתר), Cloudflare (שרתי שמות, אבטחה וסטטיסטיקת ביקורים), Railway (השרת של הבוט והחיפוש), Anthropic (בינה מלאכותית לחיפוש), אליאקספרס (תוצאות החיפוש, פרטי המוצרים והתמונות), MyMemory ו-Google (תרגום של מילות חיפוש, תיבת המייל ויוטיוב) וטלגרם (הבוט והערוץ). הספקים פועלים מחוץ לישראל, בעיקר בארצות הברית. יומני השרת נשמרים לתקופה מוגבלת, לפי מדיניות כל ספק.</p>
 <h2>מעבר לאליאקספרס</h2>
-<p>לחיצה על מוצר מעבירה אתכם לאליאקספרס דרך קישור שותפים. מרגע המעבר חלה עליכם מדיניות הפרטיות של אליאקספרס, שעשויה להשתמש בעוגיות, למשל כדי לשייך את הרכישה לקישור. לרכישות ולפרטים שאתם מוסרים באליאקספרס אין לנו גישה.</p>
+<p>לחיצה על מוצר מעבירה אתכם לאליאקספרס דרך קישור שותפים. מרגע המעבר חלה עליכם מדיניות הפרטיות של אליאקספרס, שעשויה להשתמש בעוגיות, למשל כדי לשייך את הרכישה לקישור. לפרטים שאתם מוסרים באליאקספרס (שם, כתובת, תשלום) אין לנו גישה. אליאקספרס מדווחת לנו רק שנעשתה הזמנה דרך קישור שלנו: מספר הזמנה, המוצר, הסכום והמועד, בלי שם ובלי פרטי הקונה.</p>
 <h2>הזכויות שלכם</h2>
 <p>אתם יכולים לבקש לעיין במידע עליכם, לתקן אותו או למחוק אותו, במייל <a href="mailto:{EMAIL}">{EMAIL}</a>. מכיוון שאנחנו לא שומרים מידע מזהה, ברוב המקרים לא יהיה מידע כזה.</p>
 <h2>עדכונים</h2>
@@ -1935,9 +1958,9 @@ def build_terms():
     updated = latest(EDITED[path]) or NOW.date()
     body = f"""<header class="page-head"><h1>תנאי שימוש</h1></header>
 <div class="prose">
-<p class="lead">השימוש באתר NiceBuy ובבוט "בוטן" בטלגרם (להלן "השירות") כפוף לתנאים האלה. השימוש בשירות מהווה הסכמה להם. התנאים מנוסחים בלשון רבים ומתייחסים לכל המגדרים.</p>
+<p class="lead">השימוש באתר NiceBuy ובבוט "בוטן" בטלגרם (להלן "השירות") כפוף לתנאים האלה. השימוש בשירות מהווה הסכמה להם. השירות מופעל על ידי עוז מדויל (להלן "NiceBuy"). התנאים מנוסחים בלשון רבים ומתייחסים לכל המגדרים.</p>
 <h2>מה השירות עושה</h2>
-<p>NiceBuy הוא שירות מידע חינמי שמציג מוצרים, מחירים וקודי קופון מאליאקספרס ומשווה בין מוכרים. NiceBuy אינו מוכר מוצרים, אינו צד לעסקה, ואינו קשור לאליאקספרס ואינו מייצג אותה.</p>
+<p>NiceBuy הוא שירות מידע חינמי שמציג מוצרים, מחירים וקודי קופון מאליאקספרס ומשווה בין מוכרים. NiceBuy אינו מוכר מוצרים ואינו צד לעסקה. הוא אתר עצמאי: אינו חלק מאליאקספרס ואינו מייצג אותה, והקשר היחיד הוא השתתפות בתוכנית השותפים שלה.</p>
 <h2>קנייה באליאקספרס</h2>
 <p>הקנייה, התשלום, המשלוח, האחריות, הביטולים וההחזרות נעשים מול אליאקספרס והמוכר, לפי התנאים שלהם ולפי הדין. בכל בעיה בהזמנה יש לפנות לאליאקספרס או למוכר.</p>
 <h2>מחירים וקודי קופון</h2>
@@ -1950,12 +1973,14 @@ def build_terms():
 </ul>
 <h2>קישורי שותפים</h2>
 <p>הקישורים לאליאקספרס הם קישורי שותפים. על רכישה דרכם NiceBuy מקבל עמלה מאליאקספרס, והמחיר שלכם לא משתנה.</p>
+<h2>המדריכים</h2>
+<p>המדריכים באתר (מכס ומע"מ, אישורים, משלוח) הם מידע כללי שנכון לתאריך שמופיע בהם. הם אינם ייעוץ משפטי או ייעוץ מס. לפני הזמנה גדולה בדקו באתרי רשות המסים ומשרד התקשורת.</p>
 <h2>אחריות</h2>
-<p>השירות ניתן כמות שהוא (AS IS). אנחנו משתדלים שהמידע יהיה מדויק ועדכני, אבל לא מתחייבים לכך, ולא נישא באחריות לנזק שנגרם מהסתמכות על המידע, מרכישה באליאקספרס או מהפסקה בשירות, במידה שהדין מאפשר זאת.</p>
+<p>אנחנו משתדלים שהמידע יהיה מדויק ועדכני, אבל הוא מגיע ברובו מאליאקספרס ומשתנה כל הזמן, ולכן איננו מתחייבים שיהיה נכון בכל רגע. איננו צד לקנייה, ולכן איננו אחראים למוצר, למשלוח, לאחריות או להחזר; אלה באחריות המוכר ואליאקספרס. אין באמור כדי לגרוע מאחריות שהדין אינו מאפשר להגביל.</p>
 <h2>שימוש הוגן</h2>
 <p>אין להשתמש בשירות באופן אוטומטי או מסיבי (למשל רובוטים או סריקה), אין לנסות לפגוע בו, ואין להעתיק את תוכנו לשימוש מסחרי בלי אישור.</p>
 <h2>קניין רוחני</h2>
-<p>העיצוב, הטקסטים, המדריכים והקוד של NiceBuy שייכים ל-NiceBuy. תמונות ופרטי המוצרים שייכים לבעליהם ומוצגים מאליאקספרס. AliExpress הוא סימן מסחר של בעליו.</p>
+<p>העיצוב, הטקסטים, המדריכים והקוד של NiceBuy שייכים ל-NiceBuy. תמונות ופרטי המוצרים שייכים לבעליהם ומוצגים מאליאקספרס. AliExpress הוא סימן מסחר של בעליו. אם אתם בעלי זכויות בתמונה או בתוכן שמוצג באתר ומבקשים להסירו, כתבו ל-<a href="mailto:{EMAIL}">{EMAIL}</a> ונטפל בפנייה בהקדם.</p>
 <h2>כללי</h2>
 <p>אנחנו רשאים לעדכן את התנאים מעת לעת. על התנאים חל הדין הישראלי. לשאלות: <a href="mailto:{EMAIL}">{EMAIL}</a>. עודכן לאחרונה ב-{updated.strftime("%d/%m/%Y")}.</p>
 </div>"""
@@ -1974,7 +1999,7 @@ def build_about():
 <h2>איך נבחרים המוצרים</h2>
 <p>רוב המוצרים באתר נבחרים אוטומטית מתוך אליאקספרס, לפי מחיר, דירוג, מספר מכירות ומותג, ומתעדכנים כמה פעמים ביום. חלק מהמוצרים נבחרו ידנית, וחלקם קנינו וצילמנו בעצמנו (אלה מסומנים "סרטון שלנו"). המחירים ושמות המוצרים מגיעים מאליאקספרס, ושמות בעברית נוצרים בחלקם אוטומטית. לפני שקונים, כדאי לוודא בעמוד המוצר באליאקספרס את הדגם, המפרט והמחיר.</p>
 <h2>גילוי נאות</h2>
-<p>הקישורים לאליאקספרס בבוט ובאתר הם קישורי שותפים. על רכישה דרכם NiceBuy מקבל עמלה קטנה מאליאקספרס, והמחיר שלכם לא משתנה. NiceBuy אינו קשור לאליאקספרס ואינו מייצג אותה.</p>
+<p>הקישורים לאליאקספרס בבוט ובאתר הם קישורי שותפים. על רכישה דרכם NiceBuy מקבל עמלה קטנה מאליאקספרס, והמחיר שלכם לא משתנה. NiceBuy הוא אתר עצמאי: הוא אינו חלק מאליאקספרס ואינו מייצג אותה, והקשר היחיד הוא השתתפות בתוכנית השותפים שלה.</p>
 <h2>פרטיות</h2>
 <p>האתר לא משתמש בעוגיות מעקב, והבוט לא שולח הודעות שלא ביקשתם. כל הפרטים ב<a href="{BASE}/privacy/">מדיניות הפרטיות</a>.</p>
 <h2>יצירת קשר</h2>
@@ -2008,7 +2033,7 @@ def build_meta_files():
         f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>',
         encoding="utf-8")
     (OUT / "llms.txt").write_text(
-        f"# {NAME}\n\n> קודי קופון לאליאקספרס בישראל שנבדקו בקופה, ובוט טלגרם חינמי (@Boten_IL_bot) שבודק כל מוצר.\n\n"
+        f"# {NAME}\n\n> קודי קופון לאליאקספרס בישראל עם מקור ותוקף, ובוט טלגרם חינמי (@Boten_IL_bot) שבודק כל מוצר.\n\n"
         f"- [סוגי קופונים ושילובים]({SITE_URL}/guides/coupon-types/)\n"
         f"- [קוד קופון לא עובד]({SITE_URL}/guides/code-not-working/): הודעות השגיאה האמיתיות ופתרונות\n"
         + "".join(f"- [{g['h1']}]({SITE_URL}/guides/{g['slug']}/)\n" for g in __import__("guides_content").GUIDES),

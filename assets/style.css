@@ -634,3 +634,4 @@ span.vtag { background: var(--primary); color: #fff; pointer-events: none; right
 }
 .buybox .bprice .price { font-size: 30px; color: var(--primary); }
 .demo-note { background: var(--accent); color: var(--accent-ink); border-radius: var(--radius-s); padding: 10px 14px; font-size: 14.5px; line-height: 1.55; margin: 0 0 14px; max-width: 80ch; }
+.aff-note { font-size: 14px; line-height: 1.55; color: var(--text-2); margin: 0 0 14px; max-width: 80ch; }
