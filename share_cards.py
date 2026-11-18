@@ -195,7 +195,7 @@ def _tag(canvas: Image.Image, root: Path, out: Path, p: dict, x: int, y: int, w:
     d.rounded_rectangle((x, y, x + w, y + h), 6, fill=WHITE)
     d.rounded_rectangle((x, y, x + w, y + 30), 6, fill=RED)
     d.rectangle((x, y + 20, x + w, y + 30), fill=RED)
-    disc = p.get("discount")
+    disc = p.get("discount") if p.get("was_from") == "nicebuy" else None    # only a discount NiceBuy measured
     fonts = _font(root, 900, 19)
     if disc and float(disc) >= 5:                    # "-67%" reads left to right, like the burst on the site
         d.text((x + w - 12, y + 22), f"-{float(disc):.0f}%", font=fonts[1], fill=WHITE, anchor="rs")

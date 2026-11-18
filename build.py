@@ -620,8 +620,9 @@ document.querySelectorAll('form.checker').forEach(function (f) {
   function botLink(start) { return bot + '?start=' + start + '-' + src; }
   function tile(p) {
     p.link = safeLink(p.link); if (!p.link) return '';
-    var was = p.original && p.original > p.price + 0.5 ? '<span class="was"><span class="sr-only">מחיר קודם: </span>₪' + p.original.toFixed(2) + '</span>' : '';
-    var burst = p.discount && p.discount >= 5 ? '<span class="burst"><span class="sr-only">הנחה של </span>-' + Math.round(p.discount) + '%</span>' : '';
+    var ours = p.was_from === 'nicebuy';   // a previous price only when NiceBuy measured it
+    var was = ours && p.original && p.original > p.price + 0.5 ? '<span class="was"><span class="sr-only">מחיר קודם: </span>₪' + p.original.toFixed(2) + '</span>' : '';
+    var burst = ours && p.discount && p.discount >= 5 ? '<span class="burst"><span class="sr-only">הנחה של </span>-' + Math.round(p.discount) + '%</span>' : '';
     var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
     var attrs = 'href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"';
     return '<li><div class="tile"><a class="tlink" ' + attrs + '><span class="pic">' + imgTag(p.image, 300) + '</span>' + burst +
@@ -632,8 +633,9 @@ document.querySelectorAll('form.checker').forEach(function (f) {
   function wide(p, alt) {
     p.link = safeLink(p.link); if (!p.link) return '';
     var attrs = 'href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"';
-    var was = p.original && p.original > p.price + 0.5 ? '<span class="was"><span class="sr-only">מחיר קודם: </span>₪' + p.original.toFixed(2) + '</span>' : '';
-    var disc = p.discount && p.discount >= 5 ? '<span class="pill"><span class="sr-only">הנחה של </span>-' + Math.round(p.discount) + '%</span>' : '';
+    var ours = p.was_from === 'nicebuy';   // a previous price only when NiceBuy measured it
+    var was = ours && p.original && p.original > p.price + 0.5 ? '<span class="was"><span class="sr-only">מחיר קודם: </span>₪' + p.original.toFixed(2) + '</span>' : '';
+    var disc = ours && p.discount && p.discount >= 5 ? '<span class="pill"><span class="sr-only">הנחה של </span>-' + Math.round(p.discount) + '%</span>' : '';
     var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
     var save = alt && p.saving > 0.5 ? '<span class="save">חוסכים ' + ils(p.saving) + '</span>' : '';
     return '<div class="wcard' + (alt ? ' alt' : '') + '"><a class="wpic" ' + attrs + ' tabindex="-1" aria-hidden="true">' + imgTag(p.image, 160) + '</a>' +
@@ -895,7 +897,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 <footer class="site"><div class="wrap">
 <div class="links">{"".join(f'<a href="{BASE}{p}">{n}</a>' for p, n in NAV)}<a href="{bot_link(src=src_for('footer', path))}">הבוט בטלגרם</a><a href="{CHANNEL}">ערוץ הדילים</a><a href="{YOUTUBE}">יוטיוב</a></div>
 <p>* גילוי נאות: הקישורים לאליאקספרס באתר ובבוט הם קישורי שותפים. על קנייה דרכם NiceBuy מקבל עמלה מאליאקספרס, והמחיר שלכם לא משתנה. הקנייה עצמה נעשית באתר אליאקספרס.</p>
-<p>* NiceBuy הוא אתר עצמאי. הוא אינו חלק מאליאקספרס ואינו מייצג אותה; הקשר היחיד הוא השתתפות בתוכנית השותפים שלה. AliExpress הוא סימן מסחר של בעליו. המחירים וההנחות נכונים ליום הבדיקה בלבד, אינם כוללים משלוח, ואחוזי ההנחה מחושבים לפי המחיר המקורי שמוצג באליאקספרס.</p>
+<p>* NiceBuy הוא אתר עצמאי. הוא אינו חלק מאליאקספרס ואינו מייצג אותה; הקשר היחיד הוא השתתפות בתוכנית השותפים שלה. AliExpress הוא סימן מסחר של בעליו. המחירים נכונים ליום הבדיקה בלבד ואינם כוללים משלוח. {WAS_NOTE}</p>
 <p class="legal">{"".join(f'<a href="{BASE}{p}">{n}</a>' for p, n in LEGAL)}<a href="mailto:{EMAIL}">{EMAIL}</a></p>
 {footer_date}
 </div></footer>
@@ -908,6 +910,23 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
     target.write_text(doc, encoding="utf-8")
     if path != "/404.html" and not noindex:
         SITEMAP.append((url, updated))
+
+
+# A previous (struck-through) price and a discount are shown only when the bot measured them itself (its own price
+# history: the median of what it saw over 3-4 weeks; marked "was_from": "nicebuy"), never AliExpress's "original
+# price", which the seller sets (owner's decision after the legal audit, 18/11/2026).
+def measured(p: dict) -> tuple[float, float]:
+    """(previous price, discount %) the bot measured, or (0, 0)."""
+    if not isinstance(p, dict) or p.get("was_from") != "nicebuy":
+        return 0.0, 0.0
+    try:
+        return float(p.get("original") or 0), float(p.get("discount") or 0)
+    except (TypeError, ValueError):
+        return 0.0, 0.0
+
+
+WAS_NOTE = ("מחיר מחוק הוא המחיר הרגיל שמדדנו בעצמנו: החציון של המחירים שראינו למוצר בשלושה עד ארבעה השבועות האחרונים. "
+            "מוצר שלא עקבנו אחריו מספיק זמן מוצג בלי מחיר מחוק ובלי אחוז הנחה.")
 
 
 # Shown above the first affiliate link on pages that open with products (the footer line alone is thousands of
@@ -1077,7 +1096,7 @@ def product_tiles(rows: list[dict], path: str) -> str:
     on the site. When the product has a seller code, a sticker beside the link opens the bot on that product."""
     tiles = []
     for p in rows:
-        price_v, orig, disc = float(p["price"]), p.get("original"), p.get("discount")
+        price_v, (orig, disc) = float(p["price"]), measured(p)
         was = f'<span class="was"><span class="sr-only">מחיר קודם: </span>₪{float(orig):.2f}</span>' if orig and float(orig) > price_v + 0.5 else ""
         burst = (f'<span class="burst"><span class="sr-only">הנחה של </span>-{disc:.0f}%</span>'
                  if disc and disc >= 5 else "")
@@ -1640,7 +1659,7 @@ def build_categories():
         url = f"/c/{c['slug']}/"
         if c["products"]:
             grid = (product_tiles(c["products"][:24], url) +
-                    '<p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. NiceBuy בוחר לכל קטגוריה את הדילים הכי שווים לפי מחיר, הנחה, דירוג ומכירות, '
+                    '<p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. NiceBuy בוחר לכל קטגוריה את הדילים הכי שווים לפי מחיר, דירוג ומכירות, '
                     'ומעדכן אותם כמה פעמים ביום. המחירים עשויים להשתנות. לחיצה פותחת את המוצר באליאקספרס '
                     '(קישור שותפים: המחיר שלכם לא משתנה).</p>')
         else:
@@ -1727,7 +1746,7 @@ def pick_cards(t: dict, c: dict, rows: list[dict]) -> str:
     out = []
     for p in rows:
         live = p["live"]
-        price_v, orig, disc = float(live["price"]), float(live.get("original") or 0), float(live.get("discount") or 0)
+        price_v, (orig, disc) = float(live["price"]), measured(live)
         was = f'<span class="was"><span class="sr-only">מחיר קודם: </span>₪{orig:.2f}</span>' if orig > price_v + 0.5 else ""
         burst = f'<span class="burst"><span class="sr-only">הנחה של </span>-{disc:.0f}%</span>' if disc >= 5 else ""
         inner = _pick_has_page(p)
@@ -1806,7 +1825,7 @@ def build_creators():
 <img src="{poster}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"><span class="play" aria-hidden="true">▶</span>
 <span class="sr-only">הפעלת הסרטון של {e(c['name'])} על {e(p['name'])} (נטען {frm})</span></button>
 <p class="vsrc">הסרטון נטען {frm} כשלוחצים עליו. <a href="{e(v['watch'])}" target="_blank" rel="noopener">לצפייה ב{where}</a></p></div>"""
-                price_v, orig = float(live["price"]), float(live.get("original") or 0)
+                price_v, orig = float(live["price"]), measured(live)[0]
                 was = f'<span class="was"><span class="sr-only">מחיר קודם: </span>₪{orig:.2f}</span>' if orig > price_v + 0.5 else ""
                 go = (f'<a class="btn buy" href="{e(live["link"])}" rel="sponsored nofollow noopener" target="_blank">'
                       f'{ICON_CART}למוצר באליאקספרס</a>')
@@ -1988,7 +2007,7 @@ def build_terms():
 <ul>
 <li>המחירים, ההנחות וקודי הקופון נלקחים מאליאקספרס ונכונים לתאריך שמופיע לידם. אליאקספרס והמוכרים יכולים לשנות אותם בכל רגע, והמחיר הקובע הוא המחיר שמוצג בקופה.</li>
 <li>המחירים אינם כוללים משלוח, ובמקרים מסוימים גם מיסים שחלים ביבוא.</li>
-<li>אחוזי ההנחה מחושבים לפי המחיר המקורי שאליאקספרס מציגה.</li>
+<li>{WAS_NOTE} איננו מציגים את "המחיר המקורי" שהמוכר רושם באליאקספרס.</li>
 <li>קודי קופון מוגבלים בכמות ובתנאים של אליאקספרס, ולכן גם קוד שנבדק עלול להפסיק לעבוד.</li>
 <li>שמות המוצרים בעברית ותוצאות החיפוש וההשוואה נוצרים בחלקם באופן אוטומטי. כדאי לוודא בעמוד המוצר שזה אותו דגם ואותו מפרט לפני הקנייה.</li>
 </ul>
