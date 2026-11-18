@@ -1947,7 +1947,7 @@ def build_accessibility():
 <h2>פניות בנושא נגישות</h2>
 <p>נתקלתם בבעיית נגישות, או שאתם צריכים את המידע באתר בדרך נגישה אחרת? פנו אלינו:</p>
 <ul>
-<li>איש קשר לנגישות: עוז מדויל</li>
+<li>איש קשר לנגישות: צוות NiceBuy, <a href="mailto:{EMAIL}">{EMAIL}</a></li>
 <li>דואר אלקטרוני: <a href="mailto:{EMAIL}">{EMAIL}</a></li>
 <li>או דרך <a href="{bot_link(src=src_for('inline', path))}">הבוט בטלגרם</a></li>
 </ul>
