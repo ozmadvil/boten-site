@@ -45,7 +45,8 @@ SAMPLE = {"topics": [{"slug": "nails", "name": "ציפורניים", "h1": "צי
               {"slug": "empty", "topic": "nails", "name": "בלי מוצרים חיים", "tracking": "nails_empty", "videos_ok": "2026-11-10",
                "products": [{"slug": "x", "id": "1005000000000077", "name": "אין מחיר"}]}]}
 PICKS = {"picks--nails--dana.json": {"tid": "nails_dana", "updated": "2026-11-18T09:00+02:00", "products": [
-             pick("1005000000000001", "מנורת ייבוש UV"), pick("1005000000000002", "לק ג'ל"), pick("1005000000000003", "מקדחה"),
+             dict(pick("1005000000000001", "מנורת ייבוש UV"), was_from="nicebuy"),   # a previous price the bot measured
+             pick("1005000000000002", "לק ג'ל"), pick("1005000000000003", "מקדחה"),
              dict(pick("1005000000000004", "קישור רגיל"), link="https://www.aliexpress.com/item/1005000000000004.html")]},
          "picks--nails--noa.json": {"tid": "nails_noa", "updated": "2026-11-18T09:00+02:00", "products": [pick("1005000000000009", "טופ קוט")]},
          "picks--nails--empty.json": {"tid": "someone_else", "updated": "2026-11-18T09:00+02:00", "products": [pick("1005000000000077", "x")]}}
@@ -73,6 +74,9 @@ with tempfile.TemporaryDirectory() as tmp:
     # the product page: the player waits for a press, her words are escaped in the page itself, the price is dated
     assert 'data-src="https://www.instagram.com/reel/DZE-pBygPIr/embed/"' in lamp and "<iframe" not in lamp
     assert "<p>פסקה &lt;b&gt;ראשונה&lt;/b&gt; של דנה.</p>" in main(lamp) and "<b>ראשונה</b>" not in lamp and "במילים של דנה לדוגמה" in lamp
+    # a previous price and a discount only where the bot measured them; AliExpress's "original price" alone is not shown
+    assert "מחיר קודם: </span>₪43.26" in main(lamp) and "מחיר קודם" not in main(gel).split("עוד מוצרים של")[0]
+    assert main(dana).count('class="burst"') == 1 and main(dana).count('class="was"') == 1, (main(dana).count('class="burst"'), main(dana).count('class="was"'))
     assert lamp.count(f'href="{LINK}0001" rel="sponsored nofollow noopener"') == 1 and "נכון ל-18/11" in lamp    # one button to AliExpress, under the price
     assert 'data-src="https://www.youtube-nocookie.com/embed/3g_UNj5KyS8?autoplay=1&amp;rel=0"' in gel and "במילים של" not in gel
     assert gel.count(f'href="{LINK}0002" rel="sponsored nofollow noopener"') == 1
@@ -80,7 +84,7 @@ with tempfile.TemporaryDirectory() as tmp:
     # the disclosure: on every page, above the first link to AliExpress, saying who pays whom
     for html_, who in ((hub, None), (dana, "דנה לדוגמה"), (lamp, "דנה לדוגמה"), (top, "נועה לדוגמה")):
         m = main(html_)
-        assert "תוכן שיווקי · שיתוף פעולה" in m and "NiceBuy מקבל עמלה מאליאקספרס" in m and "המחיר שלכם לא משתנה" in m
+        assert "פרסומת · שיתוף פעולה" in m and "NiceBuy מקבל עמלה מאליאקספרס" in m and "המחיר שלכם לא משתנה" in m
         assert who is None or f"עובר אל {who}" in m
         assert m.index("collab-note") < m.index("s.click.aliexpress.com"), "a link to AliExpress above the disclosure"
     # descriptions: no gendered verb, no claim of a video where there is none, cut on a whole word

@@ -634,3 +634,19 @@ span.vtag { background: var(--primary); color: #fff; pointer-events: none; right
 }
 .buybox .bprice .price { font-size: 30px; color: var(--primary); }
 .demo-note { background: var(--accent); color: var(--accent-ink); border-radius: var(--radius-s); padding: 10px 14px; font-size: 14.5px; line-height: 1.55; margin: 0 0 14px; max-width: 80ch; }
+.aff-note { font-size: 14px; line-height: 1.55; color: var(--text-2); margin: 0 0 14px; max-width: 80ch; }
+
+/* Accessibility fixes from the audit of 18/11/2026 */
+html { scroll-padding-top: 120px; }                 /* a focused element is not left under the sticky header */
+main:focus { outline: none; }
+.closer :focus-visible { outline-color: #fff; }     /* the indigo ring did not show on the indigo band */
+.closer p { color: #fff; }
+.vthumb:focus-visible { outline-offset: -4px; outline-color: #fff; }   /* the card clips a ring drawn outside it */
+.vthumb:focus-visible .play { background: var(--primary); transform: scale(1.08); }
+.chat-head h2 { font-size: 18px; margin: 0; }
+.crumbs a { display: inline-block; padding: 6px 2px; }
+.tcoupon { min-width: 0; }
+.tc-code { flex-wrap: wrap; }
+@media (max-width: 360px) { .tiles { grid-template-columns: 1fr; } }   /* 400% zoom: one column, no sideways scrolling */
+@media (max-height: 500px) { header.site { position: static; } }       /* zoomed in or a phone on its side: the header does not cover the page */
+.wrap > .aff-note:first-child { margin-top: 22px; }
