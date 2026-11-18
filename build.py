@@ -648,6 +648,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     }).then(function (d) {
       stop(); busy(false); msg.innerHTML = idle; msg.classList.remove('err');
       var items = (d.products || []);
+      if (d.blocked) { body.innerHTML = '<p>מוצרי עישון הם מוצרים שאסור לפרסם בישראל, ולכן האתר לא מחפש אותם ולא מקשר אליהם.</p>'; return; }
       if (!items.length) { body.innerHTML = '<p>לא מצאתי תוצאות טובות ל"' + esc(q) + '". נסו מילה אחרת, או באנגלית (למשל power bank).</p>'; return; }
       var coded = items.filter(function (p) { return p.coupon; }), rest = items.filter(function (p) { return !p.coupon; });
       var group = function (title, list) { return list.length ? '<h3 class="cgroup">' + title + '</h3><ul class="tiles">' + list.map(tile).join('') + '</ul>' : ''; };
