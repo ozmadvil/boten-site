@@ -549,6 +549,8 @@ document.addEventListener('click', function (ev) {
     txt.textContent = code; b.classList.add('shown');
     act.textContent = ok ? '✓ הועתק!' : 'העתיקו ידנית';
     what.innerHTML = ok ? '<b>הקוד הועתק</b> הדביקו אותו בקופה באליאקספרס' : '<b>העתיקו את הקוד</b> והדביקו אותו בקופה';
+    var live = document.getElementById('nb-say');
+    if (live) live.textContent = ok ? 'הקוד ' + code + ' הועתק. אליאקספרס נפתח בלשונית חדשה.' : 'הקוד הוא ' + code + '. העתיקו אותו ידנית.';
   };
   try { navigator.clipboard.writeText(code).then(function () { done(true); }, function () { done(false); }); } catch (e) { done(false); }
   if (!href) return;
@@ -572,7 +574,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
   var input = f.querySelector('input.q'), btn = f.querySelector('button'), msg = f.querySelector('.msg');
   var idle = msg.innerHTML, label = btn.querySelector('span').textContent;
   var bot = f.dataset.bot, src = f.dataset.src;
-  function say(t, err) { msg.textContent = t; msg.classList.toggle('err', !!err); }
+  function say(t, err) { msg.textContent = t; msg.classList.toggle('err', !!err); if (err) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid'); }
   function busy(on, t) { if (on) { btn.setAttribute('aria-busy', 'true'); btn.querySelector('span').textContent = t; } else { btn.removeAttribute('aria-busy'); btn.querySelector('span').textContent = label; } }
   input.addEventListener('input', function () { if (msg.classList.contains('err')) { msg.innerHTML = idle; msg.classList.remove('err'); } });
   // the answer appears right under the search; a new search replaces the one before it (no clear button:
@@ -581,8 +583,8 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     var box = document.getElementById('sresults');
     if (!box) {
       var band = f.closest('section') || f;
-      box = document.createElement('section'); box.id = 'sresults'; box.className = 'sresults chat'; box.setAttribute('aria-live', 'polite');
-      box.innerHTML = '<div class="wrap"><div class="chat-head"><b>התשובות שלכם</b></div><div class="chat-log"></div></div>';
+      box = document.createElement('section'); box.id = 'sresults'; box.className = 'sresults chat'; box.setAttribute('aria-labelledby', 'sr-h');
+      box.innerHTML = '<div class="wrap"><div class="chat-head"><h2 id="sr-h">התשובות שלכם</h2></div><div class="chat-log"></div></div>';
       band.insertAdjacentElement('afterend', box);
     }
     return box.querySelector('.chat-log');
@@ -594,7 +596,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     var ans = document.createElement('div'); ans.className = 'cmsg bot';
     ans.innerHTML = '<span class="cavatar" aria-hidden="true">N</span><div class="cbody"><p class="typing"><span></span><span></span><span></span></p></div>';
     log.appendChild(ans);
-    me.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    me.scrollIntoView({ behavior: window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     return ans.querySelector('.cbody');
   }
   // While the answer is on its way: the step being done now, a bar that keeps moving, and grey placeholders
@@ -618,20 +620,20 @@ document.querySelectorAll('form.checker').forEach(function (f) {
   function botLink(start) { return bot + '?start=' + start + '-' + src; }
   function tile(p) {
     p.link = safeLink(p.link); if (!p.link) return '';
-    var was = p.original && p.original > p.price + 0.5 ? '<span class="was">₪' + p.original.toFixed(2) + '</span>' : '';
+    var was = p.original && p.original > p.price + 0.5 ? '<span class="was"><span class="sr-only">מחיר קודם: </span>₪' + p.original.toFixed(2) + '</span>' : '';
     var burst = p.discount && p.discount >= 5 ? '<span class="burst"><span class="sr-only">הנחה של </span>-' + Math.round(p.discount) + '%</span>' : '';
     var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
     var attrs = 'href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"';
     return '<li><div class="tile"><a class="tlink" ' + attrs + '><span class="pic">' + imgTag(p.image, 300) + '</span>' + burst +
-      '<span class="tprice">' + priceHtml(p.price) + was + '</span><span class="ttl">' + esc(p.title) + '</span><span class="tfoot"><span class="cat">' + meta + '</span></span></a>' + coupons(p) +
-      '<a class="cta" ' + attrs + ' tabindex="-1">לצפייה במוצר</a></div></li>';
+      '<span class="tprice">' + priceHtml(p.price) + was + '</span><span class="ttl">' + esc(p.title) + '</span><span class="tfoot"><span class="cat">' + meta + '</span></span><span class="sr-only"> (נפתח בלשונית חדשה)</span></a>' + coupons(p) +
+      '<a class="cta" ' + attrs + ' tabindex="-1" aria-hidden="true">לצפייה במוצר</a></div></li>';
   }
   // one product as a wide card in the answer (the pasted link, or an alternative)
   function wide(p, alt) {
     p.link = safeLink(p.link); if (!p.link) return '';
     var attrs = 'href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"';
-    var was = p.original && p.original > p.price + 0.5 ? '<span class="was">₪' + p.original.toFixed(2) + '</span>' : '';
-    var disc = p.discount && p.discount >= 5 ? '<span class="pill">-' + Math.round(p.discount) + '%</span>' : '';
+    var was = p.original && p.original > p.price + 0.5 ? '<span class="was"><span class="sr-only">מחיר קודם: </span>₪' + p.original.toFixed(2) + '</span>' : '';
+    var disc = p.discount && p.discount >= 5 ? '<span class="pill"><span class="sr-only">הנחה של </span>-' + Math.round(p.discount) + '%</span>' : '';
     var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
     var save = alt && p.saving > 0.5 ? '<span class="save">חוסכים ' + ils(p.saving) + '</span>' : '';
     return '<div class="wcard' + (alt ? ' alt' : '') + '"><a class="wpic" ' + attrs + ' tabindex="-1" aria-hidden="true">' + imgTag(p.image, 160) + '</a>' +
@@ -646,8 +648,9 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     fetch(f.dataset.search + '?q=' + encodeURIComponent(q) + '&v=2').then(function (r) {
       if (r.status === 429) throw new Error('slow'); if (!r.ok) throw new Error('bad'); return r.json();
     }).then(function (d) {
-      stop(); busy(false); msg.innerHTML = idle; msg.classList.remove('err');
+      stop(); busy(false);
       var items = (d.products || []);
+      say(d.blocked ? 'האתר לא מחפש מוצרי עישון.' : items.length ? 'נמצאו ' + items.length + ' תוצאות. הן מופיעות מתחת לחיפוש.' : 'לא נמצאו תוצאות.');
       if (d.blocked) { body.innerHTML = '<p>מוצרי עישון הם מוצרים שאסור לפרסם בישראל, ולכן האתר לא מחפש אותם ולא מקשר אליהם.</p>'; return; }
       if (!items.length) { body.innerHTML = '<p>לא מצאתי תוצאות טובות ל"' + esc(q) + '". נסו מילה אחרת, או באנגלית (למשל power bank).</p>'; return; }
       var coded = items.filter(function (p) { return p.coupon; }), rest = items.filter(function (p) { return !p.coupon; });
@@ -758,6 +761,11 @@ SITEMAP: list[tuple[str, date | None]] = []
 # A creator's video: a picture with a play button; the player itself (an iframe from YouTube, Instagram or TikTok)
 # is put in only when the visitor presses it, so those networks get nothing from a visit that did not ask for them.
 PLAYER_JS = r"""
+document.addEventListener('focusin', function (ev) {
+  var a = ev.target, strip = a.closest && a.closest('.menu, .cats-strip .wrap, .vrow');
+  if (strip && a.scrollIntoView) a.scrollIntoView({ inline: 'center', block: 'nearest' });
+});
+
 document.addEventListener('click', function (ev) {
   var b = ev.target.closest && ev.target.closest('button.vembed');
   if (!b || !/^https:\/\/(www\.youtube-nocookie\.com|www\.instagram\.com|www\.tiktok\.com)\//.test(b.dataset.src || '')) return;
@@ -880,7 +888,8 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 </div>
 </div></header>
 {menubar_top}
-<main id="main">
+<p class="sr-only" role="status" id="nb-say"></p>
+<main id="main" tabindex="-1">
 {body}
 </main>
 <footer class="site"><div class="wrap">
@@ -1069,7 +1078,7 @@ def product_tiles(rows: list[dict], path: str) -> str:
     tiles = []
     for p in rows:
         price_v, orig, disc = float(p["price"]), p.get("original"), p.get("discount")
-        was = f'<span class="was">₪{float(orig):.2f}</span>' if orig and float(orig) > price_v + 0.5 else ""
+        was = f'<span class="was"><span class="sr-only">מחיר קודם: </span>₪{float(orig):.2f}</span>' if orig and float(orig) > price_v + 0.5 else ""
         burst = (f'<span class="burst"><span class="sr-only">הנחה של </span>-{disc:.0f}%</span>'
                  if disc and disc >= 5 else "")
         cat = f'<span class="cat">{e(clean_cat(p["category"]))}</span>' if clean_cat(p.get("category")) else ""
@@ -1096,10 +1105,10 @@ def product_tiles(rows: list[dict], path: str) -> str:
 {burst}
 <span class="tprice">{price(price_v)}{was}</span>
 {note}<span class="ttl">{e(short_title(p['title']))}</span>
-<span class="tfoot">{cat}{asof}</span>
+<span class="tfoot">{cat}{asof}</span><span class="sr-only"> (נפתח בלשונית חדשה)</span>
 </a>
 {coupons}
-<a class="cta" {attrs} tabindex="-1">{ICON_CART}לצפייה במוצר</a>
+<a class="cta" {attrs} tabindex="-1" aria-hidden="true">{ICON_CART}לצפייה במוצר</a>
 </div></li>""")
     return f'<ul class="tiles">{"".join(tiles)}</ul>'
 
@@ -1135,7 +1144,7 @@ def hero(src: str, main_heading: bool, compact: bool = False) -> str:
 # The date someone last changed each page's own text here in build.py (data-driven parts date themselves).
 EDITED = {"/": "2026-11-18", "/videos/": "2026-11-10", "/coupons/": "2026-11-18", "/guides/": "2026-11-12", "/guides/coupon-types/": "2026-10-20",
           "/guides/code-not-working/": "2026-10-20", "/about/": "2026-11-18",
-          "/accessibility/": "2026-11-12", "/privacy/": "2026-11-18", "/terms/": "2026-11-18"}
+          "/accessibility/": "2026-11-18", "/privacy/": "2026-11-18", "/terms/": "2026-11-18"}
 
 
 def event_card() -> tuple[str, str, str]:
@@ -1209,7 +1218,6 @@ def build_home():
     if products:
         tiles = f"""<section aria-labelledby="hot-title">
 <div class="sec-head"><h2 id="hot-title">מוצרים נבחרים</h2><a href="{CHANNEL}">כל הדילים בערוץ {ICON_ARROW}</a></div>
-{AFF_NOTE}
 {product_tiles(products, path)}
 <p class="tiles-note">ייתכן שהמחיר התעדכן לנמוך יותר באליאקספרס. המחירים נכונים לתאריך שמופיע על כל מוצר, ועשויים להשתנות. לחיצה על מוצר פותחת אותו באליאקספרס (קישור שותפים: המחיר שלכם לא משתנה).</p>
 </section>"""
@@ -1231,6 +1239,7 @@ def build_home():
 <!--MENUBAR-->
 
 <div class="wrap">
+{AFF_NOTE if (vids or tiles) else ""}
 {vids}
 
 {tiles}
@@ -1719,7 +1728,7 @@ def pick_cards(t: dict, c: dict, rows: list[dict]) -> str:
     for p in rows:
         live = p["live"]
         price_v, orig, disc = float(live["price"]), float(live.get("original") or 0), float(live.get("discount") or 0)
-        was = f'<span class="was">₪{orig:.2f}</span>' if orig > price_v + 0.5 else ""
+        was = f'<span class="was"><span class="sr-only">מחיר קודם: </span>₪{orig:.2f}</span>' if orig > price_v + 0.5 else ""
         burst = f'<span class="burst"><span class="sr-only">הנחה של </span>-{disc:.0f}%</span>' if disc >= 5 else ""
         inner = _pick_has_page(p)
         attrs = (f'href="{BASE}/{t["slug"]}/{c["slug"]}/{p["slug"]}/"' if inner
@@ -1735,7 +1744,7 @@ def pick_cards(t: dict, c: dict, rows: list[dict]) -> str:
 <span class="ttl">{e(p['name'])}</span>
 {quote}<span class="tfoot"><span class="asof">{_asof(p)}</span></span>
 </a>
-<a class="cta" {attrs} tabindex="-1">{cta}</a>
+<a class="cta" {attrs} tabindex="-1" aria-hidden="true">{cta}</a>
 </div></li>""")
     return f'<ul class="tiles">{"".join(out)}</ul>'
 
@@ -1798,7 +1807,7 @@ def build_creators():
 <span class="sr-only">הפעלת הסרטון של {e(c['name'])} על {e(p['name'])} (נטען {frm})</span></button>
 <p class="vsrc">הסרטון נטען {frm} כשלוחצים עליו. <a href="{e(v['watch'])}" target="_blank" rel="noopener">לצפייה ב{where}</a></p></div>"""
                 price_v, orig = float(live["price"]), float(live.get("original") or 0)
-                was = f'<span class="was">₪{orig:.2f}</span>' if orig > price_v + 0.5 else ""
+                was = f'<span class="was"><span class="sr-only">מחיר קודם: </span>₪{orig:.2f}</span>' if orig > price_v + 0.5 else ""
                 go = (f'<a class="btn buy" href="{e(live["link"])}" rel="sponsored nofollow noopener" target="_blank">'
                       f'{ICON_CART}למוצר באליאקספרס</a>')
                 text = (f'<section class="cread"><h2>במילים של {e(c["name"])}</h2>'
@@ -1869,31 +1878,40 @@ def build_accessibility():
 <div class="prose">
 <p class="lead">ב-NiceBuy רוצים שכל אחד ואחת יוכלו לחפש מוצרים, להשוות מחירים ולמצוא קודי קופון בקלות, כולל אנשים עם מוגבלות. השקענו בהנגשת האתר ונמשיך לשפר אותו.</p>
 <h2>רמת הנגישות באתר</h2>
-<p>האתר הותאם לדרישות תקנות שוויון זכויות לאנשים עם מוגבלות (התאמות נגישות לשירות), התשע"ג-2013, ולתקן הישראלי ת"י 5568, שמבוסס על הנחיות WCAG 2.0 ברמה AA.</p>
+<p>NiceBuy הוא אתר מידע והמלצות. הוא אינו מוכר מוצרים; הקנייה נעשית באתר אליאקספרס. פעלנו להתאים את האתר להנחיות התקן הישראלי ת"י 5568, שמבוסס על WCAG 2.0 ברמה AA, ועדיין נשארו בו כמה מגבלות שמפורטות למטה.</p>
 <h2>מה הונגש באתר</h2>
 <ul>
-<li>ניווט מלא במקלדת, עם סימון ברור של הרכיב שנמצא בפוקוס, וקישור "דלגו לתוכן" בתחילת כל עמוד.</li>
+<li>ניווט מלא במקלדת, סימון של הרכיב שנמצא בפוקוס, וקישור "דלגו לתוכן" בתחילת כל עמוד.</li>
 <li>מבנה עמוד תקני (כותרות, אזורי ניווט, רשימות) שמאפשר שימוש בקוראי מסך.</li>
-<li>שפת העמוד וכיוון הקריאה מוגדרים לעברית מימין לשמאל, וטקסטים באנגלית מסומנים בשפתם.</li>
-<li>לשדה החיפוש יש תווית, ותשובות החיפוש מוקראות לקורא המסך כשהן מופיעות.</li>
+<li>שפת העמוד וכיוון הקריאה מוגדרים לעברית מימין לשמאל.</li>
+<li>לשדה החיפוש יש תווית, ואחרי חיפוש נמסרת הודעה קצרה על מספר התוצאות.</li>
+<li>במחיר מחוק נאמר לקורא המסך שזה המחיר הקודם, ובתג ההנחה נאמר שזו הנחה.</li>
 <li>ניגודיות צבעים מספקת בין הטקסט לרקע.</li>
-<li>האתר מותאם לטלפון ולהגדלת תצוגה עד 400% בלי גלילה לרוחב.</li>
+<li>האתר מותאם לטלפון ולהגדלת תצוגה.</li>
 <li>תמונות שמשמשות לקישוט מוסתרות מקוראי מסך, ולכפתורים ולקישורים יש שם ברור.</li>
-<li>בדיקה אוטומטית לפי WCAG 2.1 ברמה AA של 9 עמודים, במחשב ובטלפון (12/11/2026), לא מצאה ליקויים. האתר נבדק גם ידנית בניווט במקלדת. בדיקה אוטומטית לא מגלה הכול, אז אם נתקלתם בבעיה, כתבו לנו.</li>
 <li>תגית שמהבהבת על חלק מהמוצרים מהבהבת שלוש פעמים ונעצרת, ולא מהבהבת בכלל למי שהגדיר במכשיר "הפחתת תנועה".</li>
 </ul>
 <p>האתר לא משתמש ב"תוסף נגישות". ההתאמות בנויות בקוד האתר עצמו.</p>
-<p>האתר נבדק בדפדפן Chrome במחשב ובתצוגת טלפון.</p>
+<h2>איך נבדק</h2>
+<p>ב-18/11/2026 נבדקו 18 עמודים מכל סוגי הדפים, במחשב ובטלפון, בדפדפן Chrome: בדיקה אוטומטית (axe-core), ניווט מלא במקלדת, מדידת ניגודיות ובדיקת הגדלה. הליקויים שנמצאו בסימון הפוקוס, בהקראת המחירים ובגלילה לרוחב בהגדלה של 400% תוקנו אחרי הבדיקה. האתר לא נבדק עם קורא מסך אמיתי ולא בדפדפנים אחרים, ובדיקה אוטומטית לא מגלה הכול.</p>
+<h2>מה עדיין לא נגיש במלואו</h2>
+<ul>
+<li>בטלפון, מי שמגדיל בעצמו את המרווחים בין שורות ואותיות עלול לקבל גלילה לרוחב בראש העמוד.</li>
+<li>בטלפון, סדר המעבר במקלדת בראש העמוד עובר בתפריט לפני כפתורי הטלגרם שמופיעים מעליו.</li>
+<li>חלק מהקישורים הקטנים (למשל בתחתית העמוד) קטנים מ-44 פיקסלים במגע.</li>
+<li>מילים באנגלית בתוך הטקסט (כמו Promo code) לא תמיד מסומנות כאנגלית, ולכן קורא מסך עלול להקריא אותן במבטא עברי.</li>
+<li>הסרטונים באתר מוטמעים מיוטיוב, מאינסטגרם או מטיקטוק ונטענים רק בלחיצה. לא לכולם יש כתוביות, והנגן עצמו באחריות הרשת שממנה הוא מגיע.</li>
+</ul>
 <h2>חלקים שאינם בשליטתנו</h2>
 <ul>
 <li><b>אליאקספרס:</b> לחיצה על מוצר מעבירה לאתר אליאקספרס. הקנייה, התשלום והמשלוח נעשים שם, והנגישות של אתר אליאקספרס באחריותה.</li>
-<li><b>תמונות ופרטי מוצרים:</b> התמונות ותיאורי המוצרים מגיעים מהמוכרים באליאקספרס. שמות המוצרים בעברית מתורגמים אוטומטית, ולכן ייתכן שלא כל תיאור יהיה מדויק.</li>
+<li><b>תמונות ופרטי מוצרים:</b> התמונות ותיאורי המוצרים מגיעים מהמוכרים באליאקספרס. שמות המוצרים בעברית נוצרים בחלקם אוטומטית, ולכן ייתכן שלא כל שם יהיה מדויק.</li>
 <li><b>טלגרם:</b> הבוט וערוץ הדילים פועלים בתוך אפליקציית טלגרם, והנגישות של הממשק עצמו תלויה בטלגרם.</li>
 </ul>
 <h2>נתקלתם בבעיה? דברו איתנו</h2>
 <p>אם משהו באתר לא נגיש לכם, או שאתם צריכים מידע בדרך אחרת, נשמח לעזור ולתקן. כדי שנוכל לטפל מהר, כתבו לנו מה ניסיתם לעשות, באיזה עמוד, ובאיזה דפדפן או טכנולוגיה מסייעת השתמשתם.</p>
 <ul>
-<li>איש קשר לנגישות: צוות NiceBuy</li>
+<li>איש קשר לנגישות: עוז מדויל</li>
 <li>מייל: <a href="mailto:{EMAIL}">{EMAIL}</a></li>
 <li>או דרך <a href="{bot_link(src=src_for('inline', path))}">הבוט בטלגרם</a></li>
 </ul>
