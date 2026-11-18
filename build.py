@@ -913,7 +913,7 @@ def page(path: str, title: str, description: str, body: str, crumbs: list[tuple[
 
 
 # A previous (struck-through) price and a discount are shown only when the bot measured them itself (its own price
-# history: the median of what it saw over 3-4 weeks; marked "was_from": "nicebuy"), never AliExpress's "original
+# history: the lowest price it saw in the last 30 days; marked "was_from": "nicebuy"), never AliExpress's "original
 # price", which the seller sets (owner's decision after the legal audit, 18/11/2026).
 def measured(p: dict) -> tuple[float, float]:
     """(previous price, discount %) the bot measured, or (0, 0)."""
@@ -925,7 +925,7 @@ def measured(p: dict) -> tuple[float, float]:
         return 0.0, 0.0
 
 
-WAS_NOTE = ("מחיר מחוק הוא המחיר הרגיל שמדדנו בעצמנו: החציון של המחירים שראינו למוצר בשלושה עד ארבעה השבועות האחרונים. "
+WAS_NOTE = ("מחיר מחוק הוא המחיר הנמוך ביותר שמדדנו בעצמנו למוצר ב-30 הימים האחרונים, ואחוז ההנחה מחושב ממנו. "
             "מוצר שלא עקבנו אחריו מספיק זמן מוצג בלי מחיר מחוק ובלי אחוז הנחה.")
 
 
