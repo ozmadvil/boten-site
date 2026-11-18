@@ -80,7 +80,7 @@ with tempfile.TemporaryDirectory() as tmp:
     # the disclosure: on every page, above the first link to AliExpress, saying who pays whom
     for html_, who in ((hub, None), (dana, "דנה לדוגמה"), (lamp, "דנה לדוגמה"), (top, "נועה לדוגמה")):
         m = main(html_)
-        assert "תוכן שיווקי · שיתוף פעולה" in m and "NiceBuy מקבל עמלה מאליאקספרס" in m and "המחיר שלכם לא משתנה" in m
+        assert "פרסומת · שיתוף פעולה" in m and "NiceBuy מקבל עמלה מאליאקספרס" in m and "המחיר שלכם לא משתנה" in m
         assert who is None or f"עובר אל {who}" in m
         assert m.index("collab-note") < m.index("s.click.aliexpress.com"), "a link to AliExpress above the disclosure"
     # descriptions: no gendered verb, no claim of a video where there is none, cut on a whole word

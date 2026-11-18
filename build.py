@@ -1676,7 +1676,9 @@ def _meta(text: str, limit: int = 155) -> str:
 
 
 def _collab_tag(name: str | None = None) -> str:
-    return f'<span class="collab-tag">תוכן שיווקי · שיתוף פעולה{" עם " + e(name) if name else ""}</span>'
+    # "פרסומת" in so many words, at the top of the page, in Hebrew, seen without doing anything: what the Attorney
+    # General's position on covert advertising asks for (ת"צ 29075-04-19, s. 6-7, 45); a tag or "collaboration" alone is not it
+    return f'<span class="collab-tag">פרסומת · שיתוף פעולה{" עם " + e(name) if name else ""}</span>'
 
 
 def _collab_note(c: dict) -> str:
