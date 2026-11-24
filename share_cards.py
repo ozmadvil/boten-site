@@ -200,7 +200,7 @@ def _tag(canvas: Image.Image, root: Path, out: Path, p: dict, x: int, y: int, w:
     if disc and float(disc) >= 5:                    # "-67%" reads left to right, like the burst on the site
         d.text((x + w - 12, y + 22), f"-{float(disc):.0f}%", font=fonts[1], fill=WHITE, anchor="rs")
     else:
-        _draw_rtl(d, x + w - 12, y + 22, "מבצע", fonts, WHITE)
+        _draw_rtl(d, x + w - 12, y + 22, "החל מ-", fonts, WHITE)     # the cheapest variant's price (see build.FROM)
     photo = _photo(p.get("image", ""), out, pic)
     if photo:
         canvas.paste(photo, (x + 10, y + 40))

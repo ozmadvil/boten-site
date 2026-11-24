@@ -478,6 +478,11 @@ def cat_icon(slug: str) -> str:
             f'stroke-linecap="round" stroke-linejoin="round">{_CAT_PATHS.get(slug, _CAT_PATHS["under-50"])}</svg>')
 
 
+# AliExpress gives one price per listing: its cheapest variant. A listing often holds several (2K and 4K, with or
+# without a memory card), and the title may name the dearer one, so every product price says "from" (owner, 24/11).
+FROM = '<span class="from">החל מ-</span>'
+
+
 def price(v: float, cls: str = "") -> str:
     """₪145⁸⁸ — the flyer's price: big shekels, raised agorot. The decimal point is there but hidden, so search
     engines, AI answers and screen readers read ₪145.88 and not ₪14588."""
@@ -626,7 +631,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     var meta = (p.rating ? '⭐ ' + esc(p.rating) : '') + (p.sold ? (p.rating ? ' · ' : '') + esc(p.sold) + ' נמכרו' : '');
     var attrs = 'href="' + esc(p.link) + '" rel="sponsored nofollow noopener" target="_blank"';
     return '<li><div class="tile"><a class="tlink" ' + attrs + '><span class="pic">' + imgTag(p.image, 300) + '</span>' + burst +
-      '<span class="tprice">' + priceHtml(p.price) + was + '</span><span class="ttl">' + esc(p.title) + '</span><span class="tfoot"><span class="cat">' + meta + '</span></span><span class="sr-only"> (נפתח בלשונית חדשה)</span></a>' + coupons(p) +
+      '<span class="tprice"><span class="from">החל מ-</span>' + priceHtml(p.price) + was + '</span><span class="ttl">' + esc(p.title) + '</span><span class="tfoot"><span class="cat">' + meta + '</span></span><span class="sr-only"> (נפתח בלשונית חדשה)</span></a>' + coupons(p) +
       '<a class="cta" ' + attrs + ' tabindex="-1" aria-hidden="true">לצפייה במוצר</a></div></li>';
   }
   // one product as a wide card in the answer (the pasted link, or an alternative)
@@ -640,7 +645,7 @@ document.querySelectorAll('form.checker').forEach(function (f) {
     var save = alt && p.saving > 0.5 ? '<span class="save">חוסכים ' + ils(p.saving) + '</span>' : '';
     return '<div class="wcard' + (alt ? ' alt' : '') + '"><a class="wpic" ' + attrs + ' tabindex="-1" aria-hidden="true">' + imgTag(p.image, 160) + '</a>' +
       '<div class="wbody"><a class="wttl" ' + attrs + '>' + esc(p.title) + '<span class="sr-only"> (נפתח בלשונית חדשה)</span></a>' +
-      '<div class="wprice">' + priceHtml(p.price) + was + disc + save + '</div>' + (meta ? '<p class="wmeta">' + meta + '</p>' : '') +
+      '<div class="wprice"><span class="from">החל מ-</span>' + priceHtml(p.price) + was + disc + save + '</div>' + (meta ? '<p class="wmeta">' + meta + '</p>' : '') +
       coupons(p) + '<a class="btn wbtn" ' + attrs + '>' + (alt ? 'לצפייה במוצר' : 'לקנייה באליאקספרס') + '<span class="sr-only"> (נפתח בלשונית חדשה)</span></a></div></div>';
   }
   function fail(body, text) { body.innerHTML = '<p class="cerr">' + esc(text) + '</p><p class="cnote"><a href="' + botLink('') + '">אפשר לנסות גם בבוט בטלגרם</a></p>'; }
@@ -943,7 +948,8 @@ def measured(p: dict) -> tuple[float, float]:
         return 0.0, 0.0
 
 
-WAS_NOTE = "באתר אין מחיר מחוק ואין אחוז הנחה, כי \"המחיר המקורי\" באליאקספרס נקבע בידי המוכר."
+WAS_NOTE = ("באתר אין מחיר מחוק ואין אחוז הנחה, כי \"המחיר המקורי\" באליאקספרס נקבע בידי המוכר. "
+            "המחיר שמוצג הוא של הגרסה הזולה ביותר בדף המוצר; גרסאות אחרות (דגם, נפח, צבע) עשויות לעלות יותר.")
 
 
 def faq_block(items: list[tuple[str, str]]) -> tuple[str, dict]:
@@ -1133,7 +1139,7 @@ def product_tiles(rows: list[dict], path: str) -> str:
 <a class="tlink" {attrs}>
 <span class="pic"><img src="{e(p['image'])}" alt="" width="300" height="300" loading="lazy" decoding="async" referrerpolicy="no-referrer"></span>
 {burst}
-<span class="tprice">{price(price_v)}{was}</span>
+<span class="tprice">{FROM}{price(price_v)}{was}</span>
 {note}<span class="ttl">{e(short_title(p['title']))}</span>
 <span class="tfoot">{cat}{asof}</span><span class="sr-only"> (נפתח בלשונית חדשה)</span>
 </a>
@@ -1766,7 +1772,7 @@ def pick_cards(t: dict, c: dict, rows: list[dict]) -> str:
 <a class="tlink" {attrs}>
 <span class="pic"><img src="{e(live['image'])}" alt="" width="300" height="300" loading="lazy" decoding="async" referrerpolicy="no-referrer"></span>
 {burst}
-<span class="tprice">{price(price_v)}{was}</span>
+<span class="tprice">{FROM}{price(price_v)}{was}</span>
 <span class="ttl">{e(p['name'])}</span>
 {quote}<span class="tfoot"><span class="asof">{_asof(p)}</span></span>
 </a>
@@ -1847,7 +1853,7 @@ def build_creators():
 {video}
 {_collab_note(c)}
 <div class="buybox"><img src="{e(live['image'])}" alt="" width="96" height="96" loading="lazy" decoding="async" referrerpolicy="no-referrer">
-<div><p class="bname">{e(short_title(live['title']))}</p><p class="bprice">{price(price_v)}{was}</p>
+<div><p class="bname">{e(short_title(live['title']))}</p><p class="bprice">{FROM}{price(price_v)}{was}</p>
 <p class="basof">{_asof(p)} · המחיר עשוי להשתנות</p></div></div>
 {go}
 {text}
