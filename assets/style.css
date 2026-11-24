@@ -650,3 +650,4 @@ main:focus { outline: none; }
 @media (max-height: 500px) { header.site { position: static; } }       /* zoomed in or a phone on its side: the header does not cover the page */
 .vrow { position: relative; }   /* screen-reader-only text inside the scrolling row stays inside it (no sideways scroll on the page) */
 .from { font-size: 13px; font-weight: 600; color: var(--text-2); white-space: nowrap; align-self: center; }   /* "החל מ-" before a product price */
+@media (max-width: 520px) { .tile .tprice .from { align-self: auto; } }   /* the price column there starts at the right edge */
