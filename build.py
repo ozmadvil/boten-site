@@ -22,7 +22,7 @@ OUT = ROOT / "_site"
 SITE_URL = os.environ.get("SITE_URL", "https://nicebuy.co.il").rstrip("/")
 BASE = "/" + SITE_URL.split("://", 1)[1].split("/", 1)[1] if SITE_URL.count("/") > 2 else ""   # path prefix
 BOT = "https://t.me/Boten_IL_bot"
-CHANNEL = "https://t.me/Boten_deals"
+CHANNEL = "https://t.me/nicebuydeals"
 YOUTUBE = "https://www.youtube.com/@nicebuycoil"
 try:                                      # Israel time with daylight saving (winter time from the last Sunday of October)
     from zoneinfo import ZoneInfo
