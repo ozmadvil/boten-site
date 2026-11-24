@@ -169,7 +169,7 @@ def _shadow(canvas: Image.Image, box: tuple[int, int, int, int], radius: int = 6
     canvas.alpha_composite(layer)
 
 
-def _price(d: ImageDraw.ImageDraw, root: Path, left: int, baseline: int, value: float, size: int) -> None:
+def _price(d: ImageDraw.ImageDraw, root: Path, left: int, baseline: int, value: float, size: int) -> float:
     """₪145⁸⁸: small shekel, big whole, small raised underlined agorot, read left to right."""
     heb_big, big = _font(root, 900, size)
     heb_small, small = _font(root, 900, int(size * 0.42))
@@ -185,6 +185,8 @@ def _price(d: ImageDraw.ImageDraw, root: Path, left: int, baseline: int, value: 
         d.text((x, small_base), ag, font=small, fill=RED, anchor="ls")
         uy = small_base + max(3, size // 14)
         d.line((x, uy, x + small.getlength(ag), uy), fill=RED, width=max(2, size // 22))
+        x += small.getlength(ag)
+    return x                                          # where the price ends on the right
 
 
 def _tag(canvas: Image.Image, root: Path, out: Path, p: dict, x: int, y: int, w: int) -> None:
@@ -206,7 +208,15 @@ def _tag(canvas: Image.Image, root: Path, out: Path, p: dict, x: int, y: int, w:
         canvas.paste(photo, (x + 10, y + 40))
     else:
         d.rectangle((x + 10, y + 40, x + 10 + pic, y + 40 + pic), outline=RULE, width=2)
-    _price(d, root, x + 12, y + 40 + pic + 58, float(p["price"]), 46)
+    base = y + 40 + pic + 58
+    end = _price(d, root, x + 12, base, float(p["price"]), 46)
+    # "from": the cheapest variant's price (see build.FROM); beside the price, or just above it when it is wide
+    small = _font(root, 700, 17)
+    width = sum(f.getlength(t) for t, f in _runs(get_display("החל מ-", base_dir="R"), small))
+    if end + 10 + width <= x + w - 12:
+        _draw_rtl(d, x + w - 12, base, "החל מ-", small, INK_ON_FLYER)
+    else:
+        _draw_rtl(d, x + 12 + width, base - 40, "החל מ-", small, INK_ON_FLYER)
 
 
 def _stamp(canvas: Image.Image, root: Path, cx: int, cy: int) -> None:
